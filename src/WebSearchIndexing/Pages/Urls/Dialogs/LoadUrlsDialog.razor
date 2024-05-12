@@ -1,0 +1,86 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudTabs PanelClass="py-6"
+                 TabPanelClass="tab-custom"
+                 TabHeaderClass="tabs-toolbar-custom"
+                 Elevation="0"
+                 HideSlider="true">
+            @if (_invalidUrls.Any())
+            {
+                <MudAlert Class="mb-4" Style="max-height: 200px;overflow: auto" Severity="Severity.Error" Variant="Variant.Filled" NoIcon="true">
+                    <MudText Class="mb-1" Typo="Typo.body2"><b>Invalid links were found</b></MudText>
+                    
+                    @foreach (var url in _invalidUrls)
+                    {
+                        <MudText Typo="Typo.body2">@url</MudText>
+                    }
+                </MudAlert>
+            }
+
+            <MudTabPanel Text="Text field" OnClick="() => ChangeUrlLoadType(UrlLoadType.TextField)">
+                <ChildContent>
+                    <MudAlert Class="mb-4" Severity="Severity.Warning" Variant="Variant.Filled" NoIcon>
+                        No more than @MAX_URLS links at a time
+                    </MudAlert>
+
+                    <MudTextField Class="mb-2"
+                                  T="string"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Lines="10"
+                                  Immediate="true"
+                                  @bind-Value="_urls" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Info"
+                               OnClick="PrepareUrls">Prepare</MudButton>
+                </ChildContent>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Upload file" OnClick="() => ChangeUrlLoadType(UrlLoadType.File)">
+                <ChildContent>
+                    <MudFileUpload T="IReadOnlyList<IBrowserFile>"
+                                   MaximumFileCount="1"
+                                   OnFilesChanged="HandleFileSelection"
+                                   Hidden="false"
+                                   InputClass="absolute overflow-hidden mud-width-full mud-height-full z-20"
+                                   InputStyle="opacity:0"
+                                   Accept=".txt"
+                                   @ondragenter="SetDragClass"
+                                   @ondragleave="ClearDragClass"
+                                   @ondragend="ClearDragClass">
+                        <ButtonTemplate>
+                            <MudPaper Height="180px"
+                                      Width="100%"
+                                      Outlined="true"
+                                      Class="@_dragClass">
+                                <div class="rounded-lg mb-3" style="width: 40px;height: 40px;padding: 9px;border: 1px solid var(--mud-palette-lines-default)">
+                                    <MudIcon Icon="@Icons.Material.Outlined.CloudUpload" Size="Size.Small" />
+                                </div>
+
+                                <MudText Class="mb-1" Align="Align.Center" Typo="Typo.body2">
+                                    Click for upload or drag the file here
+                                </MudText>
+
+                                <MudText Style="color: var(--mud-palette-text-disabled)" Typo="Typo.body2">
+                                    Only txt
+                                </MudText>
+                            </MudPaper>
+                        </ButtonTemplate>
+                    </MudFileUpload>
+                </ChildContent>
+            </MudTabPanel>
+        </MudTabs>
+
+        @if (_urlRequests.Any())
+        {
+            <MudAlert Class="mb-4" Severity="Severity.Success" Variant="Variant.Filled" NoIcon>
+                @($"{_urlRequests.Count} links were found")
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Close">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="_isSavingUrls" OnClick="Save">Save</MudButton>
+    </DialogActions>
+</MudDialog>

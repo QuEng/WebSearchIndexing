@@ -1,0 +1,31 @@
+﻿@page "/processed-urls/{RouteText?}"
+@using WebSearchIndexing.Pages.Urls.Components
+
+<PageTitle>Your processed urls</PageTitle>
+
+<MudText Class="mb-5" Typo="Typo.h5">Processed Urls</MudText>
+
+<MudTabs PanelClass="py-6"
+         TabPanelClass="tab-custom"
+         TabHeaderClass="tabs-toolbar-custom"
+         Elevation="0"
+         HideSlider="true"
+         ActivePanelIndex="@_activePanelIndex">
+    <MudTabPanel Text="Updated" OnClick="@(() => NavigateTo("updated"))">
+        <ChildContent>
+            <ProcessedUrlsTableComponent UrlRequestType="_selectedRequestType" />
+        </ChildContent>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Deleted" OnClick="@(() => NavigateTo("deleted"))">
+        <ChildContent>
+            <ProcessedUrlsTableComponent UrlRequestType="_selectedRequestType" />
+        </ChildContent>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Rejected" OnClick="@(() => NavigateTo("rejected"))">
+        <ChildContent>
+            <RejectedUrlsTableComponent />
+        </ChildContent>
+    </MudTabPanel>
+</MudTabs>

@@ -1,0 +1,13 @@
+﻿.data-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 10px;
+    -webkit-align-items: center;
+    align-items: center;
+}
+
+@media (max-width: 599px) {
+    .data-row {
+        grid-template-columns: 1fr;
+    }
+}
