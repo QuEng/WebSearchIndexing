@@ -19,10 +19,6 @@ public static class ConfigurationExtension
         WriteAppSettingsJson(appSettingsJson);
     }
 
-    public static bool GetInitializedState(this IConfiguration configuration)
-    {
-        return configuration.GetValue<bool>("IsInitialized");
-    }
 
     public static void SetInitializedState(this IConfiguration configuration, bool value)
     {
