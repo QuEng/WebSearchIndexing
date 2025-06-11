@@ -74,7 +74,8 @@ public partial class ServiceAccountsPage : ComponentBase
     {
         var newQuotaValue = ((ServiceAccount)element).QuotaLimitPerDay;
 
-        if (newQuotaValue == _serviceAccountBeforeEdit.QuotaLimitPerDay) return;
+        if (newQuotaValue == _serviceAccountBeforeEdit.QuotaLimitPerDay)
+            return;
 
         var serviceAccount = await ServiceAccountRepository!.GetByIdAsync(((ServiceAccount)element).Id);
 
