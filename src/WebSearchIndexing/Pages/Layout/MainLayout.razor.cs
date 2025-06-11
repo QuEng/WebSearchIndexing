@@ -22,7 +22,7 @@ public partial class MainLayout : LayoutComponentBase
             _isDarkMode = await _mudThemeProvider.GetSystemPreference();
             _isCanShowContent = true;
             StateHasChanged();
-            await _mudThemeProvider.WatchSystemPreference(OnSystemPreferenceChanged);
+            await _mudThemeProvider.WatchSystemPreference(OnSystemPreferenceChangedAsync);
         }
     }
 
@@ -32,7 +32,7 @@ public partial class MainLayout : LayoutComponentBase
         StateHasChanged();
     }
 
-    private async Task OnSystemPreferenceChanged(bool newValue)
+    private async Task OnSystemPreferenceChangedAsync(bool newValue)
     {
         _isDarkMode = newValue;
         StateHasChanged();

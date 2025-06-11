@@ -16,7 +16,7 @@ public partial class BaseNotificationComponent : ComponentBase
     [Parameter]
     public EventCallback Closed { get; set; }
 
-    private async void CloseBanner()
+    private async Task CloseBannerAsync()
     {
         _isClosed = true;
         await Closed.InvokeAsync();

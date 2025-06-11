@@ -16,7 +16,7 @@ public partial class AddServiceAccountDialog : ComponentBase
     [CascadingParameter]
     private MudDialogInstance? _mudDialog { get; set; }
 
-    private async void HandleUploadingFile(InputFileChangeEventArgs e)
+    private async Task HandleUploadingFileAsync(InputFileChangeEventArgs e)
     {
         _isUploadedFile = false;
         StateHasChanged();

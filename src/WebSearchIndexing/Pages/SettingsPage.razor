@@ -28,7 +28,7 @@ else
                     DisableElevation="true"
                     Variant="Variant.Filled"
                    Color="@(_setting.IsEnabled ? Color.Error : Color.Success)"
-                    OnClick="ToggleEnabling">
+                    OnClick="ToggleEnablingAsync">
             @(_setting.IsEnabled ? "Disable" : "Enable") service
         </MudButton>
     </MudPaper>
@@ -60,7 +60,7 @@ else
                        DisableElevation="true"
                        Variant="Variant.Filled"
                        Color="Color.Primary"
-                       OnClick="SaveRequestsPerDay">
+                       OnClick="SaveRequestsPerDayAsync">
                 Save
             </MudButton>
         }

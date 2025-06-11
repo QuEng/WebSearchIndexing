@@ -19,7 +19,7 @@ public partial class ProcessedUrlsTableComponent : Pages.Components.ComponentBas
     [Inject]
     private IUrlRequestRepository? UrlRequestRepository { get; set; }
 
-    protected override async void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         await UpdateUrlsListAsync();
     }
@@ -40,13 +40,13 @@ public partial class ProcessedUrlsTableComponent : Pages.Components.ComponentBas
         StateHasChanged();
     }
 
-    private async void ChangePage(int page)
+    private async Task ChangePageAsync(int page)
     {
         _currentPage = page;
         await UpdateUrlsListAsync();
     }
 
-    private async void RemoveItem(UrlRequest item)
+    private async Task RemoveItemAsync(UrlRequest item)
     {
         if (await UrlRequestRepository!.DeleteAsync(item.Id))
         {

@@ -42,14 +42,14 @@ public partial class HomePage : ComponentBase
     [Inject]
     private ISettingRepository? SettingRepository { get; set; }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
-        InitializeData();
+        await InitializeDataAsync();
     }
 
-    private async void InitializeData()
+    private async Task InitializeDataAsync()
     {
         _setting = await SettingRepository!.GetSettingAsync();
 
