@@ -35,7 +35,7 @@ public partial class AccessComponent : ComponentBase
         }
     }
 
-    private async void SubmitAccessKey()
+    private async Task SubmitAccessKeyAsync()
     {
         if (string.IsNullOrWhiteSpace(_accessKey))
         {

@@ -5,7 +5,7 @@
         <MudButton Style="text-transform: none"
                    Color="Color.Success"
                    StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="ShowLoadLinksDialog">
+                   OnClick="ShowLoadLinksDialogAsync">
             Add links
         </MudButton>
 
@@ -21,7 +21,7 @@
                    Color="Color.Error"
                    StartIcon="@Icons.Material.Filled.Delete"
                    IconColor="@(SelectedUrls.Any() is false ? Color.Surface : Color.Error)"
-                   OnClick="DeleteSelectedLinks">
+                   OnClick="DeleteSelectedLinksAsync">
             Delete
         </MudButton>
 
@@ -30,7 +30,7 @@
                    Color="Color.Info"
                    StartIcon="@(_isHideCompleted ? Icons.Material.Filled.RemoveRedEye : Icons.Material.Outlined.RemoveRedEye)"
                    IconColor="Color.Info"
-                   OnClick="ShowOrHideCompletedLinks">
+                   OnClick="ShowOrHideCompletedLinksAsync">
             @(_isHideCompleted ? "Show" : "Hide") completed
         </MudButton>
     </div>
@@ -180,7 +180,7 @@
                                                Icon="@Icons.Material.Filled.Save"
                                                Variant="Variant.Filled"
                                                Color="Color.Success"
-                                               OnClick="() => ItemHasBeenCommitted(context)" />
+                                               OnClick="() => ItemHasBeenCommittedAsync(context)" />
 
                                 <MudIconButton Icon="@Icons.Material.Filled.Cancel"
                                                Color="Color.Surface"
@@ -190,7 +190,7 @@
                             {
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="() => BackupItem(context)" />
                             }
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItem(context)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItemAsync(context)" />
                         </MudStack>
                     </MudTd>
                 </RowTemplate>
@@ -207,7 +207,7 @@
                                        DisableElevation="true"
                                        Count="_totalPages"
                                        Selected="_currentPage"
-                                       SelectedChanged="ChangePage" />
+                                       SelectedChanged="ChangePageAsync" />
                     }
                 </PagerContent>
             </MudTable>

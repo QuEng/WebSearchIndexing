@@ -35,7 +35,7 @@ public partial class LoadUrlsDialog : ComponentBase
         _urlRequests = [];
     }
 
-    private async void Save()
+    private async Task SaveAsync()
     {
         if (_isSavingUrls) return;
 
@@ -85,7 +85,7 @@ public partial class LoadUrlsDialog : ComponentBase
             .ToList();
     }
 
-    protected async Task HandleFileSelection(InputFileChangeEventArgs e)
+    protected async Task HandleFileSelectionAsync(InputFileChangeEventArgs e)
     {
         ClearDragClass();
 

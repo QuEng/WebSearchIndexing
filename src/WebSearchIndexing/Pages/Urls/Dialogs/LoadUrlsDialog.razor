@@ -41,7 +41,7 @@
                 <ChildContent>
                     <MudFileUpload T="IReadOnlyList<IBrowserFile>"
                                    MaximumFileCount="1"
-                                   OnFilesChanged="HandleFileSelection"
+                                   OnFilesChanged="HandleFileSelectionAsync"
                                    Hidden="false"
                                    InputClass="absolute overflow-hidden mud-width-full mud-height-full z-20"
                                    InputStyle="opacity:0"
@@ -81,6 +81,6 @@
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Close">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="_isSavingUrls" OnClick="Save">Save</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="_isSavingUrls" OnClick="SaveAsync">Save</MudButton>
     </DialogActions>
 </MudDialog>

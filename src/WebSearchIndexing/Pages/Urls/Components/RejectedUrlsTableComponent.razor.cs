@@ -16,7 +16,7 @@ public partial class RejectedUrlsTableComponent : Pages.Components.ComponentBase
     [Inject]
     private IUrlRequestRepository? UrlRequestRepository { get; set; }
 
-    protected override async void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Failed);
         _totalPages = (int)Math.Ceiling(requestsCount / (double)ROWS_PER_PAGE);
@@ -39,13 +39,13 @@ public partial class RejectedUrlsTableComponent : Pages.Components.ComponentBase
         StateHasChanged();
     }
 
-    private async void ChangePage(int page)
+    private async Task ChangePageAsync(int page)
     {
         _currentPage = page;
         await UpdateUrlsListAsync();
     }
 
-    private async void RemoveItem(UrlRequest item)
+    private async Task RemoveItemAsync(UrlRequest item)
     {
         if (await UrlRequestRepository!.DeleteAsync(item.Id))
         {

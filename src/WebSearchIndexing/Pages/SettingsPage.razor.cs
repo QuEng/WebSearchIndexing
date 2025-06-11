@@ -28,7 +28,7 @@ public partial class SettingsPage : ComponentBase
 
     private bool RequestsPerDayChanged => _setting.RequestsPerDay != _oldValueRequestsPerDay;
 
-    protected override async void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
@@ -48,7 +48,7 @@ public partial class SettingsPage : ComponentBase
         StateHasChanged();
     }
 
-    private async void ToggleEnabling()
+    private async Task ToggleEnablingAsync()
     {
         if (_isSavingSettings) return;
 
@@ -85,7 +85,7 @@ public partial class SettingsPage : ComponentBase
         }
     }
 
-    private async void SaveRequestsPerDay()
+    private async Task SaveRequestsPerDayAsync()
     {
         if (_isSavingSettings ||
             RequestsPerDayChanged is false) return;

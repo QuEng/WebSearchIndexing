@@ -21,7 +21,7 @@ public partial class ServiceAccountsPage : ComponentBase
     [Inject]
     private IDialogService? DialogService { get; set; }
 
-    protected override async void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
@@ -31,7 +31,7 @@ public partial class ServiceAccountsPage : ComponentBase
         StateHasChanged();
     }
 
-    private async void ShowAddingDialog()
+    private async Task ShowAddingDialogAsync()
     {
         var dialog = await DialogService!.ShowAsync<AddServiceAccountDialog>("Add service account",
             new DialogOptions() { CloseButton = true, FullWidth = true });
@@ -70,7 +70,7 @@ public partial class ServiceAccountsPage : ComponentBase
         ((ServiceAccount)item).QuotaLimitPerDay = _serviceAccountBeforeEdit.QuotaLimitPerDay;
     }
 
-    private async void ItemHasBeenCommitted(object element)
+    private async Task ItemHasBeenCommittedAsync(object element)
     {
         var newQuotaValue = ((ServiceAccount)element).QuotaLimitPerDay;
 
@@ -91,7 +91,7 @@ public partial class ServiceAccountsPage : ComponentBase
         }
     }
 
-    private async void DeleteServiceAccount(ServiceAccount serviceAccount)
+    private async Task DeleteServiceAccountAsync(ServiceAccount serviceAccount)
     {
         var result = await DialogService!.ShowMessageBox("Delete service account",
             "Are you sure you want to delete this service account?",
@@ -108,12 +108,12 @@ public partial class ServiceAccountsPage : ComponentBase
 
             if (_serviceAccounts.Count == 0)
             {
-                UpdateLimit();
+                await UpdateLimitAsync();
             }
         }
     }
 
-    private async void UpdateLimit()
+    private async Task UpdateLimitAsync()
     {
         var setting = await SettingRepository!.GetSettingAsync();
         if (setting is null) return;

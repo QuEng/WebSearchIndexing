@@ -104,7 +104,7 @@
                 <MudTd DataLabel="Processed at">@context.ProcessedAt.ToString("MMM dd, hh:mm:ss tt")</MudTd>
                 <MudTd>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItem(context)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItemAsync(context)" />
                     </MudStack>
                 </MudTd>
             </RowTemplate>
@@ -121,7 +121,7 @@
                                    DisableElevation="true"
                                    Count="_totalPages"
                                    Selected="_currentPage"
-                                   SelectedChanged="ChangePage" />
+                                   SelectedChanged="ChangePageAsync" />
                 }
             </PagerContent>
         </MudTable>

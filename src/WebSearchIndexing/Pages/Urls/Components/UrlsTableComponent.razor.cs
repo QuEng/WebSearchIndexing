@@ -32,7 +32,7 @@ public partial class UrlsTableComponent : Pages.Components.ComponentBase
 
     private List<UrlRequestChecked> SelectedUrls => _filteredUrls.Where(item => item.Checked).ToList();
 
-    protected override async void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
@@ -57,13 +57,13 @@ public partial class UrlsTableComponent : Pages.Components.ComponentBase
         StateHasChanged();
     }
 
-    private async void ChangePage(int page)
+    private async Task ChangePageAsync(int page)
     {
         _currentPage = page;
         await UpdateUrlsListAsync();
     }
 
-    private async void ShowLoadLinksDialog()
+    private async Task ShowLoadLinksDialogAsync()
     {
         var parameters = new DialogParameters()
         {
@@ -83,7 +83,7 @@ public partial class UrlsTableComponent : Pages.Components.ComponentBase
         _filteredUrls.ForEach(item => item.Checked = _isClickedCheckedAll);
     }
 
-    private async void DeleteSelectedLinks()
+    private async Task DeleteSelectedLinksAsync()
     {
         var dialogResponse = await DialogService!.ShowMessageBox("Delete urls",
                                                                  $"You really want to delete the selected urls? ({SelectedUrls.Count()} pc.)",
@@ -98,7 +98,7 @@ public partial class UrlsTableComponent : Pages.Components.ComponentBase
         }
     }
 
-    private async void ShowOrHideCompletedLinks()
+    private async Task ShowOrHideCompletedLinksAsync()
     {
         _isHideCompleted = !_isHideCompleted;
         await UpdateUrlsListAsync();
@@ -141,7 +141,7 @@ public partial class UrlsTableComponent : Pages.Components.ComponentBase
         item.UrlRequest.Priority = _backupItem.UrlRequest.Priority;
     }
 
-    private async void ItemHasBeenCommitted(UrlRequestChecked item)
+    private async Task ItemHasBeenCommittedAsync(UrlRequestChecked item)
     {
         if (IsUrlValid(item.UrlRequest.Url) is false)
         {
@@ -164,7 +164,7 @@ public partial class UrlsTableComponent : Pages.Components.ComponentBase
         }
     }
 
-    private async void RemoveItem(UrlRequestChecked item)
+    private async Task RemoveItemAsync(UrlRequestChecked item)
     {
         if (item.Edited)
         {
