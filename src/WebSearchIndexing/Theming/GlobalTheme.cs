@@ -7,7 +7,7 @@ internal class GlobalTheme : MudTheme
     internal GlobalTheme()
     {
         LayoutProperties = new LayoutPropertiesCustom();
-        Palette = new PaletteLightCustom();
+        PaletteLight = new PaletteLightCustom();
         PaletteDark = new PaletteDarkCustom();
         Typography = new TypographyCustom();
         ZIndex = new ZIndex() { };

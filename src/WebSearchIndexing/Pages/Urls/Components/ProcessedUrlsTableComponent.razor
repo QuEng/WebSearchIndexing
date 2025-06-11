@@ -69,7 +69,7 @@
                     </MudStack>
                 </MudTd>
                 <MudTd DataLabel="Status">
-                    <MudChip Color="@(context.Status switch
+                    <MudChip T="UrlRequestStatus" Color="@(context.Status switch
                              {
                                  UrlRequestStatus.Completed => Color.Success,
                                  UrlRequestStatus.Failed => Color.Error,

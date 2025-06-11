@@ -17,7 +17,7 @@ public partial class LoadUrlsDialog : ComponentBase
     private string _dragClass = _defaultDragClass;
 
     [CascadingParameter]
-    private MudDialogInstance? MudDialog { get; set; }
+    private IMudDialogInstance? MudDialog { get; set; }
 
     [Parameter, EditorRequired]
     public UrlRequestType UrlRequestType { get; set; }

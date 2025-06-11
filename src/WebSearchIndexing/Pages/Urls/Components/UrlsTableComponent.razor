@@ -128,7 +128,7 @@
                         }
                     </MudTd>
                     <MudTd DataLabel="Status">
-                        <MudChip Color="@(context.UrlRequest.Status switch
+                        <MudChip T="UrlRequestStatus" Color="@(context.UrlRequest.Status switch
                                  {
                                      UrlRequestStatus.Pending => Color.Info,
                                      UrlRequestStatus.Completed => Color.Success,
@@ -159,7 +159,7 @@
                         }
                         else
                         {
-                            <MudChip Color="@(context.UrlRequest.Priority switch
+                            <MudChip T="UrlRequstPriority" Color="@(context.UrlRequest.Priority switch
                                      {
                                          UrlRequstPriority.Low => Color.Surface,
                                          UrlRequstPriority.Medium => Color.Warning,

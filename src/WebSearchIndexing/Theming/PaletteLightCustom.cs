@@ -26,7 +26,7 @@ internal class PaletteLightCustom : PaletteLight, IPaletteCustom
     public override MudColor DrawerIcon => _primary;
 
     public override MudColor Background => "#f9fafb";
-    public override MudColor BackgroundGrey => "#F5F5F5";
+    public override MudColor BackgroundGray => "#F5F5F5";
 
     public override MudColor Divider => "#E0DCEA";
 

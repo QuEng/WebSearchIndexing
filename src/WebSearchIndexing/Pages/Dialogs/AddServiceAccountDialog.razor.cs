@@ -14,7 +14,7 @@ public partial class AddServiceAccountDialog : ComponentBase
     private string _serviceAccountsPath = string.Empty;
 
     [CascadingParameter]
-    private MudDialogInstance? _mudDialog { get; set; }
+    private IMudDialogInstance? _mudDialog { get; set; }
 
     private async Task HandleUploadingFileAsync(InputFileChangeEventArgs e)
     {

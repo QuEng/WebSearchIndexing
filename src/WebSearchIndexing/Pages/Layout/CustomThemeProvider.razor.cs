@@ -4,7 +4,7 @@ using WebSearchIndexing.Theming;
 
 namespace WebSearchIndexing.Pages.Layout;
 
-public partial class CustomThemeProvider : MudThemingProvider
+public partial class CustomThemeProvider : MudThemeProvider
 {
     protected new string BuildTheme()
     {
@@ -27,7 +27,7 @@ public partial class CustomThemeProvider : MudThemingProvider
             return;
         }
 
-        IPaletteCustom palette = (IsDarkMode ? Theme.PaletteDark as PaletteDarkCustom : Theme.Palette as PaletteLightCustom)!;
+        IPaletteCustom palette = (IsDarkMode ? Theme.PaletteDark as PaletteDarkCustom : Theme.PaletteLight as PaletteLightCustom)!;
 
         if (palette is null)
         {
