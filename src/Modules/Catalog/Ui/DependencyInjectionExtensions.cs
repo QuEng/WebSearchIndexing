@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using WebSearchIndexing.BuildingBlocks.Web;

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.BackgroundJobs;
+using WebSearchIndexing.Modules.Core.Application.BackgroundJobs;
 using WebSearchIndexing.Domain.Entities;
 using WebSearchIndexing.Domain.Repositories;
 

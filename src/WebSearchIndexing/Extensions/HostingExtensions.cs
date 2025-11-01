@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
-using WebSearchIndexing.BackgroundJobs;
 using WebSearchIndexing.Configurations;
 using WebSearchIndexing.Data;
+using WebSearchIndexing.Modules.Core.Application;
 using WebSearchIndexing.Pages;
 
 namespace WebSearchIndexing.Extensions;
@@ -21,8 +21,7 @@ public static class HostingExtensions
 
         builder.Services.AddMudServices();
 
-        builder.Services.AddHostedService<RequestSenderWorker>();
-        builder.Services.AddScoped<IScopedRequestSendingService, ScopedRequestSendingService>();
+        builder.Services.AddCoreApplicationModule();
 
         return builder.Build();
     }

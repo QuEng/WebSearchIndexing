@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
 using WebSearchIndexing.Hosts.WebHost.Theming;

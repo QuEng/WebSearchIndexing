@@ -63,16 +63,16 @@ public partial class AddServiceAccountDialog : ComponentBase
         }
 
         var serviceAccount = new ServiceAccount(_projectId, _credentialsJson, _quotaLimitPerDay);
-        Close(serviceAccount);
+        CloseDialogWithResult(serviceAccount);
     }
 
-    private void Close()
+    private void CloseDialog()
     {
         TryDeleteTempFile();
         _mudDialog!.Close(null);
     }
 
-    private void Close(object? obj)
+    private void CloseDialogWithResult(object? obj)
     {
         if (obj is ServiceAccount account)
         {
@@ -80,7 +80,7 @@ public partial class AddServiceAccountDialog : ComponentBase
             return;
         }
 
-        Close();
+        CloseDialog();
     }
 
     private void TryDeleteTempFile()

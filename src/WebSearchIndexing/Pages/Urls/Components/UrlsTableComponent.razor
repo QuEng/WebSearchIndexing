@@ -114,7 +114,12 @@
                     <MudTd DataLabel="Url">
                         @if (context.Edited)
                         {
-                            <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="context.UrlRequest.Url" />
+                            <MudTextField T="string"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Value="context.UrlRequest.Url"
+                                          ValueChanged="url => context.UrlRequest.UpdateUrl(url)"
+                                          ValueExpression="@(() => context.UrlRequest.Url)" />
                         }
                         else
                         {
@@ -140,30 +145,32 @@
                             @context.UrlRequest.Status
                         </MudChip>
                     </MudTd>
-                    <MudTd DataLabel="Priotiry">
+                    <MudTd DataLabel="Priority">
                         @if (context.Edited)
                         {
                             <MudSelect Style="width: 50px"
-                                       T="UrlRequstPriority"
+                                       T="UrlItemPriority"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        Immediate="true"
                                        AnchorOrigin="Origin.BottomCenter"
-                                       @bind-Value="context.UrlRequest.Priority">
-                                <MudSelectItem Value="UrlRequstPriority.Low">Low</MudSelectItem>
+                                       Value="context.UrlRequest.Priority"
+                                       ValueChanged="priority => context.UrlRequest.UpdatePriority(priority)"
+                                       ValueExpression="@(() => context.UrlRequest.Priority)">
+                                <MudSelectItem Value="UrlItemPriority.Low">Low</MudSelectItem>
 
-                                <MudSelectItem Value="UrlRequstPriority.Medium">Medium</MudSelectItem>
+                                <MudSelectItem Value="UrlItemPriority.Medium">Medium</MudSelectItem>
 
-                                <MudSelectItem Value="UrlRequstPriority.High">High</MudSelectItem>
+                                <MudSelectItem Value="UrlItemPriority.High">High</MudSelectItem>
                             </MudSelect>
                         }
                         else
                         {
                             <MudChip Color="@(context.UrlRequest.Priority switch
                                      {
-                                         UrlRequstPriority.Low => Color.Surface,
-                                         UrlRequstPriority.Medium => Color.Warning,
-                                         UrlRequstPriority.High => Color.Error,
+                                         UrlItemPriority.Low => Color.Surface,
+                                         UrlItemPriority.Medium => Color.Warning,
+                                         UrlItemPriority.High => Color.Error,
                                          _ => Color.Primary
                                      })">
                                 @context.UrlRequest.Priority

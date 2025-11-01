@@ -62,21 +62,28 @@ public class UrlRequestRepository(IDbContextFactory<IndexingDbContext> factory) 
     public async Task<int> GetRequestsCountAsync(TimeSpan subtructTime, UrlItemStatus? requestStatus = default, UrlItemType? requestType = default, CancellationToken cancellationToken = default)
     {
         using var context = _factory.CreateDbContext();
+
+        var cutoff = DateTime.UtcNow - subtructTime;
+
         return await context.Set<UrlItem>()
-            .Where(request => (requestStatus == null || request.Status == requestStatus) &&
-                              (requestType == null || request.Type == requestType) &&
-                              request.ProcessedAt >= DateTime.UtcNow.Subtract(subtructTime))
+            .Where(u =>
+                (requestStatus == null || u.Status == requestStatus) &&
+                (requestType == null || u.Type == requestType) &&
+                u.ProcessedAt >= cutoff)
             .CountAsync(cancellationToken);
     }
 
     public async Task<int> GetRequestsCountAsync(TimeSpan subtructTime, Guid serviceAccountId, UrlItemStatus? requestStatus = default, UrlItemType? requestType = default, CancellationToken cancellationToken = default)
     {
         using var context = _factory.CreateDbContext();
+
+        var cutoff = DateTime.UtcNow - subtructTime;
+
         return await context.Set<UrlItem>()
             .Where(request => (requestStatus == null || request.Status == requestStatus) &&
                               (requestType == null || request.Type == requestType) &&
                               request.ServiceAccountId == serviceAccountId &&
-                              request.ProcessedAt >= DateTime.UtcNow.Subtract(subtructTime))
+                              request.ProcessedAt >= cutoff)
             .CountAsync(cancellationToken);
     }
 
@@ -112,11 +119,14 @@ public class UrlRequestRepository(IDbContextFactory<IndexingDbContext> factory) 
     public async Task<List<UrlItem>> TakeRequestsAsync(int count, TimeSpan subtructTime, int? offset = 0, UrlItemStatus? requestStatus = null, UrlItemType? requestType = default, CancellationToken cancellationToken = default)
     {
         using var context = _factory.CreateDbContext();
+
+        var cutoff = DateTime.UtcNow - subtructTime;
+
         return await context.Set<UrlItem>()
             .Include(request => request.ServiceAccount)
             .Where(request => (requestStatus == null || request.Status == requestStatus) &&
                               (requestType == null || request.Type == requestType) &&
-                              request.ProcessedAt >= DateTime.UtcNow.Subtract(subtructTime))
+                              request.ProcessedAt >= cutoff)
             .OrderByDescending(request => request.Priority)
             .ThenBy(request => request.AddedAt)
             .Skip(offset ?? 0)
@@ -127,12 +137,15 @@ public class UrlRequestRepository(IDbContextFactory<IndexingDbContext> factory) 
     public async Task<List<UrlItem>> TakeRequestsAsync(int count, TimeSpan subtructTime, Guid serviceAccountId, int? offset = 0, UrlItemStatus? requestStatus = null, UrlItemType? requestType = default, CancellationToken cancellationToken = default)
     {
         using var context = _factory.CreateDbContext();
+
+        var cutoff = DateTime.UtcNow - subtructTime;
+
         return await context.Set<UrlItem>()
             .Include(request => request.ServiceAccount)
             .Where(request => (requestStatus == null || request.Status == requestStatus) &&
                               (requestType == null || request.Type == requestType) &&
                               request.ServiceAccountId == serviceAccountId &&
-                              request.ProcessedAt >= DateTime.UtcNow.Subtract(subtructTime))
+                              request.ProcessedAt >= cutoff)
             .OrderByDescending(request => request.Priority)
             .ThenBy(request => request.AddedAt)
             .Skip(offset ?? 0)
