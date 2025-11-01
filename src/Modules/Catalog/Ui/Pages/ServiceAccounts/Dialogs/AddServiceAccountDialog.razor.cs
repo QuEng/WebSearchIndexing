@@ -16,7 +16,7 @@ public partial class AddServiceAccountDialog : ComponentBase
     private string _projectId = string.Empty;
 
     [CascadingParameter]
-    private MudDialogInstance? _mudDialog { get; set; }
+    private MudDialogInstance? MudDialog { get; set; }
 
     private async Task HandleUploadingFileAsync(InputFileChangeEventArgs e)
     {
@@ -64,24 +64,14 @@ public partial class AddServiceAccountDialog : ComponentBase
         }
 
         var serviceAccount = new ServiceAccount(_projectId, _credentialsJson, _quotaLimitPerDay);
-        Close(serviceAccount);
+        TryDeleteTempFile();
+        MudDialog!.Close(serviceAccount);
     }
 
-    private void Close()
+    private void Cancel()
     {
         TryDeleteTempFile();
-        _mudDialog!.Close(null);
-    }
-
-    private void Close(object? obj)
-    {
-        if (obj is ServiceAccount account)
-        {
-            _mudDialog!.Close(account);
-            return;
-        }
-
-        Close();
+        MudDialog!.Close(null);
     }
 
     private void TryDeleteTempFile()

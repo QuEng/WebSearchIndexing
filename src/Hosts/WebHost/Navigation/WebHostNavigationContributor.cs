@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Routing;
 using MudBlazor;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
 
