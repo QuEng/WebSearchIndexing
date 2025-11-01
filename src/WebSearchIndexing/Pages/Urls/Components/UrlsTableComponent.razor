@@ -1,11 +1,11 @@
-﻿@inherits WebSearchIndexing.Pages.Components.ComponentBase
+@inherits WebSearchIndexing.Pages.Components.ComponentBase
 
 <div class="@Class" style="@Style">
     <div class="links__actions">
         <MudButton Style="text-transform: none"
                    Color="Color.Success"
                    StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="ShowLoadLinksDialog">
+                   OnClick="ShowLoadLinksDialogAsync">
             Add links
         </MudButton>
 
@@ -21,7 +21,7 @@
                    Color="Color.Error"
                    StartIcon="@Icons.Material.Filled.Delete"
                    IconColor="@(SelectedUrls.Any() is false ? Color.Surface : Color.Error)"
-                   OnClick="DeleteSelectedLinks">
+                   OnClick="DeleteSelectedLinksAsync">
             Delete
         </MudButton>
 
@@ -30,7 +30,7 @@
                    Color="Color.Info"
                    StartIcon="@(_isHideCompleted ? Icons.Material.Filled.RemoveRedEye : Icons.Material.Outlined.RemoveRedEye)"
                    IconColor="Color.Info"
-                   OnClick="ShowOrHideCompletedLinks">
+                   OnClick="ShowOrHideCompletedLinksAsync">
             @(_isHideCompleted ? "Show" : "Hide") completed
         </MudButton>
     </div>
@@ -49,7 +49,7 @@
         else
         {
             <MudTable Class="links__table"
-                      T="UrlRequestChecked"
+                      T="UrlEntry"
                       Items="_filteredUrls"
                       RowsPerPage="30"
                       OnRowClick="OnRowClick"
@@ -65,7 +65,7 @@
                 <HeaderContent>
                     <MudTh />
                     <MudTh>
-                        <MudTableSortLabel SortBy="new Func<UrlRequestChecked, object>(x=> _isEditMode ? string.Empty : x.UrlRequest.Url)">
+                        <MudTableSortLabel SortBy="new Func<UrlEntry, object>(x=> _isEditMode ? string.Empty : x.UrlRequest.Url)">
                             <MudText Style="font-weight: 500" Color="Color.Surface"
                                      Typo="Typo.subtitle2">
                                 Url
@@ -73,7 +73,7 @@
                         </MudTableSortLabel>
                     </MudTh>
                     <MudTh>
-                        <MudTableSortLabel SortBy="new Func<UrlRequestChecked, object>(x=> _isEditMode ? string.Empty : x.UrlRequest.Status)">
+                        <MudTableSortLabel SortBy="new Func<UrlEntry, object>(x=> _isEditMode ? string.Empty : x.UrlRequest.Status)">
                             <MudText Style="font-weight: 500" Color="Color.Surface"
                                      Typo="Typo.subtitle2">
                                 Status
@@ -81,7 +81,7 @@
                         </MudTableSortLabel>
                     </MudTh>
                     <MudTh>
-                        <MudTableSortLabel SortBy="new Func<UrlRequestChecked, object>(x => _isEditMode ? string.Empty : x.UrlRequest.Priority)">
+                        <MudTableSortLabel SortBy="new Func<UrlEntry, object>(x => _isEditMode ? string.Empty : x.UrlRequest.Priority)">
                             <MudText Style="font-weight: 500" Color="Color.Surface"
                                      Typo="Typo.subtitle2">
                                 Priotiry
@@ -89,7 +89,7 @@
                         </MudTableSortLabel>
                     </MudTh>
                     <MudTh>
-                        <MudTableSortLabel SortBy="new Func<UrlRequestChecked, object>(x =>  _isEditMode ? string.Empty : x.UrlRequest.AddedAt)">
+                        <MudTableSortLabel SortBy="new Func<UrlEntry, object>(x =>  _isEditMode ? string.Empty : x.UrlRequest.AddedAt)">
                             <MudText Style="font-weight: 500" Color="Color.Surface"
                                      Typo="Typo.subtitle2">
                                 Added at
@@ -97,7 +97,7 @@
                         </MudTableSortLabel>
                     </MudTh>
                     <MudTh>
-                        <MudTableSortLabel SortBy="new Func<UrlRequestChecked, object>(x=> _isEditMode ? string.Empty : x.UrlRequest.ProcessedAt)">
+                        <MudTableSortLabel SortBy="new Func<UrlEntry, object>(x=> _isEditMode ? string.Empty : x.UrlRequest.ProcessedAt)">
                             <MudText Style="font-weight: 500" Color="Color.Surface"
                                      Typo="Typo.subtitle2">
                                 Processed at
@@ -130,9 +130,9 @@
                     <MudTd DataLabel="Status">
                         <MudChip Color="@(context.UrlRequest.Status switch
                                  {
-                                     UrlRequestStatus.Pending => Color.Info,
-                                     UrlRequestStatus.Completed => Color.Success,
-                                     UrlRequestStatus.Failed => Color.Error,
+                                     UrlItemStatus.Pending => Color.Info,
+                                     UrlItemStatus.Completed => Color.Success,
+                                     UrlItemStatus.Failed => Color.Error,
                                      _ => Color.Primary
                                  })"
                                  Variant="Variant.Text"
@@ -180,7 +180,7 @@
                                                Icon="@Icons.Material.Filled.Save"
                                                Variant="Variant.Filled"
                                                Color="Color.Success"
-                                               OnClick="() => ItemHasBeenCommitted(context)" />
+                                               OnClick="() => ItemHasBeenCommittedAsync(context)" />
 
                                 <MudIconButton Icon="@Icons.Material.Filled.Cancel"
                                                Color="Color.Surface"
@@ -190,7 +190,7 @@
                             {
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="() => BackupItem(context)" />
                             }
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItem(context)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItemAsync(context)" />
                         </MudStack>
                     </MudTd>
                 </RowTemplate>
@@ -207,7 +207,7 @@
                                        DisableElevation="true"
                                        Count="_totalPages"
                                        Selected="_currentPage"
-                                       SelectedChanged="ChangePage" />
+                                       SelectedChanged="ChangePageAsync" />
                     }
                 </PagerContent>
             </MudTable>

@@ -1,4 +1,4 @@
-﻿@inherits WebSearchIndexing.Pages.Components.ComponentBase
+@inherits WebSearchIndexing.Pages.Components.ComponentBase
 
 <div class="@Class" style="@Style">
     @if (_allUrls.Count == 0 && _currentPage == 1 && !_isLoadingUrls)
@@ -10,7 +10,7 @@
     else
     {
         <MudTable Class="links__table"
-                  T="UrlRequest"
+                  T="UrlItem"
                   Items="_allUrls"
                   RowsPerPage="30"
                   LoadingProgressColor="Color.Primary"
@@ -24,7 +24,7 @@
                   Bordered="false">
             <HeaderContent>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<UrlRequest, object>(x=> x.Url)">
+                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.Url)">
                         <MudText Style="font-weight: 500" Color="Color.Surface"
                                  Typo="Typo.subtitle2">
                             Url
@@ -32,7 +32,7 @@
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<UrlRequest, object>(x=> x.Status)">
+                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.Status)">
                         <MudText Style="font-weight: 500" Color="Color.Surface"
                                  Typo="Typo.subtitle2">
                             Status
@@ -40,7 +40,7 @@
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<UrlRequest, object>(x => x.AddedAt)">
+                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x => x.AddedAt)">
                         <MudText Style="font-weight: 500" Color="Color.Surface"
                                  Typo="Typo.subtitle2">
                             Added at
@@ -48,7 +48,7 @@
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<UrlRequest, object>(x=> x.ProcessedAt)">
+                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.ProcessedAt)">
                         <MudText Style="font-weight: 500" Color="Color.Surface"
                                  Typo="Typo.subtitle2">
                             Processed at
@@ -71,8 +71,8 @@
                 <MudTd DataLabel="Status">
                     <MudChip Color="@(context.Status switch
                              {
-                                 UrlRequestStatus.Completed => Color.Success,
-                                 UrlRequestStatus.Failed => Color.Error,
+                                 UrlItemStatus.Completed => Color.Success,
+                                 UrlItemStatus.Failed => Color.Error,
                                  _ => Color.Primary
                              })"
                              Variant="Variant.Text"
@@ -84,7 +84,7 @@
                 <MudTd DataLabel="Processed at">@context.ProcessedAt.ToString("MMM dd, hh:mm:ss tt")</MudTd>
                 <MudTd>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">                    
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItem(context)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItemAsync(context)" />
                     </MudStack>
                 </MudTd>
             </RowTemplate>
@@ -101,7 +101,7 @@
                                    DisableElevation="true"
                                    Count="_totalPages"
                                    Selected="_currentPage"
-                                   SelectedChanged="ChangePage" />
+                                   SelectedChanged="ChangePageAsync" />
                 }
             </PagerContent>
         </MudTable>

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Domain.Entities;
 using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Domain;
 using WebSearchIndexing.Pages.Dialogs;
 
 namespace WebSearchIndexing.Pages;
@@ -9,7 +9,8 @@ namespace WebSearchIndexing.Pages;
 public partial class ServiceAccountsPage : ComponentBase
 {
     private List<ServiceAccount> _serviceAccounts = [];
-    private ServiceAccount _serviceAccountBeforeEdit = new();
+    private Guid _serviceAccountIdBeforeEdit;
+    private uint _serviceAccountQuotaBeforeEdit;
     private bool _isLoading = true;
 
     [Inject]
@@ -21,7 +22,7 @@ public partial class ServiceAccountsPage : ComponentBase
     [Inject]
     private IDialogService? DialogService { get; set; }
 
-    protected override async void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
@@ -31,7 +32,7 @@ public partial class ServiceAccountsPage : ComponentBase
         StateHasChanged();
     }
 
-    private async void ShowAddingDialog()
+    private async Task ShowAddingDialogAsync()
     {
         var dialog = await DialogService!.ShowAsync<AddServiceAccountDialog>("Add service account",
             new DialogOptions() { CloseButton = true, FullWidth = true });
@@ -45,7 +46,7 @@ public partial class ServiceAccountsPage : ComponentBase
                 Snackbar!.Add("Service account with this project ID already exists", Severity.Error);
                 return;
             }
-            if ((newServiceAccount = await ServiceAccountRepository!.AddAsync(newServiceAccount!)) is not null)
+            if ((newServiceAccount = await ServiceAccountRepository!.AddAsync(newServiceAccount)) is not null)
             {
                 _serviceAccounts.Add(newServiceAccount);
                 _serviceAccounts = _serviceAccounts.OrderByDescending(x => x.CreatedAt).ToList();
@@ -57,26 +58,31 @@ public partial class ServiceAccountsPage : ComponentBase
 
     private void BackupItem(object item)
     {
-        _serviceAccountBeforeEdit = new()
-        {
-            Id = ((ServiceAccount)item).Id,
-            QuotaLimitPerDay = ((ServiceAccount)item).QuotaLimitPerDay
-        };
+        var serviceAccount = (ServiceAccount)item;
+        _serviceAccountIdBeforeEdit = serviceAccount.Id;
+        _serviceAccountQuotaBeforeEdit = serviceAccount.QuotaLimitPerDay;
     }
 
     private void ResetItemToOriginalValues(object item)
     {
-        ((ServiceAccount)item).Id = _serviceAccountBeforeEdit.Id;
-        ((ServiceAccount)item).QuotaLimitPerDay = _serviceAccountBeforeEdit.QuotaLimitPerDay;
+        var serviceAccount = (ServiceAccount)item;
+        if (serviceAccount.Id != _serviceAccountIdBeforeEdit)
+        {
+            return;
+        }
+
+        serviceAccount.UpdateQuota(_serviceAccountQuotaBeforeEdit);
     }
 
-    private async void ItemHasBeenCommitted(object element)
+    private async Task ItemHasBeenCommittedAsync(object element)
     {
-        var newQuotaValue = ((ServiceAccount)element).QuotaLimitPerDay;
+        var editedServiceAccount = (ServiceAccount)element;
+        var newQuotaValue = editedServiceAccount.QuotaLimitPerDay;
 
-        if (newQuotaValue == _serviceAccountBeforeEdit.QuotaLimitPerDay) return;
+        if (newQuotaValue == _serviceAccountQuotaBeforeEdit)
+            return;
 
-        var serviceAccount = await ServiceAccountRepository!.GetByIdAsync(((ServiceAccount)element).Id);
+        var serviceAccount = await ServiceAccountRepository!.GetByIdAsync(editedServiceAccount.Id);
 
         if (serviceAccount is null)
         {
@@ -84,14 +90,14 @@ public partial class ServiceAccountsPage : ComponentBase
             return;
         }
 
-        serviceAccount.QuotaLimitPerDay = newQuotaValue;
-        if (await ServiceAccountRepository!.UpdateAsync(serviceAccount))
+        serviceAccount.UpdateQuota(newQuotaValue);
+        if (await ServiceAccountRepository.UpdateAsync(serviceAccount))
         {
             Snackbar!.Add("Service account updated", Severity.Success);
         }
     }
 
-    private async void DeleteServiceAccount(ServiceAccount serviceAccount)
+    private async Task DeleteServiceAccountAsync(ServiceAccount serviceAccount)
     {
         var result = await DialogService!.ShowMessageBox("Delete service account",
             "Are you sure you want to delete this service account?",
@@ -108,20 +114,21 @@ public partial class ServiceAccountsPage : ComponentBase
 
             if (_serviceAccounts.Count == 0)
             {
-                UpdateLimit();
+                await UpdateLimitAsync();
             }
         }
     }
 
-    private async void UpdateLimit()
+    private async Task UpdateLimitAsync()
     {
         var setting = await SettingRepository!.GetSettingAsync();
         if (setting is null) return;
+
         var sumAvailableLimit = _serviceAccounts.Sum(x => x.QuotaLimitPerDay);
         if (sumAvailableLimit < setting.RequestsPerDay)
         {
             setting.RequestsPerDay = (int)sumAvailableLimit;
-            await SettingRepository!.UpdateAsync(setting);
+            await SettingRepository.UpdateAsync(setting);
             Snackbar!.Add("Requests per day updated", Severity.Success);
         }
         else

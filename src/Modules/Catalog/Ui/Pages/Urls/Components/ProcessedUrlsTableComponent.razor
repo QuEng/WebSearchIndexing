@@ -1,0 +1,109 @@
+@inherits WebSearchIndexing.BuildingBlocks.Web.Components.ComponentBase
+
+<div class="@Class" style="@Style">
+    @if (_allUrls.Count == 0 && _currentPage == 1 && !_isLoadingUrls)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" NoIcon="true">
+            <MudText Typo="Typo.body2">Urls not found</MudText>
+        </MudAlert>
+    }
+    else
+    {
+        <MudTable Class="links__table"
+                  T="UrlItem"
+                  Items="_allUrls"
+                  RowsPerPage="30"
+                  LoadingProgressColor="Color.Primary"
+                  Loading="_isLoadingUrls"
+                  Hover="true"
+                  Striped="true"
+                  HorizontalScrollbar="true"
+                  FixedHeader="true"
+                  Height="600px"
+                  Elevation="0"
+                  Bordered="false">
+            <HeaderContent>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.Url)">
+                        <MudText Style="font-weight: 500" Color="Color.Surface"
+                                 Typo="Typo.subtitle2">
+                            Url
+                        </MudText>
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.Status)">
+                        <MudText Style="font-weight: 500" Color="Color.Surface"
+                                 Typo="Typo.subtitle2">
+                            Status
+                        </MudText>
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x => x.AddedAt)">
+                        <MudText Style="font-weight: 500" Color="Color.Surface"
+                                 Typo="Typo.subtitle2">
+                            Added at
+                        </MudText>
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.ProcessedAt)">
+                        <MudText Style="font-weight: 500" Color="Color.Surface"
+                                 Typo="Typo.subtitle2">
+                            Processed at
+                        </MudText>
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh />
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd DataLabel="Url">
+                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.body2">@context.Url</MudText>
+
+                        <MudLink Href="@context.Url" Target="_blank" Underline="Underline.None">
+                            <MudIcon Icon="@Icons.Material.Filled.Link" Color="Color.Info" />
+                        </MudLink>
+                    </MudStack>
+                </MudTd>
+                <MudTd DataLabel="Status">
+                    <MudChip Color="@(context.Status switch
+                             {
+                                 UrlItemStatus.Completed => Color.Success,
+                                 UrlItemStatus.Failed => Color.Error,
+                                 _ => Color.Primary
+                             })"
+                             Variant="Variant.Text"
+                             Label="true">
+                        @context.Status
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Added at">@context.AddedAt.ToString("MMM dd, hh:mm:ss tt")</MudTd>
+                <MudTd DataLabel="Processed at">@context.ProcessedAt.ToString("MMM dd, hh:mm:ss tt")</MudTd>
+                <MudTd>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">                    
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItemAsync(context)" />
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                @if (_totalPages > 1)
+                {
+                    <MudDivider Style="background: var(--mud-palette-divider);height: 1px" />
+
+                    <MudPagination Class="pa-4"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Rectangular="true"
+                                   DisableElevation="true"
+                                   Count="_totalPages"
+                                   Selected="_currentPage"
+                                   SelectedChanged="ChangePageAsync" />
+                }
+            </PagerContent>
+        </MudTable>
+    }
+</div>

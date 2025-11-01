@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Catalog\Domain\WebSearchIndexing.Modules.Catalog.Domain.csproj" />
     <ProjectReference Include="..\WebSearchIndexing.Domain\WebSearchIndexing.Domain.csproj" />
   </ItemGroup>
 

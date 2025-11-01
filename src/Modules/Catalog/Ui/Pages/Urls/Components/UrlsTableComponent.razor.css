@@ -1,0 +1,12 @@
+﻿.links__actions {
+  background-color: var(--custom-palette-section-background);
+  border-top-left-radius: var(--mud-default-borderradius);
+  border-top-right-radius: var(--mud-default-borderradius);
+  display: flex;
+  gap: 20px;
+  padding: 12px 16px;
+}
+
+.table__content {
+  background-color: var(--custom-palette-section-background);
+}

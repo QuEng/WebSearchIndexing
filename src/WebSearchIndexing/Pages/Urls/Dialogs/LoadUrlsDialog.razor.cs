@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
-using WebSearchIndexing.Domain.Entities;
+using WebSearchIndexing.Modules.Catalog.Domain;
 using WebSearchIndexing.Domain.Repositories;
 
 namespace WebSearchIndexing.Pages.Urls.Dialogs;
@@ -11,21 +11,21 @@ public partial class LoadUrlsDialog : ComponentBase
     private UrlLoadType _urlLoadType = UrlLoadType.TextField;
     private string _urls = string.Empty;
     private string[] _invalidUrls = [];
-    private List<UrlRequest> _urlRequests = [];
-    private bool _isSavingUrls = false;
-    private const string _defaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mud-width-full mud-height-full z-10 d-flex flex-column justify-center align-center";
-    private string _dragClass = _defaultDragClass;
+    private List<UrlItem> _urlRequests = [];
+    private bool _isSavingUrls;
+    private const string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mud-width-full mud-height-full z-10 d-flex flex-column justify-center align-center";
+    private string _dragClass = DefaultDragClass;
 
     [CascadingParameter]
     private MudDialogInstance? MudDialog { get; set; }
 
     [Parameter, EditorRequired]
-    public UrlRequestType UrlRequestType { get; set; }
+    public UrlItemType UrlRequestType { get; set; }
 
     [Inject]
     private IUrlRequestRepository? UrlRequestRepository { get; set; }
 
-    private const int MAX_URLS = 400;
+    private const int MaxUrls = 400;
 
     private void ChangeUrlLoadType(UrlLoadType urlLoadType)
     {
@@ -35,13 +35,14 @@ public partial class LoadUrlsDialog : ComponentBase
         _urlRequests = [];
     }
 
-    private async void Save()
+    private async Task SaveAsync()
     {
-        if (_isSavingUrls) return;
-
-        if (_urlRequests.Any() is false)
+        if (_isSavingUrls || _urlRequests.Any() is false)
         {
-            Snackbar!.Add("No links found", Severity.Error);
+            if (_urlRequests.Any() is false)
+            {
+                Snackbar!.Add("No links found", Severity.Error);
+            }
             return;
         }
 
@@ -59,7 +60,10 @@ public partial class LoadUrlsDialog : ComponentBase
         }
     }
 
-    private void Close() => MudDialog!.Close();
+    private void Close()
+    {
+        MudDialog!.Close();
+    }
 
     private void PrepareUrls()
     {
@@ -72,20 +76,21 @@ public partial class LoadUrlsDialog : ComponentBase
         _invalidUrls = [];
         _urlRequests = [];
 
-        var urls = _urls.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        if (urls.Length > MAX_URLS && _urlLoadType == UrlLoadType.TextField)
+        var urls = _urls.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (urls.Length > MaxUrls && _urlLoadType == UrlLoadType.TextField)
         {
             Snackbar!.Add("Too many links", Severity.Error);
             return;
         }
 
         _invalidUrls = [.. urls.Where(url => IsUrlValid(url) is false)];
-        _urlRequests = urls.Where(IsUrlValid)
-            .Select(url => new UrlRequest { Url = url, Type = UrlRequestType, AddedAt = DateTime.UtcNow })
+        _urlRequests = urls
+            .Where(IsUrlValid)
+            .Select(url => new UrlItem(url, UrlRequestType, UrlItemPriority.Medium))
             .ToList();
     }
 
-    protected async Task HandleFileSelection(InputFileChangeEventArgs e)
+    protected async Task HandleFileSelectionAsync(InputFileChangeEventArgs e)
     {
         ClearDragClass();
 
@@ -93,17 +98,14 @@ public partial class LoadUrlsDialog : ComponentBase
         {
             try
             {
-                using (var reader = new StreamReader(e.File.OpenReadStream()))
-                {
-                    _urls = await reader.ReadToEndAsync();
-                }
+                using var reader = new StreamReader(e.File.OpenReadStream());
+                _urls = await reader.ReadToEndAsync();
             }
-            catch (Exception ex)
+            catch
             {
                 Snackbar!.Add("An error occurred while uploading a file", Severity.Error);
                 return;
             }
-
         }
         else
         {
@@ -115,15 +117,15 @@ public partial class LoadUrlsDialog : ComponentBase
     }
 
     protected void SetDragClass()
-        => _dragClass = $"{_defaultDragClass} mud-border-primary";
+        => _dragClass = $"{DefaultDragClass} mud-border-primary";
 
     protected void ClearDragClass()
-        => _dragClass = _defaultDragClass;
+        => _dragClass = DefaultDragClass;
 
-    private bool IsUrlValid(string url)
+    private static bool IsUrlValid(string url)
     {
-        return Uri.TryCreate(url, UriKind.Absolute, out Uri uri)
-               && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
     private enum UrlLoadType

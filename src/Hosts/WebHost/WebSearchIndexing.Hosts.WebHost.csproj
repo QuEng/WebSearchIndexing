@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="6.19.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="..\..\Modules\Core\Api\WebSearchIndexing.Modules.Core.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Core\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Core\Ui\WebSearchIndexing.Modules.Core.Ui.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalog\Api\WebSearchIndexing.Modules.Catalog.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalog\Ui\WebSearchIndexing.Modules.Catalog.Ui.csproj" />
+    <ProjectReference Include="..\..\Modules\Submission\Api\WebSearchIndexing.Modules.Submission.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Inspection\Api\WebSearchIndexing.Modules.Inspection.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Crawler\Api\WebSearchIndexing.Modules.Crawler.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Notifications\Api\WebSearchIndexing.Modules.Notifications.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Reporting\Api\WebSearchIndexing.Modules.Reporting.Api.csproj" />
+    <ProjectReference Include="..\..\WebSearchIndexing.Data\WebSearchIndexing.Data.csproj" />
+    <ProjectReference Include="..\..\WebSearchIndexing.Domain\WebSearchIndexing.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

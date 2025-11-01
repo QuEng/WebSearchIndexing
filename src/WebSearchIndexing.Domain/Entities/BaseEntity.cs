@@ -1,6 +1,9 @@
-﻿namespace WebSearchIndexing.Domain.Entities;
+using WebSearchIndexing.BuildingBlocks.Abstractions.Entities;
 
-public class BaseEntity<T>
+namespace WebSearchIndexing.Domain.Entities;
+
+public class BaseEntity<T> : IEntity<T>
 {
-    public T Id { get; set; }
+    public T Id { get; set; } = default!;
 }
+

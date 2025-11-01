@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Domain.Entities;
 using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Domain;
 
 namespace WebSearchIndexing.Pages.Urls.Components;
 
 public partial class RejectedUrlsTableComponent : Pages.Components.ComponentBase
 {
-    private const int ROWS_PER_PAGE = 10;
-    private List<UrlRequest> _allUrls = [];
+    private const int RowsPerPage = 10;
+    private List<UrlItem> _allUrls = [];
     private bool _isLoadingUrls;
     private int _currentPage = 1;
     private int _totalPages = 1;
@@ -16,10 +16,10 @@ public partial class RejectedUrlsTableComponent : Pages.Components.ComponentBase
     [Inject]
     private IUrlRequestRepository? UrlRequestRepository { get; set; }
 
-    protected override async void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Failed);
-        _totalPages = (int)Math.Ceiling(requestsCount / (double)ROWS_PER_PAGE);
+        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Failed);
+        _totalPages = Math.Max(1, (int)Math.Ceiling(requestsCount / (double)RowsPerPage));
         await UpdateUrlsListAsync();
     }
 
@@ -28,24 +28,26 @@ public partial class RejectedUrlsTableComponent : Pages.Components.ComponentBase
         _isLoadingUrls = true;
         StateHasChanged();
 
-        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(requestStatus: UrlRequestStatus.Failed);
-        _totalPages = (int)Math.Ceiling(requestsCount / (double)ROWS_PER_PAGE);
-        _totalPages = _totalPages == 0 ? 1 : _totalPages;
+        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(requestStatus: UrlItemStatus.Failed);
+        _totalPages = Math.Max(1, (int)Math.Ceiling(requestsCount / (double)RowsPerPage));
         if (_currentPage > _totalPages) _currentPage = _totalPages;
 
-        _allUrls = await UrlRequestRepository!.TakeRequestsAsync(ROWS_PER_PAGE, (_currentPage - 1) * ROWS_PER_PAGE, UrlRequestStatus.Failed);
+        _allUrls = await UrlRequestRepository.TakeRequestsAsync(
+            RowsPerPage,
+            (_currentPage - 1) * RowsPerPage,
+            UrlItemStatus.Failed);
 
         _isLoadingUrls = false;
         StateHasChanged();
     }
 
-    private async void ChangePage(int page)
+    private async Task ChangePageAsync(int page)
     {
         _currentPage = page;
         await UpdateUrlsListAsync();
     }
 
-    private async void RemoveItem(UrlRequest item)
+    private async Task RemoveItemAsync(UrlItem item)
     {
         if (await UrlRequestRepository!.DeleteAsync(item.Id))
         {

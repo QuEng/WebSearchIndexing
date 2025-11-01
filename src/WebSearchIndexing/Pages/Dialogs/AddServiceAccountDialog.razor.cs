@@ -1,22 +1,24 @@
-﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Indexing.v3;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
-using WebSearchIndexing.Domain.Entities;
+using WebSearchIndexing.Modules.Catalog.Domain;
 
 namespace WebSearchIndexing.Pages.Dialogs;
 
 public partial class AddServiceAccountDialog : ComponentBase
 {
-    private ServiceAccount _serviceAccount = new();
+    private uint _quotaLimitPerDay = 0;
     private bool _isUploadedFile;
     private string _serviceAccountsPath = string.Empty;
+    private string _credentialsJson = string.Empty;
+    private string _projectId = string.Empty;
 
     [CascadingParameter]
     private MudDialogInstance? _mudDialog { get; set; }
 
-    private async void HandleUploadingFile(InputFileChangeEventArgs e)
+    private async Task HandleUploadingFileAsync(InputFileChangeEventArgs e)
     {
         _isUploadedFile = false;
         StateHasChanged();
@@ -32,53 +34,68 @@ public partial class AddServiceAccountDialog : ComponentBase
         {
             using (var reader = new StreamReader(e.File.OpenReadStream()))
             {
-                _serviceAccount.Json = await reader.ReadToEndAsync();
+                _credentialsJson = await reader.ReadToEndAsync();
             }
-            credential = GoogleCredential.FromJson(_serviceAccount.Json)
+            credential = GoogleCredential.FromJson(_credentialsJson)
                                          .CreateScoped(IndexingService.Scope.Indexing);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine(ex.Message);
             Snackbar!.Add("An error occurred while reading the file", Severity.Error);
             return;
         }
 
-        _serviceAccount.ProjectId = ((ServiceAccountCredential)credential.UnderlyingCredential).ProjectId;
+        _projectId = ((ServiceAccountCredential)credential.UnderlyingCredential).ProjectId;
         _isUploadedFile = true;
         StateHasChanged();
 
         Snackbar.Add("File uploaded successfully", Severity.Success);
 
-        try
-        {
-            File.Delete(_serviceAccountsPath);
-        }
-        catch { }
+        TryDeleteTempFile();
     }
 
     private void Save()
     {
-        if (_serviceAccount.QuotaLimitPerDay < 0) _serviceAccount.QuotaLimitPerDay = 0;
         if (_isUploadedFile is false)
         {
             Snackbar!.Add("Please upload the service account key file", Severity.Error);
             return;
         }
-        Close(_serviceAccount);
+
+        var serviceAccount = new ServiceAccount(_projectId, _credentialsJson, _quotaLimitPerDay);
+        Close(serviceAccount);
+    }
+
+    private void Close()
+    {
+        TryDeleteTempFile();
+        _mudDialog!.Close(null);
     }
 
     private void Close(object? obj)
     {
-        if (obj is not ServiceAccount && _isUploadedFile)
+        if (obj is ServiceAccount account)
         {
-            try
-            {
-                File.Delete(_serviceAccountsPath);
-            }
-            catch { }
+            _mudDialog!.Close(account);
+            return;
         }
 
-        _mudDialog!.Close(obj);
+        Close();
+    }
+
+    private void TryDeleteTempFile()
+    {
+        if (string.IsNullOrWhiteSpace(_serviceAccountsPath))
+        {
+            return;
+        }
+
+        try
+        {
+            File.Delete(_serviceAccountsPath);
+        }
+        catch
+        {
+        }
     }
 }

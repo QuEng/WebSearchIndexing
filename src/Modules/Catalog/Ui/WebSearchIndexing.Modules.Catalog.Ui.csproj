@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.67.0" />
+    <PackageReference Include="Google.Apis.Indexing.v3" Version="1.67.0.3191" />
+    <PackageReference Include="MudBlazor" Version="6.19.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="..\..\..\WebSearchIndexing.Domain\WebSearchIndexing.Domain.csproj" />
+    <ProjectReference Include="..\Domain\WebSearchIndexing.Modules.Catalog.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
