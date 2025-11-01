@@ -1,0 +1,68 @@
+﻿@page "/settings"
+
+<PageTitle>Settings</PageTitle>
+
+<MudText Class="mb-5" Typo="Typo.h5">Your settings</MudText>
+
+@if (_isLoadingSettings)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else if (_setting is null)
+{
+    <MudAlert Severity="Severity.Error" NoIcon="true">
+        <MudText Typo="Typo.body2">Failed to load settings</MudText>
+    </MudAlert>
+}
+else
+{
+    <MudPaper Class="pa-4 mb-5" Elevation="0">
+        <MudText Class="mb-2"
+                 Style="font-weight: 500"
+                 Typo="Typo.body1"
+                 Color="@(_setting.IsEnabled ? Color.Success : Color.Error)">
+            Service is @(_setting.IsEnabled ? "enabled and working" : "disabled")
+        </MudText>
+
+        <MudButton Style="text-transform: none"
+                    DisableElevation="true"
+                    Variant="Variant.Filled"
+                   Color="@(_setting.IsEnabled ? Color.Error : Color.Success)"
+                    OnClick="ToggleEnablingAsync">
+            @(_setting.IsEnabled ? "Disable" : "Enable") service
+        </MudButton>
+    </MudPaper>
+
+    <MudPaper Class="pa-4" Elevation="0">
+        <MudText Class="mb-2"
+                 Style="font-weight: 500"
+                 Typo="Typo.body1">
+            Set a limit for requests per day
+        </MudText>
+
+        <MudNumericField Class="mb-2"
+                         Style="width: fit-content"
+                         Label="Requests per day"
+                         HideSpinButtons="true"
+                         Min="0"
+                         Max="@_maxRequestsPerDay"
+                         Adornment="Adornment.End"
+                         AdornmentText="@($"/{_maxRequestsPerDay}")"
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         T="int"
+                         Immediate="true"
+                         @bind-Value="@_setting.RequestsPerDay" />
+        
+        @if (RequestsPerDayChanged)
+        {
+            <MudButton Style="text-transform: none"
+                       DisableElevation="true"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="SaveRequestsPerDayAsync">
+                Save
+            </MudButton>
+        }
+    </MudPaper>
+}

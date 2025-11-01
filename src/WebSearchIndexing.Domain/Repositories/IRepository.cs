@@ -1,8 +1,8 @@
-﻿using WebSearchIndexing.Domain.Entities;
+using WebSearchIndexing.BuildingBlocks.Abstractions.Entities;
 
 namespace WebSearchIndexing.Domain.Repositories;
 
-public interface IRepository<T, TKey> where T : BaseEntity<TKey>
+public interface IRepository<T, TKey> where T : class, IEntity<TKey>
 {
     Task<bool> EntityExists(TKey id);
     Task<List<T>> GetAllAsync();
@@ -11,3 +11,4 @@ public interface IRepository<T, TKey> where T : BaseEntity<TKey>
     Task<bool> UpdateAsync(T entity);
     Task<bool> DeleteAsync(TKey id);
 }
+

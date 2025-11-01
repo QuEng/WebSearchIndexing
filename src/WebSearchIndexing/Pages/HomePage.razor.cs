@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using WebSearchIndexing.Domain.Entities;
 using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Domain;
 
 namespace WebSearchIndexing.Pages;
 
@@ -65,25 +66,25 @@ public partial class HomePage : ComponentBase
 
         StateHasChanged();
 
-        _pendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Pending);
-        _updatedPendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Pending, UrlRequestType.Updated);
-        _deletedPendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Pending, UrlRequestType.Deleted);
+        _pendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Pending);
+        _updatedPendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Pending, UrlItemType.Updated);
+        _deletedPendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Pending, UrlItemType.Deleted);
         _isLoadingPendingRequests = false;
 
         StateHasChanged();
 
-        _completedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Completed);
-        _updatedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Completed, UrlRequestType.Updated);
-        _deletedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Completed, UrlRequestType.Deleted);
-        _rejectedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlRequestStatus.Failed);
+        _completedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Completed);
+        _updatedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Completed, UrlItemType.Updated);
+        _deletedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Completed, UrlItemType.Deleted);
+        _rejectedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Failed);
         _isLoadingCompletedRequests = false;
 
         StateHasChanged();
 
-        _completedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlRequestStatus.Completed);
-        _updatedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlRequestStatus.Completed, UrlRequestType.Updated);
-        _deletedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlRequestStatus.Completed, UrlRequestType.Deleted);
-        _rejectedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlRequestStatus.Failed);
+        _completedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlItemStatus.Completed);
+        _updatedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlItemStatus.Completed, UrlItemType.Updated);
+        _deletedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlItemStatus.Completed, UrlItemType.Deleted);
+        _rejectedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlItemStatus.Failed);
         _isLoadingCompletedRequestsToday = false;
 
         StateHasChanged();

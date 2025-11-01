@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.67.0" />
+    <PackageReference Include="Google.Apis.Indexing.v3" Version="1.67.0.3191" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0-rc.2.25502.107" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0-rc.2.25502.107" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\WebSearchIndexing.Modules.Core.Domain.csproj" />
+    <ProjectReference Include="..\..\Catalog\Domain\WebSearchIndexing.Modules.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Abstractions\WebSearchIndexing.BuildingBlocks.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Messaging\WebSearchIndexing.BuildingBlocks.Messaging.csproj" />
+    <ProjectReference Include="..\..\..\WebSearchIndexing.Domain\WebSearchIndexing.Domain.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

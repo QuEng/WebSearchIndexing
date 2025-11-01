@@ -1,4 +1,8 @@
-﻿namespace WebSearchIndexing.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
+using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Domain;
+
+namespace WebSearchIndexing.Data.Repositories;
 
 public class ServiceAccountRepository(IDbContextFactory<IndexingDbContext> factory, IUrlRequestRepository urlRequestRepository) :
     BaseRepository<ServiceAccount, Guid>(factory),
@@ -10,22 +14,31 @@ public class ServiceAccountRepository(IDbContextFactory<IndexingDbContext> facto
     public override async Task<List<ServiceAccount>> GetAllAsync()
     {
         using var context = _factory.CreateDbContext();
-        var serviceAccounts = await context.Set<ServiceAccount>().Where(item => item.DeletedAt == null).ToListAsync();
+        var serviceAccounts = await context.Set<ServiceAccount>()
+            .Where(item => item.DeletedAt == null)
+            .ToListAsync();
+
         foreach (var serviceAccount in serviceAccounts)
         {
-            serviceAccount.QuotaLimitPerDayUsed = await _urlRequestRepository.GetRequestsCountAsync(TimeSpan.FromDays(1), serviceAccount.Id, UrlRequestStatus.Completed);
+            var usedToday = await _urlRequestRepository
+                .GetRequestsCountAsync(TimeSpan.FromDays(1), serviceAccount.Id, UrlItemStatus.Completed);
+            serviceAccount.LoadQuotaUsage((uint)usedToday);
         }
+
         return serviceAccounts;
     }
 
     public override async Task<bool> DeleteAsync(Guid id)
     {
         using var context = _factory.CreateDbContext();
-        var entity = context.Set<ServiceAccount>().Find(id);
+        var entity = await context.Set<ServiceAccount>().FindAsync(id);
 
-        if (entity == null) return false;
+        if (entity is null)
+        {
+            return false;
+        }
 
-        entity.DeletedAt = DateTime.UtcNow;
+        entity.MarkDeleted();
         await context.SaveChangesAsync();
 
         return true;
@@ -34,22 +47,22 @@ public class ServiceAccountRepository(IDbContextFactory<IndexingDbContext> facto
     public async Task<bool> EntityExistByProjectIdAsync(string projectId)
     {
         using var context = _factory.CreateDbContext();
-        return await context.Set<ServiceAccount>().AnyAsync(item => item.ProjectId.Equals(projectId) && item.DeletedAt == null);
+        return await context.Set<ServiceAccount>()
+            .AnyAsync(item => item.ProjectId.Equals(projectId) && item.DeletedAt == null);
     }
 
-    public async Task<ServiceAccount> GetWithAvailableLimitAsync()
+    public async Task<ServiceAccount?> GetWithAvailableLimitAsync()
     {
         var serviceAccounts = await GetAllAsync();
         foreach (var serviceAccount in serviceAccounts)
         {
-            var requestCount = await _urlRequestRepository.GetRequestsCountAsync(TimeSpan.FromDays(1), serviceAccount.Id, UrlRequestStatus.Completed);
-            if (requestCount < serviceAccount.QuotaLimitPerDay)
+            if (serviceAccount.CanHandle(1))
             {
                 return serviceAccount;
             }
         }
 
-        return null!;
+        return null;
     }
 
     public async Task<int> GetCountAsync()
@@ -61,17 +74,14 @@ public class ServiceAccountRepository(IDbContextFactory<IndexingDbContext> facto
     public async Task<int> GetQuotaByAllAsync()
     {
         using var context = _factory.CreateDbContext();
-        return (int)await context.Set<ServiceAccount>().Where(item => item.DeletedAt == null).SumAsync(item => item.QuotaLimitPerDay);
+        return (int)await context.Set<ServiceAccount>()
+            .Where(item => item.DeletedAt == null)
+            .SumAsync(item => item.QuotaLimitPerDay);
     }
 
     public async Task<int> GetQuotaAvailableTodayAsync()
     {
-        int quotaAvailableToday = 0;
         var serviceAccounts = await GetAllAsync();
-        foreach (var serviceAccount in serviceAccounts)
-        {
-            quotaAvailableToday += (int)serviceAccount.QuotaLimitPerDay - await _urlRequestRepository.GetRequestsCountAsync(TimeSpan.FromDays(1), serviceAccount.Id, UrlRequestStatus.Completed);
-        }
-        return quotaAvailableToday;
+        return serviceAccounts.Sum(account => (int)account.RemainingQuota);
     }
 }

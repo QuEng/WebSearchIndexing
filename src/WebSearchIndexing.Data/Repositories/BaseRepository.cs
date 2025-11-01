@@ -1,6 +1,11 @@
-﻿namespace WebSearchIndexing.Data.Repositories;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using WebSearchIndexing.BuildingBlocks.Abstractions.Entities;
+using WebSearchIndexing.Domain.Repositories;
 
-public class BaseRepository<T, TKey> : IRepository<T, TKey> where T : BaseEntity<TKey>
+namespace WebSearchIndexing.Data.Repositories;
+
+public class BaseRepository<T, TKey> : IRepository<T, TKey> where T : class, IEntity<TKey>
 {
     private readonly IDbContextFactory<IndexingDbContext> _factory;
 
@@ -39,7 +44,13 @@ public class BaseRepository<T, TKey> : IRepository<T, TKey> where T : BaseEntity
         }
 
         using var context = _factory.CreateDbContext();
-        context.Set<T>().Remove((await GetByIdAsync(id))!);
+        var entity = await GetByIdAsync(id);
+        if (entity is null)
+        {
+            return false;
+        }
+
+        context.Set<T>().Remove(entity);
         await context.SaveChangesAsync();
 
         return true;
@@ -48,7 +59,7 @@ public class BaseRepository<T, TKey> : IRepository<T, TKey> where T : BaseEntity
     public async Task<bool> EntityExists(TKey id)
     {
         using var context = _factory.CreateDbContext();
-        return await context.Set<T>().AnyAsync(item => item.Id!.Equals(id));
+        return await context.Set<T>().AnyAsync(item => EqualityComparer<TKey>.Default.Equals(item.Id, id));
     }
 
     public virtual async Task<List<T>> GetAllAsync()
@@ -60,6 +71,7 @@ public class BaseRepository<T, TKey> : IRepository<T, TKey> where T : BaseEntity
     public async Task<T?> GetByIdAsync(TKey id)
     {
         using var context = _factory.CreateDbContext();
-        return await context.Set<T>().SingleOrDefaultAsync(item => item.Id!.Equals(id));
+        return await context.Set<T>().SingleOrDefaultAsync(item => EqualityComparer<TKey>.Default.Equals(item.Id, id));
     }
 }
+

@@ -1,20 +1,20 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Domain.Entities;
 using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Domain;
 
 namespace WebSearchIndexing.Pages.Urls.Components;
 
 public partial class ProcessedUrlsTableComponent : Pages.Components.ComponentBase
 {
-    private const int ROWS_PER_PAGE = 10;
-    private List<UrlRequest> _allUrls = [];
+    private const int RowsPerPage = 10;
+    private List<UrlItem> _allUrls = [];
     private bool _isLoadingUrls = true;
     private int _currentPage = 1;
     private int _totalPages = 1;
 
     [Parameter, EditorRequired]
-    public UrlRequestType UrlRequestType { get; set; }
+    public UrlItemType UrlRequestType { get; set; }
 
     [Inject]
     private IUrlRequestRepository? UrlRequestRepository { get; set; }
@@ -29,12 +29,17 @@ public partial class ProcessedUrlsTableComponent : Pages.Components.ComponentBas
         _isLoadingUrls = true;
         StateHasChanged();
 
-        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(requestStatus: UrlRequestStatus.Completed, requestType: UrlRequestType);
-        _totalPages = (int)Math.Ceiling(requestsCount / (double)ROWS_PER_PAGE);
-        _totalPages = _totalPages == 0 ? 1 : _totalPages;
+        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(
+            requestStatus: UrlItemStatus.Completed,
+            requestType: UrlRequestType);
+
+        _totalPages = Math.Max(1, (int)Math.Ceiling(requestsCount / (double)RowsPerPage));
         if (_currentPage > _totalPages) _currentPage = _totalPages;
 
-        _allUrls = await UrlRequestRepository!.TakeRequestsAsync(ROWS_PER_PAGE, (_currentPage - 1) * ROWS_PER_PAGE, requestType: UrlRequestType);
+        _allUrls = await UrlRequestRepository.TakeRequestsAsync(
+            RowsPerPage,
+            (_currentPage - 1) * RowsPerPage,
+            requestType: UrlRequestType);
 
         _isLoadingUrls = false;
         StateHasChanged();
@@ -46,7 +51,7 @@ public partial class ProcessedUrlsTableComponent : Pages.Components.ComponentBas
         await UpdateUrlsListAsync();
     }
 
-    private async Task RemoveItemAsync(UrlRequest item)
+    private async Task RemoveItemAsync(UrlItem item)
     {
         if (await UrlRequestRepository!.DeleteAsync(item.Id))
         {

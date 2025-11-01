@@ -1,0 +1,67 @@
+@inherits LayoutComponentBase
+
+<CustomThemeProvider @ref="_themeProvider" IsDarkMode="_isDarkMode" Theme="_customTheme" />
+<MudDialogProvider CloseButton="true" FullWidth="true" CloseOnEscapeKey="true" />
+<MudSnackbarProvider />
+<ColorClassProvider />
+
+<AccessComponent IsVisible="(!_hasAccess && _isReady)" AccessAllowed="AllowAccess" />
+
+@if (_isReady && _hasAccess)
+{
+    <MudLayout>
+        <MudAppBar Elevation="1">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/queng" Target="_blank" />
+            <MudSwitch Color="Color.Primary"
+                       UnCheckedColor="Color.Tertiary"
+                       Size="Size.Large"
+                       ThumbIcon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Outlined.LightMode)"
+                       @bind-Value="_isDarkMode" />
+        </MudAppBar>
+
+        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Responsive">
+            <MudNavMenu Class="mt-3">
+                @foreach (var item in _navigation)
+                {
+                    if (item.IsGroup)
+                    {
+                        <MudNavGroup Title="@item.Title" Icon="@item.Icon">
+                            @foreach (var child in item.Children)
+                            {
+                                <MudNavLink ActiveClass="drawer__item--active"
+                                            Match="@child.Match"
+                                            Icon="@child.Icon"
+                                            Href="@child.Href">
+                                    @child.Title
+                                </MudNavLink>
+                            }
+                        </MudNavGroup>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(item.Href))
+                    {
+                        <MudNavLink ActiveClass="drawer__item--active"
+                                    Match="@item.Match"
+                                    Icon="@item.Icon"
+                                    Href="@item.Href">
+                            @item.Title
+                        </MudNavLink>
+                    }
+                }
+            </MudNavMenu>
+        </MudDrawer>
+
+        <MudMainContent>
+            <div class="mt-6 mx-6">
+                @Body
+            </div>
+        </MudMainContent>
+    </MudLayout>
+}
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">??</a>
+</div>

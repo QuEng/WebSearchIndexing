@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Components;
-using WebSearchIndexing.Domain.Entities;
+using Microsoft.AspNetCore.Components;
+using WebSearchIndexing.Modules.Catalog.Domain;
 
 namespace WebSearchIndexing.Pages.Urls;
 
 public partial class AllUrlsPage : ComponentBase
 {
-    private int _activePanelIndex = 0;
+    private int _activePanelIndex;
     private string _title = "All {0} type urls";
-    private UrlRequestType _selectedRequestType = UrlRequestType.Updated;
+    private UrlItemType _selectedRequestType = UrlItemType.Updated;
 
     [Parameter]
     public string? RouteText { get; set; }
@@ -28,17 +28,17 @@ public partial class AllUrlsPage : ComponentBase
         {
             case "updated":
                 _activePanelIndex = 0;
-                _selectedRequestType = UrlRequestType.Updated;
+                _selectedRequestType = UrlItemType.Updated;
                 break;
 
             case "deleted":
                 _activePanelIndex = 1;
-                _selectedRequestType = UrlRequestType.Deleted;
+                _selectedRequestType = UrlItemType.Deleted;
                 break;
 
             default:
                 _activePanelIndex = 0;
-                _selectedRequestType = UrlRequestType.Updated;
+                _selectedRequestType = UrlItemType.Updated;
                 break;
         }
     }
