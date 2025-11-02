@@ -44,6 +44,12 @@ public sealed class CatalogDbContext : DbContext
             .HasQueryFilter(entity => EF.Property<Guid>(entity, "TenantId") == CurrentTenantId);
     }
 
+    public string Decrypt(string value)
+    {
+        // placeholder: actual unprotect done in repository/use site, not here
+        return value;
+    }
+
     private bool TryResolveTenantId(out Guid tenantId)
     {
         var tenantIdValue = _tenantContextAccessor.MultiTenantContext?.TenantInfo?.Id;

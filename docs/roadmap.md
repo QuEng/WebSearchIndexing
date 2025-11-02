@@ -5,26 +5,26 @@
 ---
 
 ## Етап0 — Швидкі покращення видимості
-- [ ] Увімкнути HealthChecks readiness endpoint (`/health/ready`) і деталізовані перевірки: БД (Catalog/Core), зовнішні сервіси при наявності.
-- [ ] Додати Serilog з sink для консолі та (опційно) Seq.
-- [ ] Додати OpenTelemetry: traces + metrics + logs; експортер (OTLP/console). 
+- [x] Увімкнути HealthChecks readiness endpoint (`/health/ready`) і деталізовані перевірки: БД (Catalog/Core), зовнішні сервіси при наявності.
+- [x] Додати Serilog з sink для консолі та (опційно) Seq.
+- [x] Додати OpenTelemetry: traces + metrics + logs; експортер (OTLP/console). 
 - [ ] Провести базову інвентаризацію логів у `RequestSender/ScopedRequestSendingService` та воркерах.
 
 Artifacts/зміни:
-- [ ] `src/Hosts/WebHost/Program.cs` — підключення Serilog, OTEL, HealthChecks.
-- [ ] `src/BuildingBlocks/Observability/DependencyInjectionExtensions.cs` — реальна реєстрація OTEL.
+- [x] `src/Hosts/WebHost/Program.cs` — підключення Serilog, OTEL, HealthChecks.
+- [x] `src/BuildingBlocks/Observability/DependencyInjectionExtensions.cs` — реальна реєстрація OTEL.
 
 ---
 
 ## Етап1 — Безпека секретів та доступу
-- [ ] Шифрування `ServiceAccount.CredentialsJson` (Data Protection або провайдер секретів). 
-- [ ] Міграція схеми: збереження ciphertext + можливість оберненого розшифрування при відправці.
+- [x] Шифрування `ServiceAccount.CredentialsJson` (Data Protection або провайдер секретів). 
+- [x] Міграція схеми: збереження ciphertext + можливість оберненого розшифрування при відправці.
 - [ ] Видалити/обмежити тимчасовий `AccessComponent` або замінити на OIDC/рольову модель (Admin UI).
 - [ ] Валідація вхідних даних API: мінімальні guard-и, обмеження розмірів запитів.
 
 Artifacts/зміни:
-- [ ] Catalog.Infrastructure: value converter або `SaveChanges` інтерсептор для шифрування/дешифрування.
-- [ ] Конфіг `appsettings`/UserSecrets для ключів шифрування.
+- [x] Catalog.Infrastructure: `SaveChanges`/materialization інтерсептори для шифрування/дешифрування.
+- [x] Конфіг `Program.cs` — додано `AddDataProtection`.
 
 ---
 

@@ -19,6 +19,7 @@ using WebSearchIndexing.Modules.Reporting.Api;
 using WebSearchIndexing.Modules.Reporting.Ui;
 using WebSearchIndexing.Modules.Submission.Api;
 using HealthChecks.NpgSql;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,9 @@ builder.Services.AddHealthChecks()
 builder.Services.AddWebSupport();
 builder.Services.AddMudServices();
 
+// Data Protection (for secrets encryption)
+builder.Services.AddDataProtection();
+
 // Observability (OTEL)
 builder.Services.AddObservability();
 
@@ -46,13 +50,13 @@ builder.Services
  .AddMultiTenant<TenantInfo>()
  .WithInMemoryStore(options =>
  {
-     options.Tenants.Add(new TenantInfo
-     {
-         Id = Guid.Empty.ToString(),
-         Identifier = "default",
-         Name = "Default",
-         ConnectionString = connectionString
-     });
+ options.Tenants.Add(new TenantInfo
+ {
+ Id = Guid.Empty.ToString(),
+ Identifier = "default",
+ Name = "Default",
+ ConnectionString = connectionString
+ });
  })
  .WithStaticStrategy("default");
 
@@ -83,8 +87,8 @@ app.UseMultiTenant();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/error", createScopeForErrors: true);
-    app.UseHsts();
+ app.UseExceptionHandler("/error", createScopeForErrors: true);
+ app.UseHsts();
 }
 
 app.UseStaticFiles();

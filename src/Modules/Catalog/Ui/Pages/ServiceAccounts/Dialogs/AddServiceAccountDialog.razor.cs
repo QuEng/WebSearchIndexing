@@ -63,6 +63,7 @@ public partial class AddServiceAccountDialog : ComponentBase
             return;
         }
 
+        // Note: credentials will be encrypted by EF interceptor on SaveChanges
         var serviceAccount = new ServiceAccount(_projectId, _credentialsJson, _quotaLimitPerDay);
         TryDeleteTempFile();
         MudDialog!.Close(serviceAccount);

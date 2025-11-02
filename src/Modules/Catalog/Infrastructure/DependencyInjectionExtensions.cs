@@ -5,6 +5,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence;
 using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Repositories;
+using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Interceptors;
 
 namespace WebSearchIndexing.Modules.Catalog.Infrastructure;
 
@@ -19,13 +20,20 @@ public static class DependencyInjectionExtensions
 
         var connectionString = configuration.GetConnectionString("IndexingDb");
 
-        services.AddPooledDbContextFactory<CatalogDbContext>(options =>
+        services.AddSingleton<ServiceAccountCredentialsEncryptionInterceptor>();
+        services.AddSingleton<ServiceAccountCredentialsDecryptionInterceptor>();
+
+        services.AddPooledDbContextFactory<CatalogDbContext>((sp, options) =>
         {
             options.UseNpgsql(connectionString, sqlOptions =>
             {
                 sqlOptions.MigrationsAssembly(typeof(CatalogDbContext).Assembly.FullName);
                 sqlOptions.ExecutionStrategy(c => new NpgsqlRetryingExecutionStrategy(c, 4));
             });
+
+            options.AddInterceptors(
+                sp.GetRequiredService<ServiceAccountCredentialsEncryptionInterceptor>(),
+                sp.GetRequiredService<ServiceAccountCredentialsDecryptionInterceptor>());
         });
 
         services.AddScoped<IServiceAccountRepository, EfServiceAccountRepository>();
