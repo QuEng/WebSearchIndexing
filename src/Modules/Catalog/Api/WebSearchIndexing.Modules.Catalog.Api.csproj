@@ -5,6 +5,7 @@
     <ProjectReference Include="..\Infrastructure\WebSearchIndexing.Modules.Catalog.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Abstractions\WebSearchIndexing.BuildingBlocks.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Core\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

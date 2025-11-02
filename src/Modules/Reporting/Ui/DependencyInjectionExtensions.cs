@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using WebSearchIndexing.BuildingBlocks.Web;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
+using WebSearchIndexing.Modules.Reporting.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Reporting.Ui;
 
@@ -15,6 +16,12 @@ public static class DependencyInjectionExtensions
 
         services.AddSingleton<IRazorComponentAssemblyProvider, ReportingUiAssemblyProvider>();
         services.AddSingleton<INavigationContributor, ReportingNavigationContributor>();
+        
+        // Add HTTP client for Reporting API
+        services.AddHttpClient<IReportingHttpClient, ReportingHttpClient>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
 
         return services;
     }

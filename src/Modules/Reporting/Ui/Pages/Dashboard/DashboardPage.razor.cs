@@ -1,48 +1,17 @@
 using Microsoft.AspNetCore.Components;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
-using WebSearchIndexing.Modules.Catalog.Domain;
-using WebSearchIndexing.Modules.Core.Application;
-using WebSearchIndexing.Modules.Core.Domain;
+using WebSearchIndexing.Modules.Reporting.Application.DTOs;
+using WebSearchIndexing.Modules.Reporting.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Reporting.Ui.Pages.Dashboard;
 
 public partial class DashboardPage : ComponentBase
 {
-    private Settings _settings = null!;
-
-    private bool _isEnabledService;
-
-    private int _serviceAccountsCount;
-    private int _quotaByServiceAccounts;
-    private int _quotaBySettings;
-    private int _quotaAvailableToday;
-    private bool _isLoadingQuota = true;
-
-    private int _pendingUrlRequestsCount;
-    private int _updatedPendingUrlRequestsCount;
-    private int _deletedPendingUrlRequestsCount;
-    private bool _isLoadingPendingRequests = true;
-
-    private int _completedUrlRequestsCount;
-    private int _updatedCompletedUrlRequestsCount;
-    private int _deletedCompletedUrlRequestsCount;
-    private int _rejectedCompletedUrlRequestsCount;
-    private bool _isLoadingCompletedRequests = true;
-
-    private int _completedUrlRequestsTodayCount;
-    private int _updatedCompletedUrlRequestsTodayCount;
-    private int _deletedCompletedUrlRequestsTodayCount;
-    private int _rejectedCompletedUrlRequestsTodayCount;
-    private bool _isLoadingCompletedRequestsToday = true;
+    private DashboardStatsDto? _dashboardStats;
+    private bool _isLoading = true;
+    private string? _errorMessage;
 
     [Inject]
-    private IServiceAccountRepository? ServiceAccountRepository { get; set; }
-
-    [Inject]
-    private IUrlRequestRepository? UrlRequestRepository { get; set; }
-
-    [Inject]
-    private ISettingsRepository? SettingsRepository { get; set; }
+    private IReportingHttpClient ReportingHttpClient { get; set; } = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -51,47 +20,54 @@ public partial class DashboardPage : ComponentBase
             return;
         }
 
-        await InitializeDataAsync();
+        await LoadDashboardDataAsync();
     }
 
-    private async Task InitializeDataAsync()
+    private async Task LoadDashboardDataAsync()
     {
-        _settings = await SettingsRepository!.GetAsync();
+        try
+        {
+            _isLoading = true;
+            _errorMessage = null;
+            StateHasChanged();
 
-        _isEnabledService = _settings.IsEnabled;
-
-        StateHasChanged();
-
-        _serviceAccountsCount = await ServiceAccountRepository!.GetCountAsync();
-        _quotaByServiceAccounts = await ServiceAccountRepository!.GetQuotaByAllAsync();
-        _quotaBySettings = _settings.RequestsPerDay;
-        _quotaAvailableToday = await ServiceAccountRepository!.GetQuotaAvailableTodayAsync();
-        _isLoadingQuota = false;
-
-        StateHasChanged();
-
-        _pendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Pending);
-        _updatedPendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Pending, UrlItemType.Updated);
-        _deletedPendingUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Pending, UrlItemType.Deleted);
-        _isLoadingPendingRequests = false;
-
-        StateHasChanged();
-
-        _completedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Completed);
-        _updatedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Completed, UrlItemType.Updated);
-        _deletedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Completed, UrlItemType.Deleted);
-        _rejectedCompletedUrlRequestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Failed);
-        _isLoadingCompletedRequests = false;
-
-        StateHasChanged();
-
-        _completedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlItemStatus.Completed);
-        _updatedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlItemStatus.Completed, UrlItemType.Updated);
-        _deletedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlItemStatus.Completed, UrlItemType.Deleted);
-        _rejectedCompletedUrlRequestsTodayCount = await UrlRequestRepository!.GetRequestsCountAsync(TimeSpan.FromDays(1), UrlItemStatus.Failed);
-        _isLoadingCompletedRequestsToday = false;
-
-        StateHasChanged();
+            _dashboardStats = await ReportingHttpClient.GetDashboardStatsAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Failed to load dashboard data: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
     }
+
+    // Helper properties for backward compatibility with the existing Razor template
+    private bool _isEnabledService => _dashboardStats?.IsServiceEnabled ?? false;
+    
+    private int _serviceAccountsCount => _dashboardStats?.ServiceAccounts.Count ?? 0;
+    private int _quotaByServiceAccounts => _dashboardStats?.Quota.TotalQuotaByServiceAccounts ?? 0;
+    private int _quotaBySettings => _dashboardStats?.Quota.QuotaBySettings ?? 0;
+    private int _quotaAvailableToday => _dashboardStats?.Quota.AvailableToday ?? 0;
+    private bool _isLoadingQuota => _isLoading;
+
+    private int _pendingUrlRequestsCount => _dashboardStats?.PendingRequests.Total ?? 0;
+    private int _updatedPendingUrlRequestsCount => _dashboardStats?.PendingRequests.Updated ?? 0;
+    private int _deletedPendingUrlRequestsCount => _dashboardStats?.PendingRequests.Deleted ?? 0;
+    private bool _isLoadingPendingRequests => _isLoading;
+
+    private int _completedUrlRequestsCount => _dashboardStats?.CompletedRequests.Total ?? 0;
+    private int _updatedCompletedUrlRequestsCount => _dashboardStats?.CompletedRequests.Updated ?? 0;
+    private int _deletedCompletedUrlRequestsCount => _dashboardStats?.CompletedRequests.Deleted ?? 0;
+    private int _rejectedCompletedUrlRequestsCount => _dashboardStats?.CompletedRequests.Rejected ?? 0;
+    private bool _isLoadingCompletedRequests => _isLoading;
+
+    private int _completedUrlRequestsTodayCount => _dashboardStats?.CompletedRequestsToday.Total ?? 0;
+    private int _updatedCompletedUrlRequestsTodayCount => _dashboardStats?.CompletedRequestsToday.Updated ?? 0;
+    private int _deletedCompletedUrlRequestsTodayCount => _dashboardStats?.CompletedRequestsToday.Deleted ?? 0;
+    private int _rejectedCompletedUrlRequestsTodayCount => _dashboardStats?.CompletedRequestsToday.Rejected ?? 0;
+    private bool _isLoadingCompletedRequestsToday => _isLoading;
 }
 

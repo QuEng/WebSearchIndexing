@@ -1,25 +1,26 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
-using WebSearchIndexing.Modules.Catalog.Domain;
-using WebSearchIndexing.Modules.Core.Application;
-using WebSearchIndexing.Modules.Core.Domain;
+using WebSearchIndexing.Modules.Catalog.Application.DTOs;
+using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
 using WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts.Dialogs;
+using WebSearchIndexing.Modules.Catalog.Ui.Services;
+using WebSearchIndexing.Modules.Core.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts;
 
 public partial class ServiceAccountsPage : ComponentBase
 {
-    private List<ServiceAccount> _serviceAccounts = [];
+    private List<ServiceAccountDto> _serviceAccounts = [];
+    private Dictionary<Guid, uint> _editingQuotas = new(); 
     private Guid _serviceAccountIdBeforeEdit;
     private uint _serviceAccountQuotaBeforeEdit;
     private bool _isLoading = true;
 
     [Inject]
-    private IServiceAccountRepository? ServiceAccountRepository { get; set; }
+    private ICatalogHttpClient? CatalogHttpClient { get; set; }
 
     [Inject]
-    private ISettingsRepository? SettingsRepository { get; set; }
+    private ICoreHttpClient? CoreHttpClient { get; set; }
 
     [Inject]
     private IDialogService? DialogService { get; set; }
@@ -31,8 +32,14 @@ public partial class ServiceAccountsPage : ComponentBase
             return;
         }
 
-        _serviceAccounts = await ServiceAccountRepository!.GetAllAsync();
-        _serviceAccounts = [.. _serviceAccounts.OrderByDescending(x => x.CreatedAt)];
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+        var serviceAccounts = await CatalogHttpClient!.GetServiceAccountsAsync();
+        _serviceAccounts = serviceAccounts ?? [];
         _isLoading = false;
         StateHasChanged();
     }
@@ -45,17 +52,18 @@ public partial class ServiceAccountsPage : ComponentBase
 
         var result = await dialog.Result;
 
-        if (result.Data is ServiceAccount newServiceAccount)
+        if (result.Data is AddServiceAccountCommand command)
         {
-            if (await ServiceAccountRepository!.EntityExistByProjectIdAsync(newServiceAccount.ProjectId))
+            if (await CatalogHttpClient!.CheckServiceAccountExistsAsync(command.ProjectId))
             {
                 Snackbar!.Add("Service account with this project ID already exists", Severity.Error);
                 return;
             }
 
-            if ((newServiceAccount = await ServiceAccountRepository.AddAsync(newServiceAccount)) is not null)
+            var addedServiceAccount = await CatalogHttpClient.AddServiceAccountAsync(command);
+            if (addedServiceAccount is not null)
             {
-                _serviceAccounts.Add(newServiceAccount);
+                _serviceAccounts.Add(addedServiceAccount);
                 _serviceAccounts = _serviceAccounts.OrderByDescending(x => x.CreatedAt).ToList();
                 StateHasChanged();
                 Snackbar!.Add("Service account added", Severity.Success);
@@ -65,48 +73,67 @@ public partial class ServiceAccountsPage : ComponentBase
 
     private void BackupItem(object item)
     {
-        var serviceAccount = (ServiceAccount)item;
+        var serviceAccount = (ServiceAccountDto)item;
         _serviceAccountIdBeforeEdit = serviceAccount.Id;
         _serviceAccountQuotaBeforeEdit = serviceAccount.QuotaLimitPerDay;
+        _editingQuotas[serviceAccount.Id] = serviceAccount.QuotaLimitPerDay;
     }
 
     private void ResetItemToOriginalValues(object item)
     {
-        var serviceAccount = (ServiceAccount)item;
+        var serviceAccount = (ServiceAccountDto)item;
         if (serviceAccount.Id != _serviceAccountIdBeforeEdit)
         {
             return;
         }
 
-        serviceAccount.UpdateQuota(_serviceAccountQuotaBeforeEdit);
+        _editingQuotas[serviceAccount.Id] = _serviceAccountQuotaBeforeEdit;
+    }
+
+    private void UpdateQuotaValue(ServiceAccountDto serviceAccount, uint newValue)
+    {
+        _editingQuotas[serviceAccount.Id] = newValue;
+    }
+
+    private uint GetQuotaForEditing(ServiceAccountDto serviceAccount)
+    {
+        return _editingQuotas.TryGetValue(serviceAccount.Id, out var value) ? value : serviceAccount.QuotaLimitPerDay;
     }
 
     private async Task ItemHasBeenCommittedAsync(object element)
     {
-        var editedServiceAccount = (ServiceAccount)element;
-        var newQuotaValue = editedServiceAccount.QuotaLimitPerDay;
+        var editedServiceAccount = (ServiceAccountDto)element;
+        var newQuotaValue = GetQuotaForEditing(editedServiceAccount);
 
         if (newQuotaValue == _serviceAccountQuotaBeforeEdit)
         {
             return;
         }
 
-        var serviceAccount = await ServiceAccountRepository!.GetByIdAsync(editedServiceAccount.Id);
-
-        if (serviceAccount is null)
+        var updatedServiceAccount = await CatalogHttpClient!.UpdateServiceAccountAsync(editedServiceAccount.Id, newQuotaValue);
+        if (updatedServiceAccount is not null)
         {
-            Snackbar!.Add("Service account not found", Severity.Error);
-            return;
-        }
-
-        serviceAccount.UpdateQuota(newQuotaValue);
-        if (await ServiceAccountRepository.UpdateAsync(serviceAccount))
-        {
+            // ??????? DTO ? ??????
+            var index = _serviceAccounts.FindIndex(sa => sa.Id == editedServiceAccount.Id);
+            if (index >= 0)
+            {
+                _serviceAccounts[index] = updatedServiceAccount;
+                StateHasChanged();
+            }
             Snackbar!.Add("Service account updated", Severity.Success);
         }
+        else
+        {
+            Snackbar!.Add("Service account not found", Severity.Error);
+            // ???????????????? ???? ??? ???????
+            await LoadDataAsync();
+        }
+
+        // ???????? ????????? ?????
+        _editingQuotas.Remove(editedServiceAccount.Id);
     }
 
-    private async Task DeleteServiceAccountAsync(ServiceAccount serviceAccount)
+    private async Task DeleteServiceAccountAsync(ServiceAccountDto serviceAccount)
     {
         var result = await DialogService!.ShowMessageBox(
             "Delete service account",
@@ -119,7 +146,7 @@ public partial class ServiceAccountsPage : ComponentBase
             return;
         }
 
-        if (await ServiceAccountRepository!.DeleteAsync(serviceAccount.Id))
+        if (await CatalogHttpClient!.DeleteServiceAccountAsync(serviceAccount.Id))
         {
             _serviceAccounts.Remove(serviceAccount);
             StateHasChanged();
@@ -134,7 +161,7 @@ public partial class ServiceAccountsPage : ComponentBase
 
     private async Task UpdateLimitAsync()
     {
-        var setting = await SettingsRepository!.GetAsync();
+        var setting = await CoreHttpClient!.GetSettingsAsync();
         if (setting is null)
         {
             return;
@@ -143,9 +170,11 @@ public partial class ServiceAccountsPage : ComponentBase
         var sumAvailableLimit = _serviceAccounts.Sum(x => x.QuotaLimitPerDay);
         if (sumAvailableLimit < setting.RequestsPerDay)
         {
-            setting.RequestsPerDay = (int)sumAvailableLimit;
-            await SettingsRepository.UpdateAsync(setting);
-            Snackbar!.Add("Requests per day updated", Severity.Success);
+            var updatedSetting = await CoreHttpClient.UpdateSettingsAsync((int)sumAvailableLimit);
+            if (updatedSetting is not null)
+            {
+                Snackbar!.Add("Requests per day updated", Severity.Success);
+            }
         }
         else
         {

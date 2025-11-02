@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using WebSearchIndexing.BuildingBlocks.Web;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
+using WebSearchIndexing.Modules.Catalog.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui;
 
@@ -16,6 +17,9 @@ public static class DependencyInjectionExtensions
 
         services.AddSingleton<IRazorComponentAssemblyProvider, CatalogUiAssemblyProvider>();
         services.AddSingleton<INavigationContributor, CatalogNavigationContributor>();
+        
+        // Add HTTP client for Catalog API
+        services.AddHttpClient<ICatalogHttpClient, CatalogHttpClient>();
 
         return services;
     }

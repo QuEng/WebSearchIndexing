@@ -69,6 +69,14 @@ builder.Services
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSingleton<INavigationContributor, WebHostNavigationContributor>();
 
+// Configure HttpClient for Blazor Server scenario
+builder.Services.AddHttpClient("WebSearchIndexing.Api", client =>
+{
+    // In Blazor Server, this will be the local API
+    // In WASM, this should be configured to point to the API server
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services
  .AddCoreModule()
  .AddCatalogModule()

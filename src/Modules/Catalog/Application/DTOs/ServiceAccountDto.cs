@@ -6,6 +6,7 @@ public sealed record ServiceAccountDto(
     Guid Id,
     string ProjectId,
     uint QuotaLimitPerDay,
+    uint QuotaUsedInPeriod,
     DateTime CreatedAt,
     DateTime? DeletedAt)
 {
@@ -17,6 +18,7 @@ public sealed record ServiceAccountDto(
             serviceAccount.Id,
             serviceAccount.ProjectId,
             serviceAccount.QuotaLimitPerDay,
+            serviceAccount.QuotaUsedInPeriod,
             serviceAccount.CreatedAt,
             serviceAccount.DeletedAt);
     }

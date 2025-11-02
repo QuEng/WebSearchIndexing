@@ -3,7 +3,7 @@ using Google.Apis.Indexing.v3;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts.Dialogs;
 
@@ -63,10 +63,10 @@ public partial class AddServiceAccountDialog : ComponentBase
             return;
         }
 
-        // Note: credentials will be encrypted by EF interceptor on SaveChanges
-        var serviceAccount = new ServiceAccount(_projectId, _credentialsJson, _quotaLimitPerDay);
+        // Create command for adding service account via API
+        var command = new AddServiceAccountCommand(_projectId, _credentialsJson, _quotaLimitPerDay);
         TryDeleteTempFile();
-        MudDialog!.Close(serviceAccount);
+        MudDialog!.Close(command);
     }
 
     private void Cancel()

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using WebSearchIndexing.BuildingBlocks.Web;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
+using WebSearchIndexing.Modules.Core.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Core.Ui;
 
@@ -15,6 +16,9 @@ public static class DependencyInjectionExtensions
 
         services.AddSingleton<IRazorComponentAssemblyProvider, CoreUiAssemblyProvider>();
         services.AddSingleton<INavigationContributor, CoreNavigationContributor>();
+        
+        // Add HTTP client for Core API
+        services.AddHttpClient<ICoreHttpClient, CoreHttpClient>();
 
         return services;
     }

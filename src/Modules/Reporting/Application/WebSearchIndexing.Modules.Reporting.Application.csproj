@@ -4,6 +4,8 @@
     <ProjectReference Include="..\Domain\WebSearchIndexing.Modules.Reporting.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Abstractions\WebSearchIndexing.BuildingBlocks.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Messaging\WebSearchIndexing.BuildingBlocks.Messaging.csproj" />
+    <ProjectReference Include="..\..\Catalog\Application\WebSearchIndexing.Modules.Catalog.Application.csproj" />
+    <ProjectReference Include="..\..\Core\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

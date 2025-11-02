@@ -1,25 +1,22 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
-using WebSearchIndexing.Modules.Core.Application;
 using WebSearchIndexing.Modules.Core.Application.BackgroundJobs;
-using SettingsModel = WebSearchIndexing.Modules.Core.Domain.Settings;
+using WebSearchIndexing.Modules.Core.Ui.Services;
+using WebSearchIndexing.Modules.Core.Application.DTOs;
 
 namespace WebSearchIndexing.Modules.Core.Ui.Pages.Settings;
 
 public partial class SettingsPage : ComponentBase
 {
-    private SettingsModel _setting = null!;
+    private SettingsDto _setting = new(Guid.Empty, Guid.Empty, "", 0, false);
+    private int _currentRequestsPerDay;
     private int _oldValueRequestsPerDay;
     private int _maxRequestsPerDay;
     private bool _isLoadingSettings = true;
     private bool _isSavingSettings;
 
     [Inject]
-    private ISettingsRepository SettingsRepository { get; set; } = default!;
-
-    [Inject]
-    private IServiceAccountRepository ServiceAccountRepository { get; set; } = default!;
+    private ICoreHttpClient CoreHttpClient { get; set; } = default!;
 
     [Inject]
     private IDialogService DialogService { get; set; } = default!;
@@ -27,7 +24,7 @@ public partial class SettingsPage : ComponentBase
     [Inject]
     private IScopedRequestSendingService RequestSendingService { get; set; } = default!;
 
-    private bool RequestsPerDayChanged => _setting.RequestsPerDay != _oldValueRequestsPerDay;
+    private bool RequestsPerDayChanged => _currentRequestsPerDay != _oldValueRequestsPerDay;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -36,19 +33,21 @@ public partial class SettingsPage : ComponentBase
             return;
         }
 
-        _setting = await SettingsRepository.GetAsync();
-        if (_setting is null)
+        var loadedSettings = await CoreHttpClient.GetSettingsAsync();
+        if (loadedSettings is null)
         {
             Snackbar!.Add("Failed to load settings", Severity.Error);
             _isLoadingSettings = false;
             StateHasChanged();
             return;
         }
-
+        
+        _setting = loadedSettings;
+        _currentRequestsPerDay = _setting.RequestsPerDay;
         _oldValueRequestsPerDay = _setting.RequestsPerDay;
 
-        var serviceAccounts = await ServiceAccountRepository.GetAllAsync();
-        _maxRequestsPerDay = (int)serviceAccounts.Sum(x => x.QuotaLimitPerDay);
+        var serviceAccounts = await CoreHttpClient.GetServiceAccountsAsync();
+        _maxRequestsPerDay = (int)(serviceAccounts?.Sum(x => x.QuotaLimitPerDay) ?? 0);
         _isLoadingSettings = false;
         StateHasChanged();
     }
@@ -74,11 +73,13 @@ public partial class SettingsPage : ComponentBase
             }
         }
 
-        _setting.IsEnabled = !_setting.IsEnabled;
+        var newIsEnabled = !_setting.IsEnabled;
         _isSavingSettings = true;
 
-        if (await SettingsRepository.UpdateAsync(_setting))
+        var updatedSettings = await CoreHttpClient.UpdateSettingsAsync(_setting.RequestsPerDay, newIsEnabled);
+        if (updatedSettings is not null)
         {
+            _setting = updatedSettings;
             if (_setting.IsEnabled)
             {
                 _ = Task.Run(async () => await RequestSendingService.DoWork(new()));
@@ -91,7 +92,6 @@ public partial class SettingsPage : ComponentBase
         else
         {
             Snackbar!.Add("Failed to update settings", Severity.Error);
-            _setting.IsEnabled = !_setting.IsEnabled;
             _isSavingSettings = false;
             StateHasChanged();
         }
@@ -107,8 +107,11 @@ public partial class SettingsPage : ComponentBase
 
         _isSavingSettings = true;
 
-        if (await SettingsRepository.UpdateAsync(_setting))
+        var updatedSettings = await CoreHttpClient.UpdateSettingsAsync(_currentRequestsPerDay);
+        if (updatedSettings is not null)
         {
+            _setting = updatedSettings;
+            _currentRequestsPerDay = _setting.RequestsPerDay;
             Snackbar!.Add("Settings updated", Severity.Success);
             _oldValueRequestsPerDay = _setting.RequestsPerDay;
             _isSavingSettings = false;
@@ -117,9 +120,21 @@ public partial class SettingsPage : ComponentBase
         else
         {
             Snackbar!.Add("Failed to update settings", Severity.Error);
-            _setting.RequestsPerDay = _oldValueRequestsPerDay;
+            // Reload from server to reset changes
+            await LoadDataAsync();
             _isSavingSettings = false;
             StateHasChanged();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        var loadedSettings = await CoreHttpClient.GetSettingsAsync();
+        if (loadedSettings is not null)
+        {
+            _setting = loadedSettings;
+            _currentRequestsPerDay = _setting.RequestsPerDay;
+            _oldValueRequestsPerDay = _setting.RequestsPerDay;
         }
     }
 }

@@ -53,13 +53,13 @@ Artifacts/зміни:
 ---
 
 ## Етап4 — Reporting як справжній модуль
-- [ ] Створити `Reporting.Application` (DTO/Handlers/Queries) і `Reporting.Api` (мінімальні ендпоїнти агрегатів/статистики).
-- [ ] `Reporting.Ui.Dashboard` перевести на запит до `Reporting.Api`, не читати напряму репозиторії Catalog/Core.
-- [ ] Агрегації сьогодні/за період (pending/completed/failed, по типах Updated/Deleted, квоти).
+- [x] Створити `Reporting.Application` (DTO/Handlers/Queries) і `Reporting.Api` (мінімальні ендпоїнти агрегатів/статистики).
+- [x] `Reporting.Ui.Dashboard` перевести на запит до `Reporting.Api`, не читати напряму репозиторії Catalog/Core.
+- [x] Агрегації сьогодні/за період (pending/completed/failed, по типах Updated/Deleted, квоти).
 
 Artifacts/зміни:
-- [ ] `src/Modules/Reporting/Application/*`, `src/Modules/Reporting/Api/*` — реалізація запитів/ендпоїнтів.
-- [ ] `DashboardPage` — споживає `Reporting.Api` через HttpClient.
+- [x] `src/Modules/Reporting/Application/*`, `src/Modules/Reporting/Api/*` — реалізація запитів/ендпоїнтів.
+- [x] `DashboardPage` — споживає `Reporting.Api` через HttpClient.
 
 ---
 
