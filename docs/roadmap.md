@@ -41,14 +41,14 @@ Artifacts/зміни:
 ---
 
 ## Етап3 — Outbox pattern і події
-- [ ] Додати `BuildingBlocks.Messaging`: контракти інтеграційних подій, outbox entity + репозиторій.
-- [ ] У Catalog/Core — публікація подій у межах транзакції (запис у Outbox).
-- [ ] Фоновий процес-діспатчер Outbox (веб-хост або окремий воркер) з ретраями/ідемпотентністю.
-- [ ] Визначити мінімальний набір подій: `ServiceAccountCreated/Updated/Deleted`, `UrlItemsImported`, `UrlItemStatusChanged`, `SettingsChanged`.
+- [x] Додати `BuildingBlocks.Messaging`: контракти інтеграційних подій, outbox entity + репозиторій.
+- [x] У Catalog/Core — публікація подій у межах транзакції (запис у Outbox).
+- [x] Фоновий процес-діспатчер Outbox (веб-хост або окремий воркер) з ретраями/ідемпотентністю.
+- [x] Визначити мінімальний набір подій: `ServiceAccountCreated/Updated/Deleted`, `UrlItemsImported`, `UrlItemStatusChanged`, `SettingsChanged`.
 
 Artifacts/зміни:
-- [ ] Схема БД: таблиця `outbox_messages` (+ TenantId, індекси по статусах/датах).
-- [ ] `BuildingBlocks.Messaging` — DI, серіалізація подій, політики ретраю.
+- [x] Схема БД: таблиця `outbox_messages` (+ TenantId, індекси по статусах/датах).
+- [x] `BuildingBlocks.Messaging` — DI, серіалізація подій, політики ретраю.
 
 ---
 

@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
+using WebSearchIndexing.BuildingBlocks.Messaging;
+using WebSearchIndexing.BuildingBlocks.Persistence;
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence;
 using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Repositories;
@@ -38,9 +40,20 @@ public static class DependencyInjectionExtensions
                 sp.GetRequiredService<TenantIdSaveChangesInterceptor>());
         });
 
+        // Register CatalogDbContext as scoped for dependency injection (needed for EfOutboxRepository)
+        services.AddScoped<CatalogDbContext>(sp =>
+        {
+            var factory = sp.GetRequiredService<IDbContextFactory<CatalogDbContext>>();
+            return factory.CreateDbContext();
+        });
+
         services.AddScoped<IServiceAccountRepository, EfServiceAccountRepository>();
         services.AddScoped<IUrlRequestRepository, EfUrlRequestRepository>();
         services.AddScoped<ICatalogRepository, CatalogRepository>();
+
+        // Add messaging and outbox support
+        services.AddMessaging();
+        services.AddOutboxRepository<CatalogDbContext>();
 
         return services;
     }

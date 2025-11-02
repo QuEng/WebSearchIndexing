@@ -9,6 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="Finbuckle.MultiTenant.AspNetCore" Version="6.13.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.21">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="MudBlazor" Version="6.19.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
@@ -20,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Observability\WebSearchIndexing.BuildingBlocks.Observability.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Messaging\WebSearchIndexing.BuildingBlocks.Messaging.csproj" />
     <ProjectReference Include="..\..\Modules\Core\Api\WebSearchIndexing.Modules.Core.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Core\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Core\Infrastructure\WebSearchIndexing.Modules.Core.Infrastructure.csproj" />
@@ -32,6 +37,10 @@
     <ProjectReference Include="..\..\Modules\Notifications\Api\WebSearchIndexing.Modules.Notifications.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Reporting\Api\WebSearchIndexing.Modules.Reporting.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Reporting\Ui\WebSearchIndexing.Modules.Reporting.Ui.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Tenancy\" />
   </ItemGroup>
 
 </Project>

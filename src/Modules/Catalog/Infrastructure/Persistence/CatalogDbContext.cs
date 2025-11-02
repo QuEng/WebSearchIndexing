@@ -1,5 +1,6 @@
 using Finbuckle.MultiTenant;
 using Microsoft.EntityFrameworkCore;
+using WebSearchIndexing.BuildingBlocks.Messaging.Outbox;
 using WebSearchIndexing.Modules.Catalog.Domain;
 
 namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence;
@@ -23,6 +24,7 @@ public sealed class CatalogDbContext : DbContext
     public DbSet<UrlItem> UrlItems => Set<UrlItem>();
     public DbSet<Site> Sites => Set<Site>();
     public DbSet<UrlBatch> UrlBatches => Set<UrlBatch>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +32,9 @@ public sealed class CatalogDbContext : DbContext
 
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogDbContext).Assembly);
+
+        // Apply outbox configuration
+        modelBuilder.ApplyConfiguration(new WebSearchIndexing.BuildingBlocks.Persistence.Configurations.OutboxMessageConfiguration());
 
         modelBuilder.Entity<ServiceAccount>()
             .HasQueryFilter(entity => EF.Property<Guid>(entity, "TenantId") == CurrentTenantId);
@@ -42,6 +47,9 @@ public sealed class CatalogDbContext : DbContext
 
         modelBuilder.Entity<UrlBatch>()
             .HasQueryFilter(entity => EF.Property<Guid>(entity, "TenantId") == CurrentTenantId);
+
+        modelBuilder.Entity<OutboxMessage>()
+            .HasQueryFilter(entity => entity.TenantId == CurrentTenantId);
     }
 
     public string Decrypt(string value)

@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using WebSearchIndexing.BuildingBlocks.Messaging;
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Application.IntegrationEvents;
 using WebSearchIndexing.Modules.Catalog.Domain;
 
 namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Repositories;
@@ -8,13 +10,16 @@ internal sealed class EfServiceAccountRepository : IServiceAccountRepository
 {
     private readonly IDbContextFactory<CatalogDbContext> _contextFactory;
     private readonly IUrlRequestRepository _urlRequestRepository;
+    private readonly IIntegrationEventPublisher _eventPublisher;
 
     public EfServiceAccountRepository(
         IDbContextFactory<CatalogDbContext> contextFactory,
-        IUrlRequestRepository urlRequestRepository)
+        IUrlRequestRepository urlRequestRepository,
+        IIntegrationEventPublisher eventPublisher)
     {
         _contextFactory = contextFactory;
         _urlRequestRepository = urlRequestRepository;
+        _eventPublisher = eventPublisher;
     }
 
     public async Task<ServiceAccount> AddAsync(ServiceAccount entity, CancellationToken cancellationToken = default)
@@ -25,6 +30,16 @@ internal sealed class EfServiceAccountRepository : IServiceAccountRepository
         SetTenantId(context, entity);
 
         await context.ServiceAccounts.AddAsync(entity, cancellationToken);
+        
+        // Publish integration event
+        var tenantId = (context as CatalogDbContext)?.CurrentTenantId.ToString() ?? string.Empty;
+        var integrationEvent = new ServiceAccountCreatedEvent(
+            tenantId, 
+            entity.Id, 
+            entity.ProjectId, 
+            entity.QuotaLimitPerDay);
+        
+        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
         return entity;
@@ -38,6 +53,16 @@ internal sealed class EfServiceAccountRepository : IServiceAccountRepository
         SetTenantId(context, entity);
 
         context.ServiceAccounts.Update(entity);
+        
+        // Publish integration event
+        var tenantId = (context as CatalogDbContext)?.CurrentTenantId.ToString() ?? string.Empty;
+        var integrationEvent = new ServiceAccountUpdatedEvent(
+            tenantId, 
+            entity.Id, 
+            entity.ProjectId, 
+            entity.QuotaLimitPerDay);
+        
+        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
         var changes = await context.SaveChangesAsync(cancellationToken);
 
         return changes > 0;
@@ -58,6 +83,11 @@ internal sealed class EfServiceAccountRepository : IServiceAccountRepository
         entity.MarkDeleted();
         context.ServiceAccounts.Update(entity);
 
+        // Publish integration event
+        var tenantId = (context as CatalogDbContext)?.CurrentTenantId.ToString() ?? string.Empty;
+        var integrationEvent = new ServiceAccountDeletedEvent(tenantId, entity.Id);
+        
+        await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
         var changes = await context.SaveChangesAsync(cancellationToken);
         return changes > 0;
     }

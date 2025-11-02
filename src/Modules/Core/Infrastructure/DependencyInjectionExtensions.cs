@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
+using WebSearchIndexing.BuildingBlocks.Messaging;
+using WebSearchIndexing.BuildingBlocks.Persistence;
 using WebSearchIndexing.Modules.Core.Application;
 using WebSearchIndexing.Modules.Core.Infrastructure;
 using WebSearchIndexing.Modules.Core.Infrastructure.Tenancy;
@@ -32,7 +34,18 @@ public static class DependencyInjectionExtensions
             options.AddInterceptors(sp.GetRequiredService<TenantIdSaveChangesInterceptor>());
         });
 
+        // Register CoreDbContext as scoped for dependency injection (needed for EfOutboxRepository)
+        services.AddScoped<CoreDbContext>(sp =>
+        {
+            var factory = sp.GetRequiredService<IDbContextFactory<CoreDbContext>>();
+            return factory.CreateDbContext();
+        });
+
         services.AddScoped<ISettingsRepository, EfSettingsRepository>();
+
+        // Add messaging and outbox support
+        services.AddMessaging();
+        services.AddOutboxRepository<CoreDbContext>();
 
         return services;
     }

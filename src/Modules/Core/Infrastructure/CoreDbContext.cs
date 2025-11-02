@@ -1,5 +1,6 @@
 using Finbuckle.MultiTenant;
 using Microsoft.EntityFrameworkCore;
+using WebSearchIndexing.BuildingBlocks.Messaging.Outbox;
 using WebSearchIndexing.Modules.Core.Domain;
 using CoreSettings = WebSearchIndexing.Modules.Core.Domain.Settings;
 
@@ -21,12 +22,16 @@ public sealed class CoreDbContext : DbContext
         : CoreSettings.DefaultTenantId;
 
     public DbSet<Settings> Settings => Set<Settings>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
+
+        // Apply outbox configuration
+        modelBuilder.ApplyConfiguration(new WebSearchIndexing.BuildingBlocks.Persistence.Configurations.OutboxMessageConfiguration());
 
         var settings = modelBuilder.Entity<Settings>();
         settings.ToTable("Settings");
@@ -58,6 +63,9 @@ public sealed class CoreDbContext : DbContext
             .HasDatabaseName("ux_settings_tenant_key");
 
         settings.HasQueryFilter(entity => entity.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<OutboxMessage>()
+            .HasQueryFilter(entity => entity.TenantId == CurrentTenantId);
     }
 
     private bool TryResolveTenantId(out Guid tenantId)

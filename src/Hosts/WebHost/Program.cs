@@ -1,6 +1,7 @@
 using Finbuckle.MultiTenant;
 using MudBlazor.Services;
 using Serilog;
+using WebSearchIndexing.BuildingBlocks.Messaging;
 using WebSearchIndexing.BuildingBlocks.Observability;
 using WebSearchIndexing.BuildingBlocks.Web;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
@@ -51,13 +52,13 @@ builder.Services
  .AddMultiTenant<TenantInfo>()
  .WithInMemoryStore(options =>
  {
- options.Tenants.Add(new TenantInfo
- {
- Id = Guid.Empty.ToString(),
- Identifier = "default",
- Name = "Default",
- ConnectionString = connectionString
- });
+     options.Tenants.Add(new TenantInfo
+     {
+         Id = Guid.Empty.ToString(),
+         Identifier = "default",
+         Name = "Default",
+         ConnectionString = connectionString
+     });
  })
  .WithStaticStrategy("default");
 
@@ -81,6 +82,9 @@ builder.Services
  .AddCatalogUiModule()
  .AddReportingUiModule();
 
+// Add outbox background service for processing integration events
+builder.Services.AddOutboxBackgroundService();
+
 var app = builder.Build();
 
 app.ApplyMigrations();
@@ -88,8 +92,8 @@ app.UseMultiTenant();
 
 if (!app.Environment.IsDevelopment())
 {
- app.UseExceptionHandler("/error", createScopeForErrors: true);
- app.UseHsts();
+    app.UseExceptionHandler("/error", createScopeForErrors: true);
+    app.UseHsts();
 }
 
 app.UseStaticFiles();
