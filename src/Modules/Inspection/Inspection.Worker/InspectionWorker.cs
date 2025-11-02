@@ -14,17 +14,22 @@ internal sealed class InspectionWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Inspection worker started.");
+        using var _ = _logger.BeginScope("InspectionWorker");
+        _logger.LogInformation("Inspection worker started");
 
         try
         {
-            await Task.Delay(Timeout.Infinite, stoppingToken);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Inspection idle tick");
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+            }
         }
         catch (OperationCanceledException)
         {
             // graceful shutdown
         }
 
-        _logger.LogInformation("Inspection worker stopping.");
+        _logger.LogInformation("Inspection worker stopping");
     }
 }

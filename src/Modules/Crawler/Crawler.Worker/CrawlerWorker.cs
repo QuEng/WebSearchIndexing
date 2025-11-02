@@ -14,17 +14,22 @@ internal sealed class CrawlerWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Crawler worker started.");
+        using var _ = _logger.BeginScope("CrawlerWorker");
+        _logger.LogInformation("Crawler worker started");
 
         try
         {
-            await Task.Delay(Timeout.Infinite, stoppingToken);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Crawler idle tick");
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+            }
         }
         catch (OperationCanceledException)
         {
             // graceful shutdown
         }
 
-        _logger.LogInformation("Crawler worker stopping.");
+        _logger.LogInformation("Crawler worker stopping");
     }
 }

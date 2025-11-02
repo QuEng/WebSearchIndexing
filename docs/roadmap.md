@@ -8,7 +8,7 @@
 - [x] Увімкнути HealthChecks readiness endpoint (`/health/ready`) і деталізовані перевірки: БД (Catalog/Core), зовнішні сервіси при наявності.
 - [x] Додати Serilog з sink для консолі та (опційно) Seq.
 - [x] Додати OpenTelemetry: traces + metrics + logs; експортер (OTLP/console). 
-- [ ] Провести базову інвентаризацію логів у `RequestSender/ScopedRequestSendingService` та воркерах.
+- [x] Провести базову інвентаризацію логів у `RequestSender/ScopedRequestSendingService` та воркерах.
 
 Artifacts/зміни:
 - [x] `src/Hosts/WebHost/Program.cs` — підключення Serilog, OTEL, HealthChecks.

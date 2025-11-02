@@ -4,21 +4,24 @@ using Microsoft.Extensions.Logging;
 
 namespace WebSearchIndexing.Modules.Core.Application.BackgroundJobs;
 
-public sealed class RequestSenderWorker(IServiceProvider services, ILogger<ScopedRequestSendingService> logger) : BackgroundService
+public sealed class RequestSenderWorker(IServiceProvider services, ILogger<RequestSenderWorker> logger) : BackgroundService
 {
     public IServiceProvider Services { get; } = services;
-    private readonly ILogger<ScopedRequestSendingService> _logger = logger;
+    private readonly ILogger<RequestSenderWorker> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Request sending service running.");
+        using var _ = _logger.BeginScope("RequestSenderWorker");
+        _logger.LogInformation("Request sending worker started");
 
         await DoWork(stoppingToken);
+
+        _logger.LogInformation("Request sending worker finished");
     }
 
     private async Task DoWork(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Request sending service is working.");
+        _logger.LogInformation("Creating scope for scoped processing service");
 
         using var scope = Services.CreateScope();
 
@@ -29,8 +32,10 @@ public sealed class RequestSenderWorker(IServiceProvider services, ILogger<Scope
 
     public override async Task StopAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Request sending service is stopping.");
+        _logger.LogInformation("Request sending worker stopping...");
 
         await base.StopAsync(stoppingToken);
+
+        _logger.LogInformation("Request sending worker stopped");
     }
 }

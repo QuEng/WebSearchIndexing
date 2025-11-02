@@ -14,17 +14,22 @@ internal sealed class SubmissionWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Submission worker started.");
+        using var _ = _logger.BeginScope("SubmissionWorker");
+        _logger.LogInformation("Submission worker started");
 
         try
         {
-            await Task.Delay(Timeout.Infinite, stoppingToken);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Submission idle tick");
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+            }
         }
         catch (OperationCanceledException)
         {
             // graceful shutdown
         }
 
-        _logger.LogInformation("Submission worker stopping.");
+        _logger.LogInformation("Submission worker stopping");
     }
 }
