@@ -1,5 +1,7 @@
 using Finbuckle.MultiTenant;
 using MudBlazor.Services;
+using Serilog;
+using WebSearchIndexing.BuildingBlocks.Observability;
 using WebSearchIndexing.BuildingBlocks.Web;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
 using WebSearchIndexing.Hosts.WebHost.Components;
@@ -16,48 +18,63 @@ using WebSearchIndexing.Modules.Notifications.Api;
 using WebSearchIndexing.Modules.Reporting.Api;
 using WebSearchIndexing.Modules.Reporting.Ui;
 using WebSearchIndexing.Modules.Submission.Api;
+using HealthChecks.NpgSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHealthChecks();
+// Serilog basic setup
+Log.Logger = new LoggerConfiguration()
+ .ReadFrom.Configuration(builder.Configuration)
+ .Enrich.FromLogContext()
+ .WriteTo.Console()
+ .CreateLogger();
+
+builder.Host.UseSerilog();
+
+builder.Services.AddHealthChecks()
+ .AddNpgSql(builder.Configuration.GetConnectionString("IndexingDb")!, name: "postgres");
+
 builder.Services.AddWebSupport();
 builder.Services.AddMudServices();
+
+// Observability (OTEL)
+builder.Services.AddObservability();
 
 var connectionString = builder.Configuration.GetConnectionString("IndexingDb");
 
 builder.Services
-    .AddMultiTenant<TenantInfo>()
-    .WithInMemoryStore(options =>
-    {
-        options.Tenants.Add(new TenantInfo
-        {
-            Id = Guid.Empty.ToString(),
-            Identifier = "default",
-            Name = "Default",
-            ConnectionString = connectionString
-        });
-    })
-    .WithStaticStrategy("default");
+ .AddMultiTenant<TenantInfo>()
+ .WithInMemoryStore(options =>
+ {
+     options.Tenants.Add(new TenantInfo
+     {
+         Id = Guid.Empty.ToString(),
+         Identifier = "default",
+         Name = "Default",
+         ConnectionString = connectionString
+     });
+ })
+ .WithStaticStrategy("default");
 
 builder.Services
-    .AddRazorComponents()
-    .AddInteractiveServerComponents();
+ .AddRazorComponents()
+ .AddInteractiveServerComponents();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSingleton<INavigationContributor, WebHostNavigationContributor>();
 
 builder.Services
-    .AddCoreModule()
-    .AddCatalogModule()
-    .AddSubmissionModule()
-    .AddInspectionModule()
-    .AddCrawlerModule()
-    .AddNotificationsModule()
-    .AddReportingModule()
-    .AddCoreApplicationModule()
-    .AddCoreUiModule()
-    .AddCatalogUiModule()
-    .AddReportingUiModule();
+ .AddCoreModule()
+ .AddCatalogModule()
+ .AddSubmissionModule()
+ .AddInspectionModule()
+ .AddCrawlerModule()
+ .AddNotificationsModule()
+ .AddReportingModule()
+ .AddCoreApplicationModule()
+ .AddCoreUiModule()
+ .AddCatalogUiModule()
+ .AddReportingUiModule();
 
 var app = builder.Build();
 
@@ -74,16 +91,18 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 var componentAssemblies = app.Services
-    .GetRequiredService<IEnumerable<IRazorComponentAssemblyProvider>>()
-    .Select(provider => provider.Assembly)
-    .Where(assembly => assembly != typeof(App).Assembly)
-    .ToArray();
+ .GetRequiredService<IEnumerable<IRazorComponentAssemblyProvider>>()
+ .Select(provider => provider.Assembly)
+ .Where(assembly => assembly != typeof(App).Assembly)
+ .ToArray();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(componentAssemblies);
+ .AddInteractiveServerRenderMode()
+ .AddAdditionalAssemblies(componentAssemblies);
 
 app.MapHealthChecks("/health/live");
+// Readiness endpoint (extend with checks later)
+app.MapHealthChecks("/health/ready");
 
 app.MapCoreModuleEndpoints();
 app.MapCatalogModuleEndpoints();

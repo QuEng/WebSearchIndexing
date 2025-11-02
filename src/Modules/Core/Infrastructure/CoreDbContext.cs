@@ -29,7 +29,7 @@ public sealed class CoreDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         var settings = modelBuilder.Entity<Settings>();
-        settings.ToTable("settings");
+        settings.ToTable("Settings");
         settings.HasKey(s => s.Id);
 
         settings.Property(s => s.Id)
