@@ -56,21 +56,56 @@ namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Migration
                     b.ToTable("ServiceAccounts");
                 });
 
-            modelBuilder.Entity("WebSearchIndexing.Domain.Entities.Setting", b =>
+            modelBuilder.Entity("WebSearchIndexing.Modules.Catalog.Domain.Site", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                        .ValueGeneratedNever()
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("boolean");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("RequestsPerDay")
-                        .HasColumnType("integer");
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("00000000-0000-0000-0000-000000000000"))
+                        .HasColumnName("TenantId");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Settings");
+                    b.ToTable("Sites");
+                });
+
+            modelBuilder.Entity("WebSearchIndexing.Modules.Catalog.Domain.UrlBatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedNever()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasDefaultValue(new Guid("00000000-0000-0000-0000-000000000000"))
+                        .HasColumnName("TenantId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SiteId");
+
+                    b.ToTable("UrlBatches");
                 });
 
             modelBuilder.Entity("WebSearchIndexing.Modules.Catalog.Domain.UrlItem", b =>
@@ -120,6 +155,15 @@ namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Migration
                         .HasForeignKey("ServiceAccountId");
 
                     b.Navigation("ServiceAccount");
+                });
+
+            modelBuilder.Entity("WebSearchIndexing.Modules.Catalog.Domain.UrlBatch", b =>
+                {
+                    b.HasOne("WebSearchIndexing.Modules.Catalog.Domain.Site", null)
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

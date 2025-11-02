@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using WebSearchIndexing.Data;
+using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence;
+using WebSearchIndexing.Modules.Core.Infrastructure;
 
 namespace WebSearchIndexing.Hosts.WebHost.Extensions;
 
@@ -12,8 +13,12 @@ internal static class ApplicationBuilderExtensions
         ArgumentNullException.ThrowIfNull(app);
 
         using var scope = app.Services.CreateScope();
-        var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IndexingDbContext>>();
-        using var context = factory.CreateDbContext();
-        context.Database.Migrate();
+        var catalogFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<CatalogDbContext>>();
+        using var catalogContext = catalogFactory.CreateDbContext();
+        catalogContext.Database.Migrate();
+
+        var coreFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<CoreDbContext>>();
+        using var coreContext = coreFactory.CreateDbContext();
+        coreContext.Database.Migrate();
     }
 }

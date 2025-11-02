@@ -1,21 +1,22 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Domain.Entities;
-using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Core.Application;
 using WebSearchIndexing.Modules.Core.Application.BackgroundJobs;
+using SettingsModel = WebSearchIndexing.Modules.Core.Domain.Settings;
 
 namespace WebSearchIndexing.Modules.Core.Ui.Pages.Settings;
 
 public partial class SettingsPage : ComponentBase
 {
-    private Setting _setting = null!;
+    private SettingsModel _setting = null!;
     private int _oldValueRequestsPerDay;
     private int _maxRequestsPerDay;
     private bool _isLoadingSettings = true;
     private bool _isSavingSettings;
 
     [Inject]
-    private ISettingRepository SettingRepository { get; set; } = default!;
+    private ISettingsRepository SettingsRepository { get; set; } = default!;
 
     [Inject]
     private IServiceAccountRepository ServiceAccountRepository { get; set; } = default!;
@@ -35,7 +36,7 @@ public partial class SettingsPage : ComponentBase
             return;
         }
 
-        _setting = await SettingRepository.GetSettingAsync();
+        _setting = await SettingsRepository.GetAsync();
         if (_setting is null)
         {
             Snackbar!.Add("Failed to load settings", Severity.Error);
@@ -76,7 +77,7 @@ public partial class SettingsPage : ComponentBase
         _setting.IsEnabled = !_setting.IsEnabled;
         _isSavingSettings = true;
 
-        if (await SettingRepository.UpdateAsync(_setting))
+        if (await SettingsRepository.UpdateAsync(_setting))
         {
             if (_setting.IsEnabled)
             {
@@ -106,7 +107,7 @@ public partial class SettingsPage : ComponentBase
 
         _isSavingSettings = true;
 
-        if (await SettingRepository.UpdateAsync(_setting))
+        if (await SettingsRepository.UpdateAsync(_setting))
         {
             Snackbar!.Add("Settings updated", Severity.Success);
             _oldValueRequestsPerDay = _setting.RequestsPerDay;

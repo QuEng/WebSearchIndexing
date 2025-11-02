@@ -18,7 +18,7 @@ services:
     image: "web-search-indexing"
     build:
       context: .
-      dockerfile: src/WebSearchIndexing/Dockerfile
+      dockerfile: src/Hosts/WebHost/Dockerfile
     environment:
       ConnectionStrings__IndexingDb: "Host=postgres;Port=5432;Username=postgres;Password={YOUR_POSTGRES_PASSWORD};Database=IndexingDb"
       ApplicationAccessKey: "{YOUR_APPLICATION_ACCESS_KEY}"

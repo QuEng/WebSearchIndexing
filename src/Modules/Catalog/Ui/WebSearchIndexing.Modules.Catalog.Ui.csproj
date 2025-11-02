@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
-    <ProjectReference Include="..\..\..\WebSearchIndexing.Domain\WebSearchIndexing.Domain.csproj" />
     <ProjectReference Include="..\Domain\WebSearchIndexing.Modules.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\..\Core\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
   </ItemGroup>
 
 </Project>

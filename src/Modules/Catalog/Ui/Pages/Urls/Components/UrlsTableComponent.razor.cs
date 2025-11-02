@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Domain;
 using WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls.Dialogs;
 

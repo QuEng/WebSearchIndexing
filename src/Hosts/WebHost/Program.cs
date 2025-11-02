@@ -1,3 +1,4 @@
+using Finbuckle.MultiTenant;
 using MudBlazor.Services;
 using WebSearchIndexing.BuildingBlocks.Web;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
@@ -13,6 +14,7 @@ using WebSearchIndexing.Modules.Crawler.Api;
 using WebSearchIndexing.Modules.Inspection.Api;
 using WebSearchIndexing.Modules.Notifications.Api;
 using WebSearchIndexing.Modules.Reporting.Api;
+using WebSearchIndexing.Modules.Reporting.Ui;
 using WebSearchIndexing.Modules.Submission.Api;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +22,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHealthChecks();
 builder.Services.AddWebSupport();
 builder.Services.AddMudServices();
+
+var connectionString = builder.Configuration.GetConnectionString("IndexingDb");
+
+builder.Services
+    .AddMultiTenant<TenantInfo>()
+    .WithInMemoryStore(options =>
+    {
+        options.Tenants.Add(new TenantInfo
+        {
+            Id = Guid.Empty.ToString(),
+            Identifier = "default",
+            Name = "Default",
+            ConnectionString = connectionString
+        });
+    })
+    .WithStaticStrategy("default");
 
 builder.Services
     .AddRazorComponents()
@@ -38,11 +56,13 @@ builder.Services
     .AddReportingModule()
     .AddCoreApplicationModule()
     .AddCoreUiModule()
-    .AddCatalogUiModule();
+    .AddCatalogUiModule()
+    .AddReportingUiModule();
 
 var app = builder.Build();
 
 app.ApplyMigrations();
+app.UseMultiTenant();
 
 if (!app.Environment.IsDevelopment())
 {

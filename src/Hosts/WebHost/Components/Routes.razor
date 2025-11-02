@@ -1,4 +1,7 @@
-<Router AppAssembly="typeof(App).Assembly">
+@using System.Reflection
+@using WebSearchIndexing.BuildingBlocks.Web
+
+<Router AppAssembly="typeof(App).Assembly" AdditionalAssemblies="_componentAssemblies">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
@@ -9,3 +12,19 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+
+@code
+{
+    [Inject]
+    private IEnumerable<IRazorComponentAssemblyProvider> RazorComponentAssemblyProviders { get; set; } = default!;
+    private Assembly[] _componentAssemblies = [];
+
+    protected override void OnInitialized()
+    {
+        _componentAssemblies = RazorComponentAssemblyProviders
+            .Select(provider => provider.Assembly)
+            .Where(assembly => assembly != typeof(App).Assembly)
+            .ToArray();
+    }
+}

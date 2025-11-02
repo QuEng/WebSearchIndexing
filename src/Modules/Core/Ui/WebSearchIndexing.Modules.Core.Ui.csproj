@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
-    <ProjectReference Include="..\..\..\WebSearchIndexing.Domain\WebSearchIndexing.Domain.csproj" />
     <ProjectReference Include="..\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
   </ItemGroup>
 

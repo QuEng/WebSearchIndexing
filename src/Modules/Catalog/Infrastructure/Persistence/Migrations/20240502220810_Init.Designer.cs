@@ -59,23 +59,6 @@ namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Migration
                     b.ToTable("ServiceAccounts");
                 });
 
-            modelBuilder.Entity("WebSearchIndexing.Domain.Entities.Setting", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("RequestsPerDay")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Settings");
-                });
-
             modelBuilder.Entity("WebSearchIndexing.Modules.Catalog.Domain.UrlItem", b =>
                 {
                     b.Property<Guid>("Id")

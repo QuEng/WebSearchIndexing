@@ -1,0 +1,171 @@
+@page "/"
+
+<PageTitle>Dashboard</PageTitle>
+
+<BaseNotificationComponent Type="NotificationType.Primary">
+    <MudText Style="font-weight: 500" Typo="Typo.h6">Welcome to the Web Search Indexing</MudText>
+</BaseNotificationComponent>
+
+<MudPaper Class="pa-4 mb-4" Elevation="0">
+    <MudStack Row="true"
+              AlignItems="AlignItems.Center"
+              Justify="Justify.SpaceBetween">
+        <MudText Typo="Typo.h6">Status</MudText>
+
+        <MudPaper Class="border pa-2" Elevation="0">
+            <MudStack Row="true" AlignItems="AlignItems.Center">
+                <div class="rounded-circle @(_isEnabledService ? "bg-color-success" : "bg-color-error")"
+                     style="width: 8px;min-width: 8px;height: 8px;min-height: 8px" />
+                <MudText Typo="Typo.body2">@(_isEnabledService ? "Working" : "Disabled")</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudStack>
+</MudPaper>
+
+<div class="grid">
+    <MudExpansionPanel Class="rounded-lg mt-0 border-0"
+                       Style="height: fit-content"
+                       IsInitiallyExpanded="true">
+        <TitleContent>
+            <MudText Class="mb-2" Typo="Typo.h6">Service accounts quota</MudText>
+        </TitleContent>
+
+        <ChildContent>
+            @if (_isLoadingQuota)
+            {
+                <MudProgressLinear Class="mt-2"
+                                   Indeterminate="true"
+                                   Color="Color.Primary" />
+            }
+            else if (_serviceAccountsCount == 0)
+            {
+                <MudAlert Severity="Severity.Error"
+                          Variant="Variant.Filled"
+                          NoIcon="true">No service accounts found</MudAlert>
+            }
+            else
+            {
+                <div class="pa-2">
+                    <DataPairComponent Title="Service accounts count"
+                                       Value="@_serviceAccountsCount"
+                                       IsLoading="_isLoadingQuota" />
+
+                    <MudDivider Class="my-3" />
+
+                    <DataPairComponent Title="Service accounts quota"
+                                       Value="@_quotaByServiceAccounts"
+                                       IsLoading="_isLoadingQuota" />
+
+                    <MudDivider Class="my-3" />
+
+                    <DataPairComponent Title="Settings quota"
+                                       Value="@_quotaBySettings"
+                                       IsLoading="_isLoadingQuota" />
+
+                    <MudDivider Class="my-3" />
+
+                    <DataPairComponent Title="Quota available today"
+                                       Value="@_quotaAvailableToday"
+                                       IsLoading="_isLoadingQuota" />
+                </div>
+            }
+        </ChildContent>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Class="rounded-lg mt-0 border-0"
+                       Style="height: fit-content"
+                       IsInitiallyExpanded="true">
+        <TitleContent>
+            <MudText Class="mb-2" Typo="Typo.h6">Pending url requests</MudText>
+        </TitleContent>
+
+        <ChildContent>
+            <div class="pa-2">
+                <DataPairComponent Title="Summary"
+                                   Value="@_pendingUrlRequestsCount"
+                                   IsLoading="_isLoadingPendingRequests" />
+
+                <MudDivider Class="my-3" />
+
+                <DataPairComponent Title="Updated type"
+                                   Value="@_updatedPendingUrlRequestsCount"
+                                   IsLoading="_isLoadingPendingRequests" />
+
+                <MudDivider Class="my-3" />
+
+                <DataPairComponent Title="Deleted type"
+                                   Value="@_deletedPendingUrlRequestsCount"
+                                   IsLoading="_isLoadingPendingRequests" />
+            </div>
+        </ChildContent>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Class="rounded-lg mt-0 border-0"
+                       Style="height: fit-content"
+                       IsInitiallyExpanded="true">
+        <TitleContent>
+            <MudText Class="mb-2" Typo="Typo.h6">Completed url requests</MudText>
+        </TitleContent>
+
+        <ChildContent>
+            <div class="pa-2">
+                <DataPairComponent Title="Summary"
+                                   Value="@_completedUrlRequestsCount"
+                                   IsLoading="@_isLoadingCompletedRequests" />
+
+                <MudDivider Class="my-3" />
+
+                <DataPairComponent Title="Updated type"
+                                   Value="@_updatedCompletedUrlRequestsCount"
+                                   IsLoading="@_isLoadingCompletedRequests" />
+
+                <MudDivider Class="my-3" />
+
+                <DataPairComponent Title="Deleted type"
+                                   Value="@_deletedCompletedUrlRequestsCount"
+                                   IsLoading="@_isLoadingCompletedRequests" />
+
+                <MudDivider Class="my-3" />
+
+                <DataPairComponent Title="Rejected"
+                                   Value="@_rejectedCompletedUrlRequestsCount"
+                                   IsLoading="@_isLoadingCompletedRequests" />
+            </div>
+        </ChildContent>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Class="rounded-lg mt-0 border-0"
+                       Style="height: fit-content"
+                       IsInitiallyExpanded="true">
+        <TitleContent>
+            <MudText Class="mb-2" Typo="Typo.h6">Completed url requests <b>TODAY</b></MudText>
+        </TitleContent>
+
+        <ChildContent>
+            <div class="pa-2">
+                <DataPairComponent Title="Summary"
+                                   Value="@_completedUrlRequestsTodayCount"
+                                   IsLoading="@_isLoadingCompletedRequestsToday" />
+
+                <MudDivider Class="my-3" />
+
+                <DataPairComponent Title="Updated type"
+                                   Value="@_updatedCompletedUrlRequestsTodayCount"
+                                   IsLoading="@_isLoadingCompletedRequestsToday" />
+
+                <MudDivider Class="my-3" />
+
+                <DataPairComponent Title="Deleted type"
+                                   Value="@_deletedCompletedUrlRequestsTodayCount"
+                                   IsLoading="@_isLoadingCompletedRequestsToday" />
+
+                <MudDivider Class="my-3" />
+
+                <DataPairComponent Title="Rejected"
+                                   Value="@_rejectedCompletedUrlRequestsTodayCount"
+                                   IsLoading="@_isLoadingCompletedRequestsToday" />
+            </div>
+        </ChildContent>
+    </MudExpansionPanel>
+</div>
+

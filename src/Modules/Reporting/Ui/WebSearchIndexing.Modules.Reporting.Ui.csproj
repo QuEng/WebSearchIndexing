@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="6.19.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="..\..\Catalog\Application\WebSearchIndexing.Modules.Catalog.Application.csproj" />
+    <ProjectReference Include="..\..\Catalog\Domain\WebSearchIndexing.Modules.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\..\Core\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
+    <ProjectReference Include="..\..\Core\Domain\WebSearchIndexing.Modules.Core.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Core.Application;
+using WebSearchIndexing.Modules.Core.Domain;
 using WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts.Dialogs;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts;
@@ -17,7 +19,7 @@ public partial class ServiceAccountsPage : ComponentBase
     private IServiceAccountRepository? ServiceAccountRepository { get; set; }
 
     [Inject]
-    private ISettingRepository? SettingRepository { get; set; }
+    private ISettingsRepository? SettingsRepository { get; set; }
 
     [Inject]
     private IDialogService? DialogService { get; set; }
@@ -132,7 +134,7 @@ public partial class ServiceAccountsPage : ComponentBase
 
     private async Task UpdateLimitAsync()
     {
-        var setting = await SettingRepository!.GetSettingAsync();
+        var setting = await SettingsRepository!.GetAsync();
         if (setting is null)
         {
             return;
@@ -142,7 +144,7 @@ public partial class ServiceAccountsPage : ComponentBase
         if (sumAvailableLimit < setting.RequestsPerDay)
         {
             setting.RequestsPerDay = (int)sumAvailableLimit;
-            await SettingRepository.UpdateAsync(setting);
+            await SettingsRepository.UpdateAsync(setting);
             Snackbar!.Add("Requests per day updated", Severity.Success);
         }
         else

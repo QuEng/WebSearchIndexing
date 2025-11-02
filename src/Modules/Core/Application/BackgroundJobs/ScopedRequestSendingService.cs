@@ -1,18 +1,20 @@
 using Microsoft.Extensions.Logging;
-using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Core.Application;
+using WebSearchIndexing.Modules.Core.Domain;
 
 namespace WebSearchIndexing.Modules.Core.Application.BackgroundJobs;
 
 public sealed class ScopedRequestSendingService(
     IUrlRequestRepository urlRequestRepository,
-    ISettingRepository settingRepository,
+    ISettingsRepository settingsRepository,
     IServiceAccountRepository serviceAccountRepository,
     ILogger<ScopedRequestSendingService> logger) : IScopedRequestSendingService
 {
     private const int MaxRequestsPerBatch = 100;
     private readonly IUrlRequestRepository _urlRequestRepository = urlRequestRepository;
-    private readonly ISettingRepository _settingRepository = settingRepository;
+    private readonly ISettingsRepository _settingsRepository = settingsRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository = serviceAccountRepository;
     private readonly ILogger _logger = logger;
 
@@ -24,7 +26,7 @@ public sealed class ScopedRequestSendingService(
 
             try
             {
-                var setting = await _settingRepository.GetSettingAsync();
+                var setting = await _settingsRepository.GetAsync(stoppingToken);
                 if (!setting.IsEnabled)
                 {
                     _logger.LogInformation("Service is disabled. Service will stop until it is enabled in the settings.");

@@ -1,35 +1,44 @@
-# Мапінг «поточна фіча → цільовий модуль»
+# WebSearchIndexing Migration Map
 
-| Поточна фіча/код | Цільовий модуль | Клас/отримувач | Коментар |
+| Old type | Target module | Target layer | Notes |
 | --- | --- | --- | --- |
-| `src/WebSearchIndexing/Pages/HomePage*.razor` | `Modules/Core.Ui` + `Modules/Core.Application` | `DashboardPage` (UI) / `DashboardMetricsQuery` | Дашборд переїжджає до Core як частина базового досвіду керування. |
-| `src/WebSearchIndexing/Pages/ServiceAccountsPage*.razor` | `Modules/Catalog.Ui` + `Modules/Catalog.Application` | `ServiceAccountsPage` / `ServiceAccountManagementService` | CRUD сервісних акаунтів стає частиною каталогу ресурсів. |
-| `src/WebSearchIndexing/Pages/Dialogs/AddServiceAccountDialog*.razor` | `Modules/Catalog.Ui` | `AddServiceAccountDialog` | Діалог додавання акаунтів залишається поряд зі сторінкою каталогу. |
-| `src/WebSearchIndexing/Pages/SettingsPage*.razor` | `Modules/Core.Ui` + `Modules/Core.Application` | `SettingsPage` / `TenantSettingsService` | Налаштування тенанта відносяться до Core. |
-| `src/WebSearchIndexing/Pages/Urls/AllUrlsPage*.razor` + `UrlsTableComponent*.razor` | `Modules/Catalog.Ui` + `Modules/Catalog.Application` | `AllUrlsPage` / `UrlCatalogService` | CRUD, фільтри та імпорт URL залишаємо в каталозі. |
-| `src/WebSearchIndexing/Pages/Urls/ProcessedUrlsPage*.razor` + `ProcessedUrlsTableComponent*.razor` | `Modules/Catalog.Ui` + `Modules/Catalog.Application` | `ProcessedUrlsPage` / `UrlProcessingHistoryQuery` | Відображення історії обробки URL-ів як частина каталогу. |
-| `src/WebSearchIndexing/Pages/Urls/Components/RejectedUrlsTableComponent*.razor` | `Modules/Catalog.Ui` + `Modules/Catalog.Application` | `RejectedUrlsTable` / `UrlFailureLogQuery` | Таблиця відхилених запитів. |
-| `src/WebSearchIndexing/Pages/Urls/Dialogs/LoadUrlsDialog*.razor` | `Modules/Catalog.Ui` + `Modules/Catalog.Application` | `LoadUrlsDialog` / `UrlImportService` | Логіка імпорту URL-ів у каталозі. |
-| `src/WebSearchIndexing/Pages/Layout/*` | `Modules/Core.Ui` | `ShellLayout` / `ThemeProvider` | Макет, тема та доступ — частина Core UI. |
-| `src/WebSearchIndexing/Pages/App.razor`, `Routes.razor`, `Error.razor` | `Hosts/WebHost` | `WebHostAppShell` | Хостова збірка контролює маршрутизацію та помилки. |
-| `src/WebSearchIndexing/Pages/Components/*` | `Modules/Core.Ui` | `ComponentBase`, `NotificationPanel` | Базові UI-компоненти спільного використання. |
-| `src/WebSearchIndexing/BackgroundJobs/RequestSenderWorker.cs` | `Modules/Submission.Worker` | `GoogleSubmissionWorker` | Hosted service для обробки черги. |
-| `src/WebSearchIndexing/BackgroundJobs/ScopedRequestSendingService.cs` | `Modules/Submission.Application` | `UrlSubmissionOrchestrator` | Оркестрація відправки та лімітів. |
-| `src/WebSearchIndexing/BackgroundJobs/RequestSender.cs` | `Modules/Submission.Infrastructure` | `GoogleIndexingClient` | Інтеграція з Google Indexing API. |
-| `src/WebSearchIndexing/BackgroundJobs/IScopedRequestSendingService.cs` | `Modules/Submission.Application` | `ISubmissionProcessor` | Контракт сервісу подачі запитів. |
-| `src/WebSearchIndexing/Configurations/ConfigureConnections.cs` | `Modules/Core.Infrastructure` | `DbContextFactoryConfigurator` | Постачальник EF Core підʼєднань. |
-| `src/WebSearchIndexing/Configurations/ServicesConfigurations.cs` | `Modules/Catalog.Infrastructure` | `CatalogModuleServiceCollectionExtensions` | Реєстрація репозиторіїв каталогу в DI. |
-| `src/WebSearchIndexing/Extensions/HostingExtensions.cs` | `Hosts/WebHost` | `WebHostStartup` | Побудова пайплайну та старту хоста. |
-| `src/WebSearchIndexing/Program.cs` | `Hosts/WebHost` | `Program` | Точка входу хоста з модульною конфігурацією. |
-| `src/WebSearchIndexing/Utils/EventUtil.cs` | `BuildingBlocks/Web` | `EventDispatcher` | Загальна утиліта подій стає частиною building blocks. |
-| `src/WebSearchIndexing.Data/IndexingDbContext.cs` | `Modules/Catalog.Infrastructure` | `CatalogDbContext` | Контекст для каталогу URL-ів та сервісних акаунтів. |
-| `src/WebSearchIndexing.Data/Repositories/ServiceAccountRepository.cs` | `Modules/Catalog.Infrastructure` | `ServiceAccountRepository` | Реалізація репозиторію каталогу. |
-| `src/WebSearchIndexing.Data/Repositories/UrlRequestRepository.cs` | `Modules/Catalog.Infrastructure` | `UrlRequestRepository` | Реалізація репозиторію запитів. |
-| `src/WebSearchIndexing.Data/Repositories/SettingRepository.cs` | `Modules/Core.Infrastructure` | `TenantSettingRepository` | Налаштування переміщуються до Core. |
-| `src/WebSearchIndexing.Domain/Entities/ServiceAccount.cs` | `Modules/Catalog.Domain` | `ServiceAccountAggregate` | Доменна модель каталогу. |
-| `src/WebSearchIndexing.Domain/Entities/UrlRequest.cs` | `Modules/Catalog.Domain` | `UrlRequestAggregate` | Домен запитів каталогу. |
-| `src/WebSearchIndexing.Domain/Entities/Setting.cs` | `Modules/Core.Domain` | `TenantSettingAggregate` | Доменна модель Core. |
-| `src/WebSearchIndexing.Domain/Repositories/IServiceAccountRepository.cs` | `Modules/Catalog.Domain` | `IServiceAccountRepository` | Контракт каталогу. |
-| `src/WebSearchIndexing.Domain/Repositories/IUrlRequestRepository.cs` | `Modules/Catalog.Domain` | `IUrlCatalogRepository` | Контракт каталогу URL-ів. |
-| `src/WebSearchIndexing.Domain/Repositories/ISettingRepository.cs` | `Modules/Core.Domain` | `ITenantSettingRepository` | Контракт Core. |
-| `src/WebSearchIndexing.Domain/Repositories/IRepository.cs` | `BuildingBlocks/Persistence` | `IAggregateRepository<T>` | Базовий контракт у building blocks. |
+| `WebSearchIndexing.Extensions.HostingExtensions` | `Hosts.WebHost` | `Ui` | Split between host `ServiceCollectionExtensions` and `ApplicationBuilderExtensions` invoked by `Program`. |
+| `WebSearchIndexing.Configurations.ServicesConfigurations` | `Modules.Catalog` | `Infrastructure` | Register Catalog repositories via a module-level DI extension in infrastructure. |
+| `WebSearchIndexing.Configurations.ConfigureConnections` | `Hosts.WebHost` | `Infrastructure` | Fold into the host `AddInfrastructure` pipeline that wires pooled `CatalogDbContext` and `CoreDbContext` factories. |
+| `WebSearchIndexing.Utils.EventUtil` | `BuildingBlocks` | `Ui` | Relocate to `BuildingBlocks.Web` as a shared Blazor event helper. |
+| `WebSearchIndexing.Graphics.Icon` | `BuildingBlocks` | `Ui` | Move static icon placeholders (including nested `Filled/Outlined/Background`) into shared UI utilities. |
+| `WebSearchIndexing.Theming.ThemeColor` | `Hosts.WebHost` | `Ui` | Use the host-level theming definitions already under `Hosts/WebHost/Theming`. |
+| `WebSearchIndexing.Theming.ThemeColorExtensions` | `Hosts.WebHost` | `Ui` | Consolidate with the existing host color extension helpers. |
+| `WebSearchIndexing.Theming.GlobalTheme` | `Hosts.WebHost` | `Ui` | Reuse the host `GlobalTheme` implementation and retire the duplicate. |
+| `WebSearchIndexing.Theming.PaletteLightCustom` | `Hosts.WebHost` | `Ui` | Merge with the host light palette configuration. |
+| `WebSearchIndexing.Theming.PaletteDarkCustom` | `Hosts.WebHost` | `Ui` | Merge with the host dark palette configuration. |
+| `WebSearchIndexing.Theming.TypographyCustom` | `Hosts.WebHost` | `Ui` | Align with the host typography customization. |
+| `WebSearchIndexing.Theming.LayoutPropertiesCustom` | `Hosts.WebHost` | `Ui` | Align with the host layout properties customization. |
+| `WebSearchIndexing.Theming.IPaletteCustom` | `Hosts.WebHost` | `Ui` | Keep the palette contract alongside the host theming assets. |
+| `WebSearchIndexing.Pages.Components.ComponentBase` | `BuildingBlocks` | `Ui` | Replace with `BuildingBlocks.Web.Components.ComponentBase`. |
+| `WebSearchIndexing.Pages.Components.DataPairComponent<T>` | `Modules.Core` | `Ui` | Port as a Core UI component for the dashboard metric cards. |
+| `WebSearchIndexing.Pages.Components.Notification.NotificationType` | `BuildingBlocks` | `Ui` | Share notification type enum via building-blocks UI utilities. |
+| `WebSearchIndexing.Pages.Components.Notification.BaseNotificationComponent` | `BuildingBlocks` | `Ui` | Move notification wrapper component to building-blocks for reuse. |
+| `WebSearchIndexing.Pages.HomePage` | `Modules.Core` | `Ui` | Port dashboard landing page into the Core UI module. |
+| `WebSearchIndexing.Pages.SettingsPage` | `Modules.Core` | `Ui` | Superseded by `Modules.Core.Ui.Pages.Settings.SettingsPage`. |
+| `WebSearchIndexing.Pages.ServiceAccountsPage` | `Modules.Catalog` | `Ui` | Superseded by `Modules.Catalog.Ui.Pages.ServiceAccounts.ServiceAccountsPage`. |
+| `WebSearchIndexing.Pages.Dialogs.AddServiceAccountDialog` | `Modules.Catalog` | `Ui` | Superseded by the Catalog UI dialog under `Pages/ServiceAccounts/Dialogs`. |
+| `WebSearchIndexing.Pages.Urls.AllUrlsPage` | `Modules.Catalog` | `Ui` | Superseded by `Modules.Catalog.Ui.Pages.Urls.AllUrlsPage`. |
+| `WebSearchIndexing.Pages.Urls.ProcessedUrlsPage` | `Modules.Catalog` | `Ui` | Superseded by `Modules.Catalog.Ui.Pages.Urls.ProcessedUrlsPage`. |
+| `WebSearchIndexing.Pages.Urls.Components.UrlsTableComponent` | `Modules.Catalog` | `Ui` | Superseded by the Catalog UI component under `Pages/Urls/Components`. |
+| `WebSearchIndexing.Pages.Urls.Components.ProcessedUrlsTableComponent` | `Modules.Catalog` | `Ui` | Superseded by the Catalog UI component under `Pages/Urls/Components`. |
+| `WebSearchIndexing.Pages.Urls.Components.RejectedUrlsTableComponent` | `Modules.Catalog` | `Ui` | Superseded by the Catalog UI component under `Pages/Urls/Components`. |
+| `WebSearchIndexing.Pages.Urls.Dialogs.LoadUrlsDialog` | `Modules.Catalog` | `Ui` | Superseded by the Catalog UI dialog under `Pages/Urls/Dialogs`. |
+| `WebSearchIndexing.Pages.Layout.MainLayout` | `Hosts.WebHost` | `Ui` | Replace with `Hosts.WebHost.Components.Layout.MainLayout`. |
+| `WebSearchIndexing.Pages.Layout.CustomThemeProvider` | `Hosts.WebHost` | `Ui` | Replace with `Hosts.WebHost.Components.Layout.CustomThemeProvider`. |
+| `WebSearchIndexing.Pages.Layout.Components.AccessComponent` | `Modules.Core` | `Ui` | Superseded by `Modules.Core.Ui.Components.AccessComponent`. |
+| `WebSearchIndexing.Data.IndexingDbContext` | `Modules.Catalog` | `Infrastructure` | Rename to `CatalogDbContext` within `Modules.Catalog.Infrastructure.Persistence`. |
+| `WebSearchIndexing.Data.Repositories.BaseRepository<T, TKey>` | `Modules.Catalog` | `Infrastructure` | Move into Catalog persistence as the base EF repository (or replace with module-specific pattern). |
+| `WebSearchIndexing.Data.Repositories.ServiceAccountRepository` | `Modules.Catalog` | `Infrastructure` | Port to Catalog persistence layer alongside new `CatalogDbContext`. |
+| `WebSearchIndexing.Data.Repositories.UrlRequestRepository` | `Modules.Catalog` | `Infrastructure` | Port to Catalog persistence layer alongside new `CatalogDbContext`. |
+| `WebSearchIndexing.Data.Migrations.Init` | `Modules.Catalog` | `Infrastructure` | Rescope the migration set to `Modules.Catalog.Infrastructure.Persistence.Migrations`. |
+| `WebSearchIndexing.Data.Migrations.IndexingDbContextModelSnapshot` | `Modules.Catalog` | `Infrastructure` | Move snapshot to the Catalog infrastructure migrations folder. |
+| `WebSearchIndexing.Domain.Entities.BaseEntity<T>` | `BuildingBlocks` | `Domain` | Relocate to building-blocks domain abstractions (or drop in favour of direct `IEntity` usage). |
+| `WebSearchIndexing.Domain.Repositories.IRepository<T, TKey>` | `BuildingBlocks` | `Application` | Move generic repository contract into shared application abstractions. |
+| `WebSearchIndexing.Domain.Repositories.IServiceAccountRepository` | `Modules.Catalog` | `Application` | Relocate to Catalog application abstractions; wire into handlers. |
+| `WebSearchIndexing.Domain.Repositories.IUrlRequestRepository` | `Modules.Catalog` | `Application` | Relocate to Catalog application abstractions; wire into handlers. |

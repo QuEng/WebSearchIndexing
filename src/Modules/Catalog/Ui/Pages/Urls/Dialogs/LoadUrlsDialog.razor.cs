@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
-using WebSearchIndexing.Domain.Repositories;
+using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Domain;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls.Dialogs;

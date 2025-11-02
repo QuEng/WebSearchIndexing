@@ -1,0 +1,15 @@
+@inherits WebSearchIndexing.BuildingBlocks.Web.Components.ComponentBase
+@typeparam T
+
+<div class="data-row @Class" style="@Style">
+    <MudText Typo="Typo.body2">@Title:</MudText>
+
+    @if (IsLoading)
+    {
+        <MudProgressCircular Class="ml-sm-auto ml-0" Indeterminate="true" Color="Color.Primary" Size="Size.Small" />
+    }
+    else
+    {
+        <MudText Class="ml-sm-auto ml-0 mud-secondary-text" Style="font-weight: 500" Typo="Typo.h6">@Value</MudText>
+    }
+</div>

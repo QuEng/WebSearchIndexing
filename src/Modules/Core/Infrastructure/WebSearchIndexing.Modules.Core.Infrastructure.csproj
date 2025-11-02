@@ -1,6 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.11.0" />
+    <PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="6.11.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.21" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
     <ProjectReference Include="..\Domain\WebSearchIndexing.Modules.Core.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Persistence\WebSearchIndexing.BuildingBlocks.Persistence.csproj" />

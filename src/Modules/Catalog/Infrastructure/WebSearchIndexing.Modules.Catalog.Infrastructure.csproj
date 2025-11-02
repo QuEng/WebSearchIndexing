@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.11.0" />
+    <PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="6.11.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.21">
       <PrivateAssets>all</PrivateAssets>
@@ -14,7 +16,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\WebSearchIndexing.Modules.Catalog.Application.csproj" />
     <ProjectReference Include="..\Domain\WebSearchIndexing.Modules.Catalog.Domain.csproj" />
-    <ProjectReference Include="..\..\..\WebSearchIndexing.Domain\WebSearchIndexing.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Persistence\WebSearchIndexing.BuildingBlocks.Persistence.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Observability\WebSearchIndexing.BuildingBlocks.Observability.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Messaging\WebSearchIndexing.BuildingBlocks.Messaging.csproj" />

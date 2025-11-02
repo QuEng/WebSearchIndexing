@@ -12,6 +12,21 @@ namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Migration
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Sites",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Host = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
+                    DisplayName = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: Guid.Empty)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sites", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ServiceAccounts",
                 columns: table => new
                 {
@@ -29,16 +44,23 @@ namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "Settings",
+                name: "UrlBatches",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    RequestsPerDay = table.Column<int>(type: "integer", nullable: false),
-                    IsEnabled = table.Column<bool>(type: "boolean", nullable: false)
+                    SiteId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: Guid.Empty)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Settings", x => x.Id);
+                    table.PrimaryKey("PK_UrlBatches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UrlBatches_Sites_SiteId",
+                        column: x => x.SiteId,
+                        principalTable: "Sites",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -66,6 +88,11 @@ namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Migration
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_UrlBatches_SiteId",
+                table: "UrlBatches",
+                column: "SiteId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UrlRequests_ServiceAccountId",
                 table: "UrlRequests",
                 column: "ServiceAccountId");
@@ -75,13 +102,16 @@ namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Migration
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Settings");
-
-            migrationBuilder.DropTable(
                 name: "UrlRequests");
 
             migrationBuilder.DropTable(
+                name: "UrlBatches");
+
+            migrationBuilder.DropTable(
                 name: "ServiceAccounts");
+
+            migrationBuilder.DropTable(
+                name: "Sites");
         }
     }
 }
