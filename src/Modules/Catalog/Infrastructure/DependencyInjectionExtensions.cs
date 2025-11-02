@@ -22,6 +22,7 @@ public static class DependencyInjectionExtensions
 
         services.AddSingleton<ServiceAccountCredentialsEncryptionInterceptor>();
         services.AddSingleton<ServiceAccountCredentialsDecryptionInterceptor>();
+        services.AddSingleton<TenantIdSaveChangesInterceptor>();
 
         services.AddPooledDbContextFactory<CatalogDbContext>((sp, options) =>
         {
@@ -33,7 +34,8 @@ public static class DependencyInjectionExtensions
 
             options.AddInterceptors(
                 sp.GetRequiredService<ServiceAccountCredentialsEncryptionInterceptor>(),
-                sp.GetRequiredService<ServiceAccountCredentialsDecryptionInterceptor>());
+                sp.GetRequiredService<ServiceAccountCredentialsDecryptionInterceptor>(),
+                sp.GetRequiredService<TenantIdSaveChangesInterceptor>());
         });
 
         services.AddScoped<IServiceAccountRepository, EfServiceAccountRepository>();

@@ -46,6 +46,7 @@ builder.Services.AddObservability();
 
 var connectionString = builder.Configuration.GetConnectionString("IndexingDb");
 
+// Multi-tenant: default in-memory store with a default tenant
 builder.Services
  .AddMultiTenant<TenantInfo>()
  .WithInMemoryStore(options =>
@@ -105,7 +106,7 @@ app.MapRazorComponents<App>()
  .AddAdditionalAssemblies(componentAssemblies);
 
 app.MapHealthChecks("/health/live");
-// Readiness endpoint (extend with checks later)
+// Readiness endpoint (extend with per-dependency checks if needed)
 app.MapHealthChecks("/health/ready");
 
 app.MapCoreModuleEndpoints();

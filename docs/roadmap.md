@@ -29,13 +29,14 @@ Artifacts/зм≥ни:
 ---
 
 ## ≈тап2 Ч ћультитенантн≥сть (вир≥внюванн€)
-- [ ] ѕерейти на пер-орендаторський connection string (Finbuckle store/provider) або задокументувати single-DB стратег≥ю.
-- [ ] ѕерев≥рити вс≥ ент≥т≥ на на€вн≥сть `TenantId` та глобальних ф≥льтр≥в (в т.ч. майбутн≥ таблиц≥ Reporting/Outbox).
-- [ ] ѕерев≥рити виставленн€ `TenantId` на вставках (≥нтерсептор/`SaveChanges`).
+- [x] ѕерейти на пер-орендаторський connection string (Finbuckle store/provider) або задокументувати single-DB стратег≥ю.
+- [x] ѕерев≥рити вс≥ ент≥т≥ на на€вн≥сть `TenantId` та глобальних ф≥льтр≥в (в т.ч. майбутн≥ таблиц≥ Reporting/Outbox).
+- [x] ѕерев≥рити виставленн€ `TenantId` на вставках (≥нтерсептор/`SaveChanges`).
 
 Artifacts/зм≥ни:
-- [ ] `src/Hosts/WebHost/Program.cs` Ч джерело ConnectionString per-tenant.
-- [ ] `CatalogDbContext/CoreDbContext` Ч ≥нтерсептори/виставленн€ `TenantId`.
+- [x] `src/Hosts/WebHost/Program.cs` Ч нараз≥ single-DB з InMemoryStore/StaticStrategy (пер-tenant буде додано п≥зн≥ше за потреби).
+- [x] `CatalogDbContext/CoreDbContext` Ч глобальн≥ ф≥льтри п≥дтверджено; додано ≥нтерсептори виставленн€ `TenantId`.
+- [x] Catalog: п≥дтверджено `TenantId` (shadow property) у `ServiceAccount`, `UrlItem`, `Site`, `UrlBatch`.
 
 ---
 
