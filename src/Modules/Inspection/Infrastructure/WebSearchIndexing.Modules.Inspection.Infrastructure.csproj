@@ -1,6 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Finbuckle.MultiTenant" Version="6.11.0" />
+    <PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="6.11.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Application\WebSearchIndexing.Modules.Inspection.Application.csproj" />
     <ProjectReference Include="..\Domain\WebSearchIndexing.Modules.Inspection.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Persistence\WebSearchIndexing.BuildingBlocks.Persistence.csproj" />
@@ -8,11 +22,4 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Messaging\WebSearchIndexing.BuildingBlocks.Messaging.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
 </Project>
-
