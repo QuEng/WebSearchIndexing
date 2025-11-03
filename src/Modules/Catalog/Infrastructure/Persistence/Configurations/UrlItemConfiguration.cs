@@ -20,6 +20,7 @@ internal sealed class UrlItemConfiguration : IEntityTypeConfiguration<UrlItem>
         builder.Property(item => item.AddedAt).IsRequired();
         builder.Property(item => item.ProcessedAt).IsRequired();
         builder.Property(item => item.ServiceAccountId);
+        builder.Property(item => item.FailureCount).IsRequired().HasDefaultValue(0);
 
         builder.Property<Guid>("TenantId")
                .HasColumnName("TenantId")

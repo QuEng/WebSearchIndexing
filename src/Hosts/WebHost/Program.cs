@@ -8,6 +8,8 @@ using WebSearchIndexing.BuildingBlocks.Web.Navigation;
 using WebSearchIndexing.Hosts.WebHost.Components;
 using WebSearchIndexing.Hosts.WebHost.Extensions;
 using WebSearchIndexing.Hosts.WebHost.Navigation;
+using WebSearchIndexing.Hosts.WebHost.Swagger;
+using WebSearchIndexing.Hosts.WebHost.Middleware;
 using WebSearchIndexing.Modules.Catalog.Api;
 using WebSearchIndexing.Modules.Catalog.Ui;
 using WebSearchIndexing.Modules.Core.Api;
@@ -21,6 +23,7 @@ using WebSearchIndexing.Modules.Reporting.Ui;
 using WebSearchIndexing.Modules.Submission.Api;
 using HealthChecks.NpgSql;
 using Microsoft.AspNetCore.DataProtection;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +44,85 @@ builder.Services.AddMudServices();
 
 // Data Protection (for secrets encryption)
 builder.Services.AddDataProtection();
+
+// Rate Limiting (simplified implementation)
+builder.Services.AddRateLimiter(options =>
+{
+    // Global rate limiting for API endpoints
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        var path = httpContext.Request.Path.Value ?? "";
+        if (path.StartsWith("/api"))
+        {
+            return RateLimitPartition.GetFixedWindowLimiter("api", key => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 10
+            });
+        }
+        return RateLimitPartition.GetNoLimiter("unlimited");
+    });
+
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = 429;
+        
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = 
+                ((int)retryAfter.TotalSeconds).ToString();
+        }
+
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", token);
+    };
+});
+
+// Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "WebSearchIndexing API",
+        Version = "v1",
+        Description = "API for Web Search Indexing system",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "Development Team",
+            Email = "dev@websearchindexing.com"
+        }
+    });
+
+    // Add correlation ID parameter to all operations
+    options.OperationFilter<CorrelationIdOperationFilter>();
+    
+    // Add rate limiting information to operations
+    options.OperationFilter<RateLimitOperationFilter>();
+});
+
+// Problem Details for consistent error handling
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        // Add correlation ID to all problem details
+        if (context.HttpContext.Request.Headers.TryGetValue("X-Correlation-ID", out var correlationId))
+        {
+            context.ProblemDetails.Extensions["correlationId"] = correlationId.ToString();
+        }
+        else
+        {
+            context.ProblemDetails.Extensions["correlationId"] = Guid.NewGuid().ToString();
+        }
+
+        context.ProblemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+        
+        // Add instance path
+        context.ProblemDetails.Instance = context.HttpContext.Request.Path;
+    };
+});
 
 // Observability (OTEL)
 builder.Services.AddObservability();
@@ -98,10 +180,33 @@ var app = builder.Build();
 app.ApplyMigrations();
 app.UseMultiTenant();
 
+// Add global exception handling middleware early in pipeline (but after multi-tenant)
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
+// Add correlation ID middleware early in the pipeline
+app.UseMiddleware<CorrelationIdMiddleware>();
+
+// Add rate limiting
+app.UseRateLimiter();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/error", createScopeForErrors: true);
     app.UseHsts();
+}
+else
+{
+    // Swagger only in development
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "WebSearchIndexing API v1");
+        options.RoutePrefix = "swagger";
+        options.DisplayRequestDuration();
+        options.EnableDeepLinking();
+        options.EnableFilter();
+        options.ShowExtensions();
+    });
 }
 
 app.UseStaticFiles();

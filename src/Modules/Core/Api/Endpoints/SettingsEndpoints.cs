@@ -20,50 +20,43 @@ internal static class SettingsEndpoints
 
     private static async Task<IResult> HandleGetSettings(
         ISettingsRepository repository,
+        HttpContext context,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var settings = await repository.GetAsync();
-            return settings is not null 
-                ? Results.Ok(SettingsDto.FromDomain(settings)) 
-                : Results.NotFound(new { message = "Settings not found" });
-        }
-        catch (Exception ex)
-        {
-            return Results.Problem($"Failed to get settings: {ex.Message}");
-        }
+        var settings = await repository.GetAsync();
+        return settings is not null 
+            ? Results.Ok(SettingsDto.FromDomain(settings)) 
+            : Results.NotFound(new { message = "Settings not found" });
     }
 
     private static async Task<IResult> HandleUpdateSettings(
         UpdateSettingsRequest request,
         ISettingsRepository repository,
+        HttpContext context,
         CancellationToken cancellationToken)
     {
-        try
+        if (request.RequestsPerDay <= 0)
         {
-            var settings = await repository.GetAsync();
-            if (settings is null)
-            {
-                return Results.NotFound(new { message = "Settings not found" });
-            }
+            return Results.BadRequest(new { message = "RequestsPerDay must be greater than 0" });
+        }
 
-            settings.RequestsPerDay = request.RequestsPerDay;
-            if (request.IsEnabled.HasValue)
-            {
-                settings.IsEnabled = request.IsEnabled.Value;
-            }
-            
-            var updated = await repository.UpdateAsync(settings);
-            
-            return updated 
-                ? Results.Ok(SettingsDto.FromDomain(settings)) 
-                : Results.Problem("Failed to update settings");
-        }
-        catch (Exception ex)
+        var settings = await repository.GetAsync();
+        if (settings is null)
         {
-            return Results.Problem($"Failed to update settings: {ex.Message}");
+            return Results.NotFound(new { message = "Settings not found" });
         }
+
+        settings.RequestsPerDay = request.RequestsPerDay;
+        if (request.IsEnabled.HasValue)
+        {
+            settings.IsEnabled = request.IsEnabled.Value;
+        }
+        
+        var updated = await repository.UpdateAsync(settings);
+        
+        return updated 
+            ? Results.Ok(SettingsDto.FromDomain(settings)) 
+            : Results.Problem("Failed to update settings");
     }
 }
 

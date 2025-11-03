@@ -27,20 +27,3 @@ public interface IInspectionService
     /// </summary>
     Task<RetryRecommendation> AnalyzeFailureAsync(UrlItem urlItem, CancellationToken cancellationToken = default);
 }
-
-/// <summary>
-/// Result of URL inspection
-/// </summary>
-public sealed record InspectionResult(
-    bool IsSuccessful,
-    string Status,
-    string? ErrorMessage = null,
-    DateTime InspectedAt = default);
-
-/// <summary>
-/// Recommendation for retry strategy
-/// </summary>
-public sealed record RetryRecommendation(
-    bool ShouldRetry,
-    TimeSpan DelayBeforeRetry,
-    string Reason);

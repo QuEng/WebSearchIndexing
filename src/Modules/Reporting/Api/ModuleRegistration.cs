@@ -21,7 +21,7 @@ public static class ReportingModule
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        var reportingGroup = endpoints.MapGroup("/api/reporting");
+        var reportingGroup = endpoints.MapGroup("/api/v1/reporting");
 
         reportingGroup.MapStatsEndpoints();
 

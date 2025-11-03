@@ -77,14 +77,17 @@ Artifacts/зміни:
 ---
 
 ## Етап6 — API твердість та обмеження
-- [ ] Увімкнути `RateLimiter` для `/api/*` (політики: фіксоване вікно/токен бакет).
-- [ ] Додати Swagger/OpenAPI (генерація клієнтів опційно).
-- [ ] Консистентна обробка помилок (ProblemDetails), кореляційні ідентифікатори.
-- [ ] Версіонування API для майбутньої еволюції.
+- [x] Увімкнути `RateLimiter` для `/api/*` (політики: фіксоване вікно/токен бакет).
+- [x] Додати Swagger/OpenAPI (генерація клієнтів опційно).
+- [x] Консистентна обробка помилок (ProblemDetails), кореляційні ідентифікатори.
+- [x] Версіонування API для майбутньої еволюції.
 
 Artifacts/зміни:
-- [ ] `src/Hosts/WebHost/Program.cs` — `AddRateLimiter`, `UseRateLimiter`, Swagger.
-- [ ] Узгодження відповідей у мінімальних ендпоїнтах модулів.
+- [x] `src/Hosts/WebHost/Program.cs` — `AddRateLimiter`, `UseRateLimiter`, Swagger.
+- [x] `src/Hosts/WebHost/Middleware/` — `CorrelationIdMiddleware`, `GlobalExceptionHandlingMiddleware`.
+- [x] `src/Hosts/WebHost/Extensions/` — `ApiResultExtensions` для консистентних відповідей.
+- [x] `src/Hosts/WebHost/Swagger/` — фільтри для Swagger документації.
+- [x] Узгодження відповідей у мінімальних ендпоїнтах модулів з версіонуванням v1.
 
 ---
 

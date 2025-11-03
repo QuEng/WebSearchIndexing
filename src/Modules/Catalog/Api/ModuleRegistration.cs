@@ -19,7 +19,7 @@ public static class CatalogModule
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        var catalogGroup = endpoints.MapGroup("/api/catalog");
+        var catalogGroup = endpoints.MapGroup("/api/v1/catalog");
 
         catalogGroup
             .MapSitesEndpoints()

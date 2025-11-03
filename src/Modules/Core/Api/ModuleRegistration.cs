@@ -19,7 +19,7 @@ public static class CoreModule
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        var coreGroup = endpoints.MapGroup("/api/core");
+        var coreGroup = endpoints.MapGroup("/api/v1/core");
         coreGroup.MapSettingsEndpoints();
 
         return endpoints;
