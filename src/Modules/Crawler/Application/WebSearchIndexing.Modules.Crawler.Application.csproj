@@ -1,9 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Polly" Version="8.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0-rc.2.25502.107" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Domain\WebSearchIndexing.Modules.Crawler.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Abstractions\WebSearchIndexing.BuildingBlocks.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Messaging\WebSearchIndexing.BuildingBlocks.Messaging.csproj" />
+    <ProjectReference Include="..\..\Catalog\Domain\WebSearchIndexing.Modules.Catalog.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

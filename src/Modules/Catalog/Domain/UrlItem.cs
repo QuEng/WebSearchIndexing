@@ -30,6 +30,7 @@ public sealed class UrlItem : IEntity<Guid>
     public DateTime ProcessedAt { get; private set; }
     public Guid? ServiceAccountId { get; private set; }
     public ServiceAccount? ServiceAccount { get; private set; }
+    public int FailureCount { get; private set; }
 
     public bool IsPending => Status == UrlItemStatus.Pending;
     public bool IsCompleted => Status == UrlItemStatus.Completed;
@@ -63,6 +64,7 @@ public sealed class UrlItem : IEntity<Guid>
         AssignTo(account);
         Status = UrlItemStatus.Failed;
         ProcessedAt = DateTime.UtcNow;
+        FailureCount++;
     }
 
     public void MarkPending()
@@ -71,6 +73,7 @@ public sealed class UrlItem : IEntity<Guid>
         ProcessedAt = DateTime.MinValue;
         ServiceAccountId = null;
         ServiceAccount = null;
+        // Don't reset FailureCount when marking as pending - keep the history
     }
 }
 

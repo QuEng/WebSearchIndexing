@@ -9,10 +9,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0-rc.2.25502.107" />
+    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Api\WebSearchIndexing.Modules.Submission.Api.csproj" />
+    <ProjectReference Include="..\Application\WebSearchIndexing.Modules.Submission.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Observability\WebSearchIndexing.BuildingBlocks.Observability.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Messaging\WebSearchIndexing.BuildingBlocks.Messaging.csproj" />
   </ItemGroup>
 </Project>
 
