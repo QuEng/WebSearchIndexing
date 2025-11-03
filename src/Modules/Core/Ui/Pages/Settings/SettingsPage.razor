@@ -28,6 +28,7 @@ else
                     DisableElevation="true"
                     Variant="Variant.Filled"
                    Color="@(_setting.IsEnabled ? Color.Error : Color.Success)"
+                    Disabled="@_isSavingSettings"
                     OnClick="ToggleEnablingAsync">
             @(_setting.IsEnabled ? "Disable" : "Enable") service
         </MudButton>
@@ -40,7 +41,8 @@ else
             Set a limit for requests per day
         </MudText>
 
-        <MudNumericField Class="mb-2"
+        <MudNumericField @key="@($"requests-field-{_setting.Id}")"
+                         Class="mb-2"
                          Style="width: fit-content"
                          Label="Requests per day"
                          HideSpinButtons="true"
@@ -52,6 +54,7 @@ else
                          Margin="Margin.Dense"
                          T="int"
                          Immediate="true"
+                         Disabled="@_isSavingSettings"
                          @bind-Value="@_currentRequestsPerDay" />
         
         @if (RequestsPerDayChanged)
@@ -60,6 +63,7 @@ else
                        DisableElevation="true"
                        Variant="Variant.Filled"
                        Color="Color.Primary"
+                       Disabled="@_isSavingSettings"
                        OnClick="SaveRequestsPerDayAsync">
                 Save
             </MudButton>

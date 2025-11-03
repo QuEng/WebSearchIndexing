@@ -1,0 +1,36 @@
+@page "/error"
+
+<PageTitle>Error</PageTitle>
+
+<MudContainer>
+    <MudPaper Class="pa-6" Elevation="2">
+        <MudText Typo="Typo.h4" Class="mb-4" Color="Color.Error">
+            Oops! Something went wrong
+        </MudText>
+        
+        <MudAlert Severity="Severity.Error" Class="mb-4">
+            We encountered an unexpected error while processing your request.
+        </MudAlert>
+        
+        <MudText Typo="Typo.body1" Class="mb-4">
+            This might happen if:
+        </MudText>
+        
+        <ul>
+            <li>The API server is not running</li>
+            <li>There's a network connectivity issue</li>
+            <li>The requested resource is not available</li>
+        </ul>
+        
+        <MudText Typo="Typo.body1" Class="mt-4 mb-4">
+            Please try again or contact support if the problem persists.
+        </MudText>
+        
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   Href="/" 
+                   StartIcon="Icons.Material.Filled.Home">
+            Go to Home
+        </MudButton>
+    </MudPaper>
+</MudContainer>

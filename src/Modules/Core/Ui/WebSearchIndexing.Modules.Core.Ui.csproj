@@ -7,16 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
     <PackageReference Include="MudBlazor" Version="6.19.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
+    <ProjectReference Include="..\..\..\Contracts\WebSearchIndexing.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

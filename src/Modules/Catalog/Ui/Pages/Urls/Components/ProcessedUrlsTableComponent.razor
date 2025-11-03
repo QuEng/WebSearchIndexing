@@ -10,7 +10,7 @@
     else
     {
         <MudTable Class="links__table"
-                  T="UrlItem"
+                  T="UrlItemDto"
                   Items="_allUrls"
                   RowsPerPage="30"
                   LoadingProgressColor="Color.Primary"
@@ -24,7 +24,7 @@
                   Bordered="false">
             <HeaderContent>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.Url)">
+                    <MudTableSortLabel SortBy="new Func<UrlItemDto, object>(x=> x.Url)">
                         <MudText Style="font-weight: 500" Color="Color.Surface"
                                  Typo="Typo.subtitle2">
                             Url
@@ -32,7 +32,7 @@
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.Status)">
+                    <MudTableSortLabel SortBy="new Func<UrlItemDto, object>(x=> x.Status)">
                         <MudText Style="font-weight: 500" Color="Color.Surface"
                                  Typo="Typo.subtitle2">
                             Status
@@ -40,7 +40,7 @@
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x => x.AddedAt)">
+                    <MudTableSortLabel SortBy="new Func<UrlItemDto, object>(x => x.AddedAt)">
                         <MudText Style="font-weight: 500" Color="Color.Surface"
                                  Typo="Typo.subtitle2">
                             Added at
@@ -48,7 +48,7 @@
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<UrlItem, object>(x=> x.ProcessedAt)">
+                    <MudTableSortLabel SortBy="new Func<UrlItemDto, object>(x=> x.ProcessedAt)">
                         <MudText Style="font-weight: 500" Color="Color.Surface"
                                  Typo="Typo.subtitle2">
                             Processed at
@@ -81,7 +81,7 @@
                     </MudChip>
                 </MudTd>
                 <MudTd DataLabel="Added at">@context.AddedAt.ToString("MMM dd, hh:mm:ss tt")</MudTd>
-                <MudTd DataLabel="Processed at">@context.ProcessedAt.ToString("MMM dd, hh:mm:ss tt")</MudTd>
+                <MudTd DataLabel="Processed at">@(context.ServiceAccountId == null ? "Not processed" : context.ProcessedAt.ToString("MMM dd, hh:mm:ss tt"))</MudTd>
                 <MudTd>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">                    
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveItemAsync(context)" />

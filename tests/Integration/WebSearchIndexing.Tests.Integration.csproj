@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Hosts\WebHost\WebSearchIndexing.Hosts.WebHost.csproj" />
+        <ProjectReference Include="..\..\src\Hosts\ApiHost\WebSearchIndexing.Hosts.ApiHost.csproj" />
         <ProjectReference Include="..\..\src\Modules\Catalog\Application\WebSearchIndexing.Modules.Catalog.Application.csproj" />
         <ProjectReference Include="..\..\src\Modules\Core\Application\WebSearchIndexing.Modules.Core.Application.csproj" />
         <ProjectReference Include="..\..\src\Modules\Reporting\Application\WebSearchIndexing.Modules.Reporting.Application.csproj" />
@@ -30,6 +30,7 @@
         <ProjectReference Include="..\..\src\Modules\Crawler\Application\WebSearchIndexing.Modules.Crawler.Application.csproj" />
         <ProjectReference Include="..\..\src\Modules\Inspection\Application\WebSearchIndexing.Modules.Inspection.Application.csproj" />
         <ProjectReference Include="..\..\src\Modules\Notifications\Application\WebSearchIndexing.Modules.Notifications.Application.csproj" />
+        <ProjectReference Include="..\..\src\Contracts\WebSearchIndexing.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,14 +1,15 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Application.DTOs;
 using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls.Components;
 
 public partial class ProcessedUrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.Components.ComponentBase
 {
     private const int RowsPerPage = 10;
-    private List<UrlItem> _allUrls = [];
+    private List<UrlItemDto> _allUrls = [];
     private bool _isLoadingUrls = true;
     private int _currentPage = 1;
     private int _totalPages = 1;
@@ -17,7 +18,7 @@ public partial class ProcessedUrlsTableComponent : WebSearchIndexing.BuildingBlo
     public UrlItemType UrlRequestType { get; set; }
 
     [Inject]
-    private IUrlRequestRepository? UrlRequestRepository { get; set; }
+    private IUrlsApiService? UrlsApiService { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -29,17 +30,18 @@ public partial class ProcessedUrlsTableComponent : WebSearchIndexing.BuildingBlo
         _isLoadingUrls = true;
         StateHasChanged();
 
-        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(
-            requestStatus: UrlItemStatus.Completed,
-            requestType: UrlRequestType);
+        var requestsCount = await UrlsApiService!.GetUrlsCountAsync(
+            status: UrlItemStatus.Completed,
+            type: UrlRequestType);
 
         _totalPages = Math.Max(1, (int)Math.Ceiling(requestsCount / (double)RowsPerPage));
         if (_currentPage > _totalPages) _currentPage = _totalPages;
 
-        _allUrls = await UrlRequestRepository.TakeRequestsAsync(
+        _allUrls = (await UrlsApiService.GetUrlsAsync(
             RowsPerPage,
             (_currentPage - 1) * RowsPerPage,
-            requestType: UrlRequestType);
+            status: UrlItemStatus.Completed,
+            type: UrlRequestType)).ToList();
 
         _isLoadingUrls = false;
         StateHasChanged();
@@ -51,10 +53,12 @@ public partial class ProcessedUrlsTableComponent : WebSearchIndexing.BuildingBlo
         await UpdateUrlsListAsync();
     }
 
-    private async Task RemoveItemAsync(UrlItem item)
+    private async Task RemoveItemAsync(UrlItemDto item)
     {
-        if (await UrlRequestRepository!.DeleteAsync(item.Id))
+        var success = await UrlsApiService!.DeleteUrlAsync(item.Id);
+        if (success)
         {
+            await UpdateUrlsListAsync();
             Snackbar!.Add("The link was successfully removed", Severity.Success);
         }
         else

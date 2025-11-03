@@ -178,7 +178,7 @@
                         }
                     </MudTd>
                     <MudTd DataLabel="Added at">@context.UrlRequest.AddedAt.ToString("MMM dd, hh:mm:ss tt")</MudTd>
-                    <MudTd DataLabel="Processed at">@(context.UrlRequest.ServiceAccount is null ? "Not processed" : context.UrlRequest.ProcessedAt.ToString("MMM dd, hh:mm:ss tt"))</MudTd>
+                    <MudTd DataLabel="Processed at">@(context.UrlRequest.ServiceAccountId is null ? "Not processed" : context.UrlRequest.ProcessedAt.ToString("MMM dd, hh:mm:ss tt"))</MudTd>
                     <MudTd>
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd">
                             @if (context.Edited)

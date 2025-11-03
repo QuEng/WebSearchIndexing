@@ -1,0 +1,11 @@
+@inherits MudThemingProvider
+
+@if (!DefaultScrollbar)
+{
+    @((MarkupString)BuildMudBlazorScrollbar())
+}
+
+@((MarkupString)BuildTheme())
+
+
+<MudPopoverProvider></MudPopoverProvider>

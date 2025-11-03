@@ -1,24 +1,25 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Application.DTOs;
 using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls.Components;
 
 public partial class RejectedUrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.Components.ComponentBase
 {
     private const int RowsPerPage = 10;
-    private List<UrlItem> _allUrls = [];
+    private List<UrlItemDto> _allUrls = [];
     private bool _isLoadingUrls;
     private int _currentPage = 1;
     private int _totalPages = 1;
 
     [Inject]
-    private IUrlRequestRepository? UrlRequestRepository { get; set; }
+    private IUrlsApiService? UrlsApiService { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(UrlItemStatus.Failed);
+        var requestsCount = await UrlsApiService!.GetUrlsCountAsync(UrlItemStatus.Failed);
         _totalPages = Math.Max(1, (int)Math.Ceiling(requestsCount / (double)RowsPerPage));
         await UpdateUrlsListAsync();
     }
@@ -28,14 +29,14 @@ public partial class RejectedUrlsTableComponent : WebSearchIndexing.BuildingBloc
         _isLoadingUrls = true;
         StateHasChanged();
 
-        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(requestStatus: UrlItemStatus.Failed);
+        var requestsCount = await UrlsApiService!.GetUrlsCountAsync(status: UrlItemStatus.Failed);
         _totalPages = Math.Max(1, (int)Math.Ceiling(requestsCount / (double)RowsPerPage));
         if (_currentPage > _totalPages) _currentPage = _totalPages;
 
-        _allUrls = await UrlRequestRepository.TakeRequestsAsync(
+        _allUrls = (await UrlsApiService.GetUrlsAsync(
             RowsPerPage,
             (_currentPage - 1) * RowsPerPage,
-            UrlItemStatus.Failed);
+            UrlItemStatus.Failed)).ToList();
 
         _isLoadingUrls = false;
         StateHasChanged();
@@ -47,10 +48,12 @@ public partial class RejectedUrlsTableComponent : WebSearchIndexing.BuildingBloc
         await UpdateUrlsListAsync();
     }
 
-    private async Task RemoveItemAsync(UrlItem item)
+    private async Task RemoveItemAsync(UrlItemDto item)
     {
-        if (await UrlRequestRepository!.DeleteAsync(item.Id))
+        var success = await UrlsApiService!.DeleteUrlAsync(item.Id);
+        if (success)
         {
+            await UpdateUrlsListAsync();
             Snackbar!.Add("The link was successfully removed", Severity.Success);
         }
         else

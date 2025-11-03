@@ -5,7 +5,6 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 using WebSearchIndexing.BuildingBlocks.Messaging;
 using WebSearchIndexing.BuildingBlocks.Persistence;
 using WebSearchIndexing.Modules.Core.Application;
-using WebSearchIndexing.Modules.Core.Infrastructure;
 using WebSearchIndexing.Modules.Core.Infrastructure.Tenancy;
 
 namespace WebSearchIndexing.Modules.Core.Infrastructure;

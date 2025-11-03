@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSearchIndexing</title>
+    <base href="/" />
+    
+    <!-- MudBlazor CSS -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="WebSearchIndexing.Hosts.WasmHost.styles.css" rel="stylesheet" />
+    
+    <style>
+        .wasm-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .wasm-loader__container {
+            text-align: center;
+            color: white;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .wasm-loader__logo {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .wasm-loader__title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin: 0 0 0.5rem 0;
+            letter-spacing: 1px;
+        }
+
+        .wasm-loader__subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin: 0 0 2rem 0;
+            font-weight: 300;
+        }
+
+        .wasm-loader__progress {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 auto 2rem auto;
+        }
+
+        .wasm-loader__progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.7), #fff);
+            border-radius: 2px;
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        .wasm-loader__dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .wasm-loader__dots span {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: dots 1.5s ease-in-out infinite;
+        }
+
+        .wasm-loader__dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .wasm-loader__dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes progress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400px); }
+        }
+
+        @keyframes dots {
+            0%, 20%, 80%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .wasm-loader {
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .wasm-loader__title {
+                font-size: 2rem;
+            }
+            
+            .wasm-loader__subtitle {
+                font-size: 1rem;
+            }
+            
+            .wasm-loader__progress {
+                width: 250px;
+            }
+            
+            .wasm-loader__logo {
+                font-size: 3rem;
+            }
+        }
+
+        /* Hide default Blazor loading */
+        .loading-progress {
+            display: none;
+        }
+        
+        .loading-progress-text {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="wasm-loader" id="wasm-loader">
+            <div class="wasm-loader__container">
+                <div class="wasm-loader__logo">
+                    🔍
+                </div>
+                <div class="wasm-loader__content">
+                    <h2 class="wasm-loader__title">WebSearch Indexing</h2>
+                    <p class="wasm-loader__subtitle">Завантаження додатку...</p>
+                    <div class="wasm-loader__progress">
+                        <div class="wasm-loader__progress-bar"></div>
+                    </div>
+                    <div class="wasm-loader__dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fallback loader (hidden by default) -->
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    
+    <div id="reconnect-modal" style="display: none;">
+        Attempting to reconnect...
+    </div>
+    
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

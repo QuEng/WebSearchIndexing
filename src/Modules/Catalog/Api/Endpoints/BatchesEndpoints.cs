@@ -21,11 +21,24 @@ internal static class BatchesEndpoints
     }
 
     private static async Task<IResult> HandleImportUrls(
-        ImportUrlsCommand command,
+        HttpContext context,
         ImportUrlsHandler handler,
         CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(command, cancellationToken);
-        return Results.Ok(result);
+        try
+        {
+            var command = await context.Request.ReadFromJsonAsync<ImportUrlsCommand>(cancellationToken);
+            if (command == null)
+            {
+                return Results.BadRequest(new { message = "Invalid request body." });
+            }
+
+            var result = await handler.HandleAsync(command, cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 }

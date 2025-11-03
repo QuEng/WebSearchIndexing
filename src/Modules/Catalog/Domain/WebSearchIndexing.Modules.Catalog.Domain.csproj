@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Abstractions\WebSearchIndexing.BuildingBlocks.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Core\Domain\WebSearchIndexing.Modules.Core.Domain.csproj" />
   </ItemGroup>
 
 </Project>

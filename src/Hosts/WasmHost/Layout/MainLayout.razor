@@ -1,0 +1,117 @@
+﻿@inherits LayoutComponentBase
+@inject INavigationService NavigationService
+@using WebSearchIndexing.Hosts.WasmHost.Theming
+@using WebSearchIndexing.Hosts.WasmHost.Styling
+@using WebSearchIndexing.Hosts.WasmHost.Layout
+
+<CustomThemeProvider @ref="_themeProvider" IsDarkMode="_isDarkMode" Theme="_customTheme" />
+<MudDialogProvider CloseButton="true" FullWidth="true" CloseOnEscapeKey="true" />
+<MudSnackbarProvider />
+<ColorClassProvider />
+
+<AccessComponent IsVisible="(!_hasAccess && _isReady)" AccessAllowed="AllowAccess" />
+
+@if (_isReady && _hasAccess)
+{
+    <script>
+        // Safe way to hide loader from Blazor component
+        setTimeout(() => {
+            const loader = document.getElementById('wasm-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                loader.style.transition = 'opacity 0.5s ease-out';
+                setTimeout(() => {
+                    loader.remove();
+                }, 500);
+            }
+        }, 100);
+    </script>
+
+    <MudLayout>
+        <MudAppBar Elevation="1">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/queng" Target="_blank" />
+            <MudSwitch Color="Color.Primary"
+                       UnCheckedColor="Color.Tertiary"
+                       Size="Size.Large"
+                       ThumbIcon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Outlined.LightMode)"
+                       @bind-Value="_isDarkMode" />
+        </MudAppBar>
+
+        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Responsive">
+            <MudNavMenu Class="mt-3">
+                @foreach (var item in _navigation)
+                {
+                    if (item.IsGroup)
+                    {
+                        <MudNavGroup Title="@item.Title" Icon="@item.Icon">
+                            @foreach (var child in item.Children)
+                            {
+                                <MudNavLink ActiveClass="drawer__item--active"
+                                            Match="@child.Match"
+                                            Icon="@child.Icon"
+                                            Href="@child.Href">
+                                    @child.Title
+                                </MudNavLink>
+                            }
+                        </MudNavGroup>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(item.Href))
+                    {
+                        <MudNavLink ActiveClass="drawer__item--active"
+                                    Match="@item.Match"
+                                    Icon="@item.Icon"
+                                    Href="@item.Href">
+                            @item.Title
+                        </MudNavLink>
+                    }
+                }                
+            </MudNavMenu>
+        </MudDrawer>
+
+        <MudMainContent>
+            <div class="mt-6 mx-6">
+                @Body
+            </div>
+        </MudMainContent>
+    </MudLayout>
+}
+
+
+@code
+{
+    private readonly List<NavigationItem> _navigation = [];
+    private bool _drawerOpen = true;
+    private bool _isDarkMode;
+    private bool _isReady;
+    private bool _hasAccess;
+    private CustomThemeProvider? _themeProvider;
+    private readonly GlobalTheme _customTheme = new();
+
+    protected override void OnInitialized()
+    {
+        _navigation.AddRange(NavigationService.GetItems());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _isDarkMode = false;
+        _isReady = true;
+    }
+
+    private void AllowAccess()
+    {
+        _hasAccess = true;
+    }
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}

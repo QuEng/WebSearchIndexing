@@ -37,8 +37,9 @@ public partial class AddServiceAccountDialog : ComponentBase
                 _credentialsJson = await reader.ReadToEndAsync();
             }
 
-            credential = GoogleCredential.FromJson(_credentialsJson)
-                                         .CreateScoped(IndexingService.Scope.Indexing);
+            credential = GoogleCredential
+                .FromJson(_credentialsJson)
+                .CreateScoped(IndexingService.Scope.Indexing);
         }
         catch (Exception)
         {
@@ -86,8 +87,6 @@ public partial class AddServiceAccountDialog : ComponentBase
         {
             File.Delete(_serviceAccountsPath);
         }
-        catch
-        {
-        }
+        catch { }
     }
 }

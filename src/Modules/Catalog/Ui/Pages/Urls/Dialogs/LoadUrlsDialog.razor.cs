@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls.Dialogs;
 
@@ -11,7 +11,7 @@ public partial class LoadUrlsDialog : ComponentBase
     private UrlLoadType _urlLoadType = UrlLoadType.TextField;
     private string _urls = string.Empty;
     private string[] _invalidUrls = [];
-    private List<UrlItem> _urlRequests = [];
+    private List<ImportUrlEntry> _urlRequests = [];
     private bool _isSavingUrls;
     private const string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mud-width-full mud-height-full z-10 d-flex flex-column justify-center align-center";
     private string _dragClass = DefaultDragClass;
@@ -23,7 +23,7 @@ public partial class LoadUrlsDialog : ComponentBase
     public UrlItemType UrlRequestType { get; set; }
 
     [Inject]
-    private IUrlRequestRepository? UrlRequestRepository { get; set; }
+    private IUrlsApiService? UrlsApiService { get; set; }
 
     private const int MaxUrls = 400;
 
@@ -48,12 +48,21 @@ public partial class LoadUrlsDialog : ComponentBase
 
         _isSavingUrls = true;
 
-        if (await UrlRequestRepository!.AddRangeAsync(_urlRequests))
+        try
         {
-            Snackbar!.Add("Links added", Severity.Success);
-            MudDialog!.Close(true);
+            var result = await UrlsApiService!.ImportUrlsAsync(_urlRequests);
+            if (result.Any())
+            {
+                Snackbar!.Add("Links added", Severity.Success);
+                MudDialog!.Close(true);
+            }
+            else
+            {
+                _isSavingUrls = false;
+                Snackbar!.Add("Failed to add links", Severity.Error);
+            }
         }
-        else
+        catch (Exception)
         {
             _isSavingUrls = false;
             Snackbar!.Add("Failed to add links", Severity.Error);
@@ -86,7 +95,7 @@ public partial class LoadUrlsDialog : ComponentBase
         _invalidUrls = [.. urls.Where(url => IsUrlValid(url) is false)];
         _urlRequests = urls
             .Where(IsUrlValid)
-            .Select(url => new UrlItem(url, UrlRequestType, UrlItemPriority.Medium))
+            .Select(url => new ImportUrlEntry(url, UrlRequestType, UrlItemPriority.Medium))
             .ToList();
     }
 

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using WebSearchIndexing.Modules.Core.Application;
+using WebSearchIndexing.Modules.Core.Application.Queries.Settings;
+using WebSearchIndexing.Modules.Core.Application.Commands.Settings;
+using WebSearchIndexing.Modules.Core.Application.Commands.Processing;
 using WebSearchIndexing.Modules.Core.Application.DTOs;
 
 namespace WebSearchIndexing.Modules.Core.Api;
@@ -14,49 +16,75 @@ internal static class SettingsEndpoints
 
         coreGroup.MapGet("/settings", HandleGetSettings);
         coreGroup.MapPut("/settings", HandleUpdateSettings);
+        coreGroup.MapPost("/settings/trigger-processing", HandleTriggerProcessing);
 
         return coreGroup;
     }
 
     private static async Task<IResult> HandleGetSettings(
-        ISettingsRepository repository,
-        HttpContext context,
+        GetSettingsHandler handler,
         CancellationToken cancellationToken)
     {
-        var settings = await repository.GetAsync();
-        return settings is not null 
-            ? Results.Ok(SettingsDto.FromDomain(settings)) 
-            : Results.NotFound(new { message = "Settings not found" });
+        try
+        {
+            var query = new GetSettingsQuery();
+            var settings = await handler.HandleAsync(query, cancellationToken);
+            return settings is not null 
+                ? Results.Ok(settings) 
+                : Results.NotFound(new { message = "Settings not found" });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem($"Failed to get settings: {ex.Message}");
+        }
     }
 
     private static async Task<IResult> HandleUpdateSettings(
-        UpdateSettingsRequest request,
-        ISettingsRepository repository,
         HttpContext context,
+        UpdateSettingsHandler handler,
         CancellationToken cancellationToken)
     {
-        if (request.RequestsPerDay <= 0)
+        try
         {
-            return Results.BadRequest(new { message = "RequestsPerDay must be greater than 0" });
-        }
+            var request = await context.Request.ReadFromJsonAsync<UpdateSettingsRequest>(cancellationToken);
+            if (request == null)
+            {
+                return Results.BadRequest(new { message = "Invalid request body." });
+            }
 
-        var settings = await repository.GetAsync();
-        if (settings is null)
-        {
-            return Results.NotFound(new { message = "Settings not found" });
+            var command = new UpdateSettingsCommand(request.RequestsPerDay, request.IsEnabled);
+            var result = await handler.HandleAsync(command, cancellationToken);
+            return Results.Ok(result);
         }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem($"Failed to update settings: {ex.Message}");
+        }
+    }
 
-        settings.RequestsPerDay = request.RequestsPerDay;
-        if (request.IsEnabled.HasValue)
+    private static async Task<IResult> HandleTriggerProcessing(
+        TriggerProcessingHandler handler,
+        CancellationToken cancellationToken)
+    {
+        try
         {
-            settings.IsEnabled = request.IsEnabled.Value;
+            var command = new TriggerProcessingCommand();
+            await handler.HandleAsync(command, cancellationToken);
+            
+            return Results.Ok(new { message = "Processing triggered successfully" });
         }
-        
-        var updated = await repository.UpdateAsync(settings);
-        
-        return updated 
-            ? Results.Ok(SettingsDto.FromDomain(settings)) 
-            : Results.Problem("Failed to update settings");
+        catch (Exception ex)
+        {
+            return Results.Problem($"Failed to trigger processing: {ex.Message}");
+        }
     }
 }
 

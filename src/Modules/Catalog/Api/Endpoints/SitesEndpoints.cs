@@ -17,11 +17,24 @@ internal static class SitesEndpoints
     }
 
     private static async Task<IResult> HandleCreateSite(
-        CreateSiteCommand command,
+        HttpContext context,
         CreateSiteHandler handler,
         CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(command, cancellationToken);
-        return Results.Ok(result);
+        try
+        {
+            var command = await context.Request.ReadFromJsonAsync<CreateSiteCommand>(cancellationToken);
+            if (command == null)
+            {
+                return Results.BadRequest(new { message = "Invalid request body." });
+            }
+
+            var result = await handler.HandleAsync(command, cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 }

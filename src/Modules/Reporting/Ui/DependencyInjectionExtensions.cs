@@ -17,11 +17,8 @@ public static class DependencyInjectionExtensions
         services.AddSingleton<IRazorComponentAssemblyProvider, ReportingUiAssemblyProvider>();
         services.AddSingleton<INavigationContributor, ReportingNavigationContributor>();
         
-        // Add HTTP client for Reporting API
-        services.AddHttpClient<IReportingHttpClient, ReportingHttpClient>(client =>
-        {
-            client.Timeout = TimeSpan.FromSeconds(30);
-        });
+        // Add specific HTTP client for Reporting API
+        services.AddScoped<IReportingHttpClient, ReportingHttpClient>();
 
         return services;
     }

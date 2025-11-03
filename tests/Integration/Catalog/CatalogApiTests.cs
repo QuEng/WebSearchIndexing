@@ -1,9 +1,7 @@
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
-using WebSearchIndexing.Modules.Catalog.Application.DTOs;
+using System.Net.Http.Json;
 using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
+using WebSearchIndexing.Contracts.Catalog;
 using Xunit;
 
 namespace WebSearchIndexing.Tests.Integration.Catalog;
@@ -28,7 +26,7 @@ public class CatalogApiTests : IClassFixture<WebApplicationFactory<Program>>
         // Assert
         response.EnsureSuccessStatusCode();
         var serviceAccounts = await response.Content.ReadFromJsonAsync<List<ServiceAccountDto>>();
-        
+
         Assert.NotNull(serviceAccounts);
     }
 
@@ -44,11 +42,11 @@ public class CatalogApiTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/catalog/service-accounts", command);
-        
+
         // Assert
         response.EnsureSuccessStatusCode();
         var createdServiceAccount = await response.Content.ReadFromJsonAsync<ServiceAccountDto>();
-        
+
         Assert.NotNull(createdServiceAccount);
         Assert.Equal(command.ProjectId, createdServiceAccount.ProjectId);
         Assert.Equal(command.QuotaLimitPerDay, createdServiceAccount.QuotaLimitPerDay);

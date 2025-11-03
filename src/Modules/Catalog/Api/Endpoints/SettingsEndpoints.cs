@@ -36,12 +36,18 @@ internal static class SettingsEndpoints
     }
 
     private static async Task<IResult> HandleUpdateSettings(
-        UpdateSettingsRequest request,
+        HttpContext context,
         ISettingsRepository repository,
         CancellationToken cancellationToken)
     {
         try
         {
+            var request = await context.Request.ReadFromJsonAsync<UpdateSettingsRequest>(cancellationToken);
+            if (request == null)
+            {
+                return Results.BadRequest(new { message = "Invalid request body." });
+            }
+
             var settings = await repository.GetAsync();
             if (settings is null)
             {

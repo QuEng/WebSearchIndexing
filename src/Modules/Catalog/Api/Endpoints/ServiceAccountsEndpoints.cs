@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Application.DTOs;
+using ContractDto = WebSearchIndexing.Contracts.Catalog.ServiceAccountDto;
 
 namespace WebSearchIndexing.Modules.Catalog.Api;
 
@@ -33,6 +34,7 @@ internal static class ServiceAccountsEndpoints
             var dtos = serviceAccounts
                 .OrderByDescending(x => x.CreatedAt)
                 .Select(ServiceAccountDto.FromDomain)
+                .Select(dto => dto.ToContract())
                 .ToList();
             return Results.Ok(dtos);
         }
@@ -51,7 +53,7 @@ internal static class ServiceAccountsEndpoints
         {
             var serviceAccount = await repository.GetByIdAsync(id);
             return serviceAccount is not null 
-                ? Results.Ok(ServiceAccountDto.FromDomain(serviceAccount)) 
+                ? Results.Ok(ServiceAccountDto.FromDomain(serviceAccount).ToContract()) 
                 : Results.NotFound(new { message = "Service account not found" });
         }
         catch (Exception ex)
@@ -62,7 +64,7 @@ internal static class ServiceAccountsEndpoints
 
     private static async Task<IResult> HandleUpdateServiceAccount(
         Guid id,
-        UpdateServiceAccountRequest request,
+        WebSearchIndexing.Contracts.Catalog.UpdateServiceAccountRequest request,
         IServiceAccountRepository repository,
         CancellationToken cancellationToken)
     {
@@ -78,7 +80,7 @@ internal static class ServiceAccountsEndpoints
             var updated = await repository.UpdateAsync(serviceAccount);
             
             return updated 
-                ? Results.Ok(ServiceAccountDto.FromDomain(serviceAccount)) 
+                ? Results.Ok(ServiceAccountDto.FromDomain(serviceAccount).ToContract()) 
                 : Results.Problem("Failed to update service account");
         }
         catch (Exception ex)
@@ -137,5 +139,3 @@ internal static class ServiceAccountsEndpoints
         }
     }
 }
-
-public record UpdateServiceAccountRequest(uint QuotaLimitPerDay);

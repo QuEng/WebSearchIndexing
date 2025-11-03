@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Application.DTOs;
 using WebSearchIndexing.Modules.Catalog.Domain;
 using WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls.Dialogs;
+using WebSearchIndexing.Modules.Catalog.Ui.Services;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls.Components;
 
@@ -11,7 +12,7 @@ public partial class UrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.C
     private const int RowsPerPage = 10;
     private readonly List<UrlEntry> _selectedUrls = [];
     private List<UrlEntry> _filteredUrls = [];
-    private List<UrlItem> _allUrls = [];
+    private List<UrlItemDto> _allUrls = [];
     private bool _isClickedCheckedAll;
     private bool _isEditMode;
     private Guid _editingUrlId;
@@ -29,7 +30,7 @@ public partial class UrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.C
     private IDialogService? DialogService { get; set; }
 
     [Inject]
-    private IUrlRequestRepository? UrlRequestRepository { get; set; }
+    private IUrlsApiService? UrlsApiService { get; set; }
 
     private List<UrlEntry> SelectedUrls => _filteredUrls.Where(item => item.Checked).ToList();
 
@@ -46,18 +47,18 @@ public partial class UrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.C
         _filteredUrls = [];
         StateHasChanged();
 
-        var requestsCount = await UrlRequestRepository!.GetRequestsCountAsync(
-            requestStatus: _isHideCompleted ? UrlItemStatus.Pending : null,
-            requestType: UrlRequestType);
+        var requestsCount = await UrlsApiService!.GetUrlsCountAsync(
+            status: _isHideCompleted ? UrlItemStatus.Pending : null,
+            type: UrlRequestType);
 
         _totalPages = Math.Max(1, (int)Math.Ceiling(requestsCount / (double)RowsPerPage));
         if (_currentPage > _totalPages) _currentPage = _totalPages;
 
-        _allUrls = await UrlRequestRepository.TakeRequestsAsync(
+        _allUrls = (await UrlsApiService.GetUrlsAsync(
             RowsPerPage,
             (_currentPage - 1) * RowsPerPage,
-            requestStatus: _isHideCompleted ? UrlItemStatus.Pending : null,
-            requestType: UrlRequestType);
+            status: _isHideCompleted ? UrlItemStatus.Pending : null,
+            type: UrlRequestType)).ToList();
 
         _filteredUrls = _allUrls.Select(item => new UrlEntry(item)).ToList();
 
@@ -101,9 +102,18 @@ public partial class UrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.C
 
         if (dialogResponse is true)
         {
-            await UrlRequestRepository!.RemoveRangeAsync(SelectedUrls.Select(item => item.UrlRequest));
-            await UpdateUrlsListAsync();
-            Snackbar!.Add("Selected links were successfully removed", Severity.Success);
+            var urlIds = SelectedUrls.Select(item => item.UrlRequest.Id).ToList();
+            var success = await UrlsApiService!.DeleteUrlsBatchAsync(urlIds);
+            
+            if (success)
+            {
+                await UpdateUrlsListAsync();
+                Snackbar!.Add("Selected links were successfully removed", Severity.Success);
+            }
+            else
+            {
+                Snackbar!.Add("An error occurred while removing the links. Please try again.", Severity.Error);
+            }
         }
     }
 
@@ -161,11 +171,19 @@ public partial class UrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.C
         _isEditMode = false;
         item.Edited = false;
 
-        if (await UrlRequestRepository!.UpdateAsync(item.UrlRequest))
+        try
         {
+            var updatedDto = await UrlsApiService!.UpdateUrlAsync(
+                item.UrlRequest.Id,
+                item.UrlRequest.Url,
+                item.UrlRequest.Priority);
+
+            // Update the item with the response from server
+            item.UpdateFromDto(updatedDto);
+
             Snackbar!.Add("Changes are successfully saved", Severity.Success);
         }
-        else
+        catch (Exception)
         {
             Snackbar!.Add("An error occurred while saving changes. Please try again.", Severity.Error);
             ResetItemToOriginalValue(item);
@@ -178,8 +196,11 @@ public partial class UrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.C
         {
             _isEditMode = false;
         }
-        if (await UrlRequestRepository!.DeleteAsync(item.UrlRequest.Id))
+        
+        var success = await UrlsApiService!.DeleteUrlAsync(item.UrlRequest.Id);
+        if (success)
         {
+            await UpdateUrlsListAsync();
             Snackbar!.Add("The link was successfully removed", Severity.Success);
         }
         else
@@ -196,13 +217,20 @@ public partial class UrlsTableComponent : WebSearchIndexing.BuildingBlocks.Web.C
 
     private class UrlEntry
     {
-        public UrlEntry(UrlItem urlRequest)
+        public UrlEntry(UrlItemDto urlItem)
         {
-            UrlRequest = urlRequest;
+            UrlRequest = new EditableUrlItem(urlItem);
+            UrlItem = urlItem;
         }
 
         public bool Checked { get; set; }
         public bool Edited { get; set; }
-        public UrlItem UrlRequest { get; }
+        public EditableUrlItem UrlRequest { get; }
+        public UrlItemDto UrlItem { get; private set; }
+
+        public void UpdateFromDto(UrlItemDto dto)
+        {
+            UrlItem = dto;
+        }
     }
 }

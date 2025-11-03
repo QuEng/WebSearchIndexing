@@ -1,4 +1,5 @@
 using WebSearchIndexing.Modules.Catalog.Domain;
+using ContractDto = WebSearchIndexing.Contracts.Catalog.ServiceAccountDto;
 
 namespace WebSearchIndexing.Modules.Catalog.Application.DTOs;
 
@@ -21,5 +22,27 @@ public sealed record ServiceAccountDto(
             serviceAccount.QuotaUsedInPeriod,
             serviceAccount.CreatedAt,
             serviceAccount.DeletedAt);
+    }
+
+    public ContractDto ToContract()
+    {
+        return new ContractDto(
+            Id,
+            ProjectId,
+            QuotaLimitPerDay,
+            QuotaUsedInPeriod,
+            CreatedAt,
+            DeletedAt);
+    }
+
+    public static ServiceAccountDto FromContract(ContractDto contractDto)
+    {
+        return new ServiceAccountDto(
+            contractDto.Id,
+            contractDto.ProjectId,
+            contractDto.QuotaLimitPerDay,
+            contractDto.QuotaUsedInPeriod,
+            contractDto.CreatedAt,
+            contractDto.DeletedAt);
     }
 }

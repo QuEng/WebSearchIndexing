@@ -1,11 +1,11 @@
-using System;
-using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
+using System.Reflection;
 using WebSearchIndexing.BuildingBlocks.Web;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
 using WebSearchIndexing.Modules.Catalog.Ui.Services;
+using WebSearchIndexing.Contracts.Catalog;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui;
 
@@ -17,9 +17,10 @@ public static class DependencyInjectionExtensions
 
         services.AddSingleton<IRazorComponentAssemblyProvider, CatalogUiAssemblyProvider>();
         services.AddSingleton<INavigationContributor, CatalogNavigationContributor>();
-        
-        // Add HTTP client for Catalog API
-        services.AddHttpClient<ICatalogHttpClient, CatalogHttpClient>();
+
+        // Add HttpClient for API services
+        services.AddScoped<IUrlsApiService, UrlsApiService>();
+        services.AddScoped<IServiceAccountsApiService, ServiceAccountsApiService>();
 
         return services;
     }
@@ -33,7 +34,8 @@ public static class DependencyInjectionExtensions
     {
         public void Configure(NavigationBuilder builder)
         {
-            builder.AddGroup("Urls", Icons.Material.Filled.Link, order: 100)
+            builder
+                .AddGroup("Urls", Icons.Material.Filled.Link, order: 100)
                 .AddLink("All urls", Icons.Material.Filled.AddLink, "/all-urls")
                 .AddLink("Processed urls", Icons.Material.Filled.PhonelinkRing, "/processed-urls");
 

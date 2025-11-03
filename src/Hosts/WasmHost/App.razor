@@ -1,0 +1,41 @@
+﻿@using System.Reflection
+@using CoreUi = WebSearchIndexing.Modules.Core.Ui
+@using CatalogUi = WebSearchIndexing.Modules.Catalog.Ui  
+@using ReportingUi = WebSearchIndexing.Modules.Reporting.Ui
+
+<Router AppAssembly="@typeof(App).Assembly" 
+        AdditionalAssemblies="@_moduleAssemblies"
+        OnNavigateAsync="@OnNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private List<Assembly> _moduleAssemblies = new();
+
+    protected override void OnInitialized()
+    {
+        // Додавання модульних assemblies для маршрутизації
+        _moduleAssemblies.AddRange(new[]
+        {
+            typeof(CoreUi.DependencyInjectionExtensions).Assembly, // Core.Ui
+            typeof(CatalogUi.DependencyInjectionExtensions).Assembly, // Catalog.Ui
+            typeof(ReportingUi.DependencyInjectionExtensions).Assembly // Reporting.Ui
+        });
+    }
+
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        // В майбутньому тут можна додати lazy loading логіку
+        // наприклад, завантажувати конкретні модулі тільки коли потрібно
+        await Task.CompletedTask;
+    }
+}

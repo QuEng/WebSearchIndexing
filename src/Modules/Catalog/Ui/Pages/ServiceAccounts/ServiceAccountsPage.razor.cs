@@ -1,26 +1,25 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Modules.Catalog.Application.DTOs;
 using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
 using WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts.Dialogs;
-using WebSearchIndexing.Modules.Catalog.Ui.Services;
 using WebSearchIndexing.Modules.Core.Ui.Services;
+using WebSearchIndexing.Contracts.Catalog;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts;
 
 public partial class ServiceAccountsPage : ComponentBase
 {
     private List<ServiceAccountDto> _serviceAccounts = [];
-    private Dictionary<Guid, uint> _editingQuotas = new(); 
+    private Dictionary<Guid, uint> _editingQuotas = new();
     private Guid _serviceAccountIdBeforeEdit;
     private uint _serviceAccountQuotaBeforeEdit;
     private bool _isLoading = true;
 
     [Inject]
-    private ICatalogHttpClient? CatalogHttpClient { get; set; }
+    private IServiceAccountsApiService? ServiceAccountsApiService { get; set; }
 
     [Inject]
-    private ICoreHttpClient? CoreHttpClient { get; set; }
+    private ICoreApiService? CoreApiService { get; set; }
 
     [Inject]
     private IDialogService? DialogService { get; set; }
@@ -38,8 +37,8 @@ public partial class ServiceAccountsPage : ComponentBase
     private async Task LoadDataAsync()
     {
         _isLoading = true;
-        var serviceAccounts = await CatalogHttpClient!.GetServiceAccountsAsync();
-        _serviceAccounts = serviceAccounts ?? [];
+        var serviceAccounts = await ServiceAccountsApiService!.GetAllAsync();
+        _serviceAccounts = serviceAccounts?.ToList() ?? [];
         _isLoading = false;
         StateHasChanged();
     }
@@ -54,13 +53,14 @@ public partial class ServiceAccountsPage : ComponentBase
 
         if (result.Data is AddServiceAccountCommand command)
         {
-            if (await CatalogHttpClient!.CheckServiceAccountExistsAsync(command.ProjectId))
+            if (await ServiceAccountsApiService!.ExistsAsync(command.ProjectId))
             {
                 Snackbar!.Add("Service account with this project ID already exists", Severity.Error);
                 return;
             }
 
-            var addedServiceAccount = await CatalogHttpClient.AddServiceAccountAsync(command);
+            var request = new AddServiceAccountRequest(command.ProjectId, command.CredentialsJson, command.QuotaLimitPerDay);
+            var addedServiceAccount = await ServiceAccountsApiService.AddAsync(request);
             if (addedServiceAccount is not null)
             {
                 _serviceAccounts.Add(addedServiceAccount);
@@ -110,10 +110,11 @@ public partial class ServiceAccountsPage : ComponentBase
             return;
         }
 
-        var updatedServiceAccount = await CatalogHttpClient!.UpdateServiceAccountAsync(editedServiceAccount.Id, newQuotaValue);
+        var request = new UpdateServiceAccountRequest(newQuotaValue);
+        var updatedServiceAccount = await ServiceAccountsApiService!.UpdateAsync(editedServiceAccount.Id, request);
         if (updatedServiceAccount is not null)
         {
-            // ??????? DTO ? ??????
+            // ???????? DTO ? ??????
             var index = _serviceAccounts.FindIndex(sa => sa.Id == editedServiceAccount.Id);
             if (index >= 0)
             {
@@ -125,11 +126,11 @@ public partial class ServiceAccountsPage : ComponentBase
         else
         {
             Snackbar!.Add("Service account not found", Severity.Error);
-            // ???????????????? ???? ??? ???????
+            // ????????????? ?????? ??? ??????
             await LoadDataAsync();
         }
 
-        // ???????? ????????? ?????
+        // ???????? ????????? ??????
         _editingQuotas.Remove(editedServiceAccount.Id);
     }
 
@@ -146,8 +147,9 @@ public partial class ServiceAccountsPage : ComponentBase
             return;
         }
 
-        if (await CatalogHttpClient!.DeleteServiceAccountAsync(serviceAccount.Id))
+        try
         {
+            await ServiceAccountsApiService!.DeleteAsync(serviceAccount.Id);
             _serviceAccounts.Remove(serviceAccount);
             StateHasChanged();
             Snackbar!.Add("Service account deleted", Severity.Success);
@@ -157,11 +159,15 @@ public partial class ServiceAccountsPage : ComponentBase
                 await UpdateLimitAsync();
             }
         }
+        catch
+        {
+            Snackbar!.Add("Failed to delete service account", Severity.Error);
+        }
     }
 
     private async Task UpdateLimitAsync()
     {
-        var setting = await CoreHttpClient!.GetSettingsAsync();
+        var setting = await CoreApiService!.GetSettingsAsync();
         if (setting is null)
         {
             return;
@@ -170,7 +176,8 @@ public partial class ServiceAccountsPage : ComponentBase
         var sumAvailableLimit = _serviceAccounts.Sum(x => x.QuotaLimitPerDay);
         if (sumAvailableLimit < setting.RequestsPerDay)
         {
-            var updatedSetting = await CoreHttpClient.UpdateSettingsAsync((int)sumAvailableLimit);
+            var request = new UpdateSettingsRequest((int)sumAvailableLimit);
+            var updatedSetting = await CoreApiService.UpdateSettingsAsync(request);
             if (updatedSetting is not null)
             {
                 Snackbar!.Add("Requests per day updated", Severity.Success);

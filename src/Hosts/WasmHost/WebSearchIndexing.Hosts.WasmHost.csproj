@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorWebAssemblyLoadAllGlobalizationData>false</BlazorWebAssemblyLoadAllGlobalizationData>
+    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <BlazorEnableCompression>true</BlazorEnableCompression>
+    <UserSecretsId>1e5d7957-ef38-4109-8668-2039b5ca5b54</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10" PrivateAssets="all" />
+    <PackageReference Include="MudBlazor" Version="6.19.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Core\Ui\WebSearchIndexing.Modules.Core.Ui.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalog\Ui\WebSearchIndexing.Modules.Catalog.Ui.csproj" />
+    <ProjectReference Include="..\..\Modules\Reporting\Ui\WebSearchIndexing.Modules.Reporting.Ui.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
+  </ItemGroup>
+
+</Project>
