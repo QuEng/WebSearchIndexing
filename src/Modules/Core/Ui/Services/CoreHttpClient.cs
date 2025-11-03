@@ -41,7 +41,7 @@ public class CoreHttpClient : ICoreHttpClient
         try
         {
             _logger.LogInformation("Getting settings from API");
-            return await _httpClient.GetFromJsonAsync<SettingsDto>("/api/core/settings");
+            return await _httpClient.GetFromJsonAsync<SettingsDto>("/api/v1/core/settings");
         }
         catch (Exception ex)
         {
@@ -59,7 +59,7 @@ public class CoreHttpClient : ICoreHttpClient
                 RequestsPerDay = requestsPerDay, 
                 IsEnabled = isEnabled 
             };
-            var response = await _httpClient.PutAsJsonAsync("/api/core/settings", request);
+            var response = await _httpClient.PutAsJsonAsync("/api/v1/core/settings", request);
             return response.IsSuccessStatusCode 
                 ? await response.Content.ReadFromJsonAsync<SettingsDto>() 
                 : null;
@@ -76,7 +76,7 @@ public class CoreHttpClient : ICoreHttpClient
         try
         {
             _logger.LogInformation("Getting service accounts from API");
-            return await _httpClient.GetFromJsonAsync<List<ServiceAccountDto>>("/api/catalog/service-accounts");
+            return await _httpClient.GetFromJsonAsync<List<ServiceAccountDto>>("/api/v1/catalog/service-accounts");
         }
         catch (Exception ex)
         {

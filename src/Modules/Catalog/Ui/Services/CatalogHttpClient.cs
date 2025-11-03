@@ -43,7 +43,7 @@ public class CatalogHttpClient : ICatalogHttpClient
         try
         {
             _logger.LogInformation("Getting service accounts from API");
-            return await _httpClient.GetFromJsonAsync<List<ServiceAccountDto>>("/api/catalog/service-accounts");
+            return await _httpClient.GetFromJsonAsync<List<ServiceAccountDto>>("/api/v1/catalog/service-accounts");
         }
         catch (Exception ex)
         {
@@ -57,7 +57,7 @@ public class CatalogHttpClient : ICatalogHttpClient
         try
         {
             _logger.LogInformation("Getting service account {Id} from API", id);
-            return await _httpClient.GetFromJsonAsync<ServiceAccountDto>($"/api/catalog/service-accounts/{id}");
+            return await _httpClient.GetFromJsonAsync<ServiceAccountDto>($"/api/v1/catalog/service-accounts/{id}");
         }
         catch (Exception ex)
         {
@@ -71,7 +71,7 @@ public class CatalogHttpClient : ICatalogHttpClient
         try
         {
             _logger.LogInformation("Adding service account via API");
-            var response = await _httpClient.PostAsJsonAsync("/api/catalog/service-accounts", serviceAccountRequest);
+            var response = await _httpClient.PostAsJsonAsync("/api/v1/catalog/service-accounts", serviceAccountRequest);
             return response.IsSuccessStatusCode 
                 ? await response.Content.ReadFromJsonAsync<ServiceAccountDto>() 
                 : null;
@@ -89,7 +89,7 @@ public class CatalogHttpClient : ICatalogHttpClient
         {
             _logger.LogInformation("Updating service account {Id} via API", id);
             var request = new { QuotaLimitPerDay = quotaLimitPerDay };
-            var response = await _httpClient.PutAsJsonAsync($"/api/catalog/service-accounts/{id}", request);
+            var response = await _httpClient.PutAsJsonAsync($"/api/v1/catalog/service-accounts/{id}", request);
             return response.IsSuccessStatusCode 
                 ? await response.Content.ReadFromJsonAsync<ServiceAccountDto>() 
                 : null;
@@ -106,7 +106,7 @@ public class CatalogHttpClient : ICatalogHttpClient
         try
         {
             _logger.LogInformation("Deleting service account {Id} via API", id);
-            var response = await _httpClient.DeleteAsync($"/api/catalog/service-accounts/{id}");
+            var response = await _httpClient.DeleteAsync($"/api/v1/catalog/service-accounts/{id}");
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
@@ -121,7 +121,7 @@ public class CatalogHttpClient : ICatalogHttpClient
         try
         {
             _logger.LogInformation("Checking if service account exists for project {ProjectId} via API", projectId);
-            var response = await _httpClient.GetFromJsonAsync<dynamic>($"/api/catalog/service-accounts/exists/{projectId}");
+            var response = await _httpClient.GetFromJsonAsync<dynamic>($"/api/v1/catalog/service-accounts/exists/{projectId}");
             return response?.exists == true;
         }
         catch (Exception ex)

@@ -38,8 +38,8 @@ internal sealed class ReportingHttpClient : IReportingHttpClient
     {
         try
         {
-            _logger.LogDebug("Making request to: {Url}", new Uri(_httpClient.BaseAddress!, "/api/reporting/dashboard"));
-            var result = await _httpClient.GetFromJsonAsync<DashboardStatsDto>("/api/reporting/dashboard", cancellationToken);
+            _logger.LogDebug("Making request to: {Url}", new Uri(_httpClient.BaseAddress!, "/api/v1/reporting/dashboard"));
+            var result = await _httpClient.GetFromJsonAsync<DashboardStatsDto>("/api/v1/reporting/dashboard", cancellationToken);
             return result ?? new DashboardStatsDto();
         }
         catch (HttpRequestException ex)
@@ -60,7 +60,7 @@ internal sealed class ReportingHttpClient : IReportingHttpClient
         {
             var fromStr = from.ToString("yyyy-MM-dd");
             var toStr = to.ToString("yyyy-MM-dd");
-            var result = await _httpClient.GetFromJsonAsync<PeriodStatsDto>($"/api/reporting/period?from={fromStr}&to={toStr}", cancellationToken);
+            var result = await _httpClient.GetFromJsonAsync<PeriodStatsDto>($"/api/v1/reporting/period?from={fromStr}&to={toStr}", cancellationToken);
             return result ?? new PeriodStatsDto();
         }
         catch (HttpRequestException)
@@ -77,7 +77,7 @@ internal sealed class ReportingHttpClient : IReportingHttpClient
     {
         try
         {
-            var url = "/api/reporting/quota";
+            var url = "/api/v1/reporting/quota";
             if (date.HasValue)
             {
                 var dateStr = date.Value.ToString("yyyy-MM-dd");
