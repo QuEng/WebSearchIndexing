@@ -19,7 +19,7 @@ public class InspectionApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetInspectionResults_ReturnsValidResponse()
     {
         // Act
-        var response = await _client.GetAsync("/api/inspection/results");
+        var response = await _client.GetAsync("/api/v1/inspection/results");
         
         // Assert
         response.EnsureSuccessStatusCode();
@@ -36,7 +36,7 @@ public class InspectionApiTests : IClassFixture<WebApplicationFactory<Program>>
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/inspection/inspect", inspectionRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/inspection/inspect", inspectionRequest);
         
         // Assert
         // Note: Adjust expected behavior based on actual API

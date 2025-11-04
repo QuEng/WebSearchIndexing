@@ -21,7 +21,7 @@ public class CatalogApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetServiceAccounts_ReturnsValidResponse()
     {
         // Act
-        var response = await _client.GetAsync("/api/catalog/service-accounts");
+        var response = await _client.GetAsync("/api/v1/catalog/service-accounts");
 
         // Assert
         response.EnsureSuccessStatusCode();
@@ -41,7 +41,7 @@ public class CatalogApiTests : IClassFixture<WebApplicationFactory<Program>>
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/catalog/service-accounts", command);
+        var response = await _client.PostAsJsonAsync("/api/v1/catalog/service-accounts", command);
 
         // Assert
         response.EnsureSuccessStatusCode();

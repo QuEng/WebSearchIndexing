@@ -1,5 +1,6 @@
-using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net.Http.Json;
+using WebSearchIndexing.Modules.Core.Api;
 using WebSearchIndexing.Modules.Core.Application.DTOs;
 using Xunit;
 
@@ -20,7 +21,7 @@ public class CoreApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetSettings_ReturnsValidResponse()
     {
         // Act
-        var response = await _client.GetAsync("/api/core/settings");
+        var response = await _client.GetAsync("/api/v1/core/settings");
         
         // Assert
         response.EnsureSuccessStatusCode();
@@ -34,22 +35,21 @@ public class CoreApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task UpdateSettings_WithValidData_ReturnsSuccess()
     {
         // Arrange - First get current settings
-        var getResponse = await _client.GetAsync("/api/core/settings");
+        var getResponse = await _client.GetAsync("/api/v1/core/settings");
         getResponse.EnsureSuccessStatusCode();
         var currentSettings = await getResponse.Content.ReadFromJsonAsync<SettingsDto>();
         Assert.NotNull(currentSettings);
 
         // Modify settings
-        var updatedSettings = currentSettings with { RequestsPerDay = currentSettings.RequestsPerDay + 100 };
-
+        var updatedSettings = new UpdateSettingsRequest(currentSettings.RequestsPerDay + 1, currentSettings.IsEnabled);
         // Act
-        var response = await _client.PutAsJsonAsync("/api/core/settings", updatedSettings);
+        var response = await _client.PutAsJsonAsync("/api/v1/core/settings", updatedSettings);
         
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.NoContent, response.StatusCode);
         
         // Verify the update
-        var verifyResponse = await _client.GetAsync("/api/core/settings");
+        var verifyResponse = await _client.GetAsync("/api/v1/core/settings");
         verifyResponse.EnsureSuccessStatusCode();
         var verifiedSettings = await verifyResponse.Content.ReadFromJsonAsync<SettingsDto>();
         

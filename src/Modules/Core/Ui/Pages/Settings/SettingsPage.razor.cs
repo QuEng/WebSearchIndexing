@@ -82,7 +82,6 @@ public partial class SettingsPage : ComponentBase
             _setting = updatedSettings;
             if (_setting.IsEnabled)
             {
-                // ??????? API endpoint ??? ??????? ???????? ????????? ??????
                 try
                 {
                     await CoreApiService.TriggerProcessingAsync();
@@ -95,13 +94,11 @@ public partial class SettingsPage : ComponentBase
 
             Snackbar.Add("Settings updated", Severity.Success);
             _isSavingSettings = false;
-            // StateHasChanged() ??????????? ?????????????
         }
         else
         {
             Snackbar.Add("Failed to update settings", Severity.Error);
             _isSavingSettings = false;
-            // StateHasChanged() ??????????? ?????????????
         }
     }
 
@@ -124,7 +121,6 @@ public partial class SettingsPage : ComponentBase
             Snackbar.Add("Settings updated", Severity.Success);
             _oldValueRequestsPerDay = _setting.RequestsPerDay;
             _isSavingSettings = false;
-            // StateHasChanged() ??????????? ?????????????
         }
         else
         {
@@ -132,7 +128,6 @@ public partial class SettingsPage : ComponentBase
             // Reload from server to reset changes
             await LoadDataAsync();
             _isSavingSettings = false;
-            // StateHasChanged() ??????????? ?????????????
         }
     }
 

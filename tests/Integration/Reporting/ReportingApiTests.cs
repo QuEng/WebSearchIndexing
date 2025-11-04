@@ -20,7 +20,7 @@ public class ReportingApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetDashboardStats_ReturnsValidResponse()
     {
         // Act
-        var response = await _client.GetAsync("/api/reporting/dashboard");
+        var response = await _client.GetAsync("/api/v1/reporting/dashboard");
         
         // Assert
         response.EnsureSuccessStatusCode();
@@ -42,7 +42,7 @@ public class ReportingApiTests : IClassFixture<WebApplicationFactory<Program>>
         var to = DateTime.UtcNow.ToString("yyyy-MM-dd");
         
         // Act
-        var response = await _client.GetAsync($"/api/reporting/period?from={from}&to={to}");
+        var response = await _client.GetAsync($"/api/v1/reporting/period?from={from}&to={to}");
         
         // Assert
         response.EnsureSuccessStatusCode();
@@ -57,7 +57,7 @@ public class ReportingApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetQuotaUsage_ReturnsValidResponse()
     {
         // Act
-        var response = await _client.GetAsync("/api/reporting/quota");
+        var response = await _client.GetAsync("/api/v1/reporting/quota");
         
         // Assert
         response.EnsureSuccessStatusCode();

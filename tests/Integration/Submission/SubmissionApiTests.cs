@@ -19,7 +19,7 @@ public class SubmissionApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetSubmissions_ReturnsValidResponse()
     {
         // Act
-        var response = await _client.GetAsync("/api/submission/submissions");
+        var response = await _client.GetAsync("/api/v1/submission/submissions");
         
         // Assert
         response.EnsureSuccessStatusCode();
@@ -38,7 +38,7 @@ public class SubmissionApiTests : IClassFixture<WebApplicationFactory<Program>>
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/submission/submit", submissionRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/submission/submit", submissionRequest);
         
         // Assert
         // Note: Adjust expected status code based on actual API behavior
