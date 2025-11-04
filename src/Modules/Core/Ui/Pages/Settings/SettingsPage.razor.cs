@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using WebSearchIndexing.Modules.Core.Application.DTOs;
-using WebSearchIndexing.Modules.Core.Ui.Services;
 using WebSearchIndexing.Contracts.Catalog;
+using WebSearchIndexing.Modules.Core.Application.DTOs;
+using WebSearchIndexing.Modules.Core.Ui.Contracts;
+using WebSearchIndexing.Modules.Core.Ui.Models;
 
 namespace WebSearchIndexing.Modules.Core.Ui.Pages.Settings;
 

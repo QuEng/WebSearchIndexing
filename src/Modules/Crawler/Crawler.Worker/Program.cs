@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Serilog;
+﻿using Serilog;
 using WebSearchIndexing.BuildingBlocks.Observability;
 using WebSearchIndexing.Modules.Crawler.Api;
 using WebSearchIndexing.Modules.Crawler.Application;

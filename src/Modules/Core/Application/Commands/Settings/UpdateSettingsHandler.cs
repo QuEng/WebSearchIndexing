@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using WebSearchIndexing.Modules.Core.Application.Abstractions;
 using WebSearchIndexing.Modules.Core.Application.DTOs;
 
 namespace WebSearchIndexing.Modules.Core.Application.Commands.Settings;

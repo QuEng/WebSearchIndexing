@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.DataProtection;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Interceptors;
 

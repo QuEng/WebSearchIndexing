@@ -1,5 +1,5 @@
 using WebSearchIndexing.BuildingBlocks.Messaging;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Crawler.Application.Events;
 

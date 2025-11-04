@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using WebSearchIndexing.Modules.Submission.Application.Services;
+using WebSearchIndexing.Modules.Submission.Application.Abstractions;
 
 namespace WebSearchIndexing.Modules.Submission.Worker;
 

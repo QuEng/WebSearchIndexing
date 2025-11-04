@@ -2,7 +2,8 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using System.Net;
 using WebSearchIndexing.BuildingBlocks.Messaging;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
+using WebSearchIndexing.Modules.Crawler.Application.Abstractions;
 using WebSearchIndexing.Modules.Crawler.Application.Events;
 
 namespace WebSearchIndexing.Modules.Crawler.Application.Services;

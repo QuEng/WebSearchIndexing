@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls;
 

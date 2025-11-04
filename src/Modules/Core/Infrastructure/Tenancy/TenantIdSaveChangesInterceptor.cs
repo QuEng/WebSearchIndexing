@@ -2,7 +2,7 @@ using Finbuckle.MultiTenant;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
-using CoreSettings = WebSearchIndexing.Modules.Core.Domain.Settings;
+using CoreSettings = WebSearchIndexing.Modules.Core.Domain.Entities.Settings;
 
 namespace WebSearchIndexing.Modules.Core.Infrastructure.Tenancy;
 

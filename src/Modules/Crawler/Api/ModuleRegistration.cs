@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +15,9 @@ public static class CrawlerModule
     public static IEndpointRouteBuilder MapCrawlerModuleEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
+
+        var crawlerGroup = endpoints.MapGroup("/api/v1/crawler");
+
         return endpoints;
     }
 }

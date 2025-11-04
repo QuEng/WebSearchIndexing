@@ -1,9 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using WebSearchIndexing.Modules.Crawler.Application.Services;
+using WebSearchIndexing.Modules.Crawler.Application.Abstractions;
 
 namespace WebSearchIndexing.Modules.Crawler.Worker;
 
@@ -24,10 +21,10 @@ internal sealed class CrawlerWorker : BackgroundService
     {
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        
+
         // Initialize metrics
         _meter = new Meter("WebSearchIndexing.Crawler.Worker", "1.0.0");
-        _verifiedUrlsCounter = _meter.CreateCounter<int>("crawler_urls_verified_total", 
+        _verifiedUrlsCounter = _meter.CreateCounter<int>("crawler_urls_verified_total",
             description: "Total number of URLs verified by crawler worker");
         _failedVerificationsCounter = _meter.CreateCounter<int>("crawler_verifications_failed_total",
             description: "Total number of URL verifications that failed");
@@ -75,13 +72,13 @@ internal sealed class CrawlerWorker : BackgroundService
 
             // Check for pending URLs count first
             var pendingCount = await crawlerService.GetPendingUrlCountAsync(cancellationToken);
-            
+
             if (pendingCount > 0)
             {
                 _logger.LogInformation("Processing {PendingCount} pending URLs for verification", pendingCount);
-                
+
                 await crawlerService.ProcessPendingUrlsAsync(cancellationToken);
-                
+
                 _verifiedUrlsCounter.Add(pendingCount, new TagList { { "status", "processed" } });
                 _logger.LogInformation("Successfully processed {PendingCount} URLs", pendingCount);
             }
@@ -99,7 +96,7 @@ internal sealed class CrawlerWorker : BackgroundService
         {
             var duration = stopwatch.Elapsed.TotalSeconds;
             _verificationDurationHistogram.Record(duration);
-            
+
             if (activity != null)
             {
                 activity.SetTag("duration_seconds", duration);

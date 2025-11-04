@@ -3,7 +3,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Indexing.v3;
 using Google.Apis.Indexing.v3.Data;
 using Google.Apis.Services;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Core.Application.BackgroundJobs;
 

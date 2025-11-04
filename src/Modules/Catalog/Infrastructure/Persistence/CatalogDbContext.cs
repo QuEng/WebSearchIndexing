@@ -1,7 +1,7 @@
 using Finbuckle.MultiTenant;
 using Microsoft.EntityFrameworkCore;
 using WebSearchIndexing.BuildingBlocks.Messaging.Outbox;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence;
 

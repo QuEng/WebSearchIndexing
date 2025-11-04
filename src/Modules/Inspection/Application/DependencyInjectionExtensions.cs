@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using WebSearchIndexing.Modules.Inspection.Application.Abstractions;
 using WebSearchIndexing.Modules.Inspection.Application.Services;
 
 namespace WebSearchIndexing.Modules.Inspection.Application;

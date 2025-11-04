@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Application.DTOs;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 using ContractDto = WebSearchIndexing.Contracts.Catalog.ServiceAccountDto;
 
 namespace WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;

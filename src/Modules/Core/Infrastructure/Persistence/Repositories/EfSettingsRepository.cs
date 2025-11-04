@@ -1,12 +1,12 @@
 using Finbuckle.MultiTenant;
 using Microsoft.EntityFrameworkCore;
 using WebSearchIndexing.BuildingBlocks.Messaging;
-using WebSearchIndexing.Modules.Core.Application;
+using WebSearchIndexing.Modules.Core.Application.Abstractions;
 using WebSearchIndexing.Modules.Core.Application.IntegrationEvents;
-using WebSearchIndexing.Modules.Core.Domain;
-using CoreSettings = WebSearchIndexing.Modules.Core.Domain.Settings;
+using WebSearchIndexing.Modules.Core.Domain.Entities;
+using CoreSettings = WebSearchIndexing.Modules.Core.Domain.Entities.Settings;
 
-namespace WebSearchIndexing.Modules.Core.Infrastructure;
+namespace WebSearchIndexing.Modules.Core.Infrastructure.Persistence.Repositories;
 
 public sealed class EfSettingsRepository : ISettingsRepository
 {
@@ -54,16 +54,16 @@ public sealed class EfSettingsRepository : ISettingsRepository
 
         await using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         context.Settings.Update(settings);
-        
+
         // Publish integration event
         var tenantId = ResolveTenantId().ToString();
         var integrationEvent = new SettingsChangedEvent(
-            tenantId, 
-            settings.Id, 
-            settings.Key, 
-            settings.RequestsPerDay, 
+            tenantId,
+            settings.Id,
+            settings.Key,
+            settings.RequestsPerDay,
             settings.IsEnabled);
-        
+
         await _eventPublisher.PublishAsync(integrationEvent, cancellationToken);
         var changes = await context.SaveChangesAsync(cancellationToken);
 

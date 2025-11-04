@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using WebSearchIndexing.Modules.Core.Application.DTOs;
+using WebSearchIndexing.Modules.Core.Ui.Contracts;
+using WebSearchIndexing.Modules.Core.Ui.Models;
 
 namespace WebSearchIndexing.Modules.Core.Ui.Services;
 

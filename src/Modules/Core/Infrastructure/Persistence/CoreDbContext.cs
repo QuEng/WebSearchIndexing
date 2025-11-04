@@ -1,10 +1,10 @@
 using Finbuckle.MultiTenant;
 using Microsoft.EntityFrameworkCore;
 using WebSearchIndexing.BuildingBlocks.Messaging.Outbox;
-using WebSearchIndexing.Modules.Core.Domain;
-using CoreSettings = WebSearchIndexing.Modules.Core.Domain.Settings;
+using WebSearchIndexing.Modules.Core.Domain.Entities;
+using CoreSettings = WebSearchIndexing.Modules.Core.Domain.Entities.Settings;
 
-namespace WebSearchIndexing.Modules.Core.Infrastructure;
+namespace WebSearchIndexing.Modules.Core.Infrastructure.Persistence;
 
 public sealed class CoreDbContext : DbContext
 {
@@ -31,7 +31,7 @@ public sealed class CoreDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Apply outbox configuration
-        modelBuilder.ApplyConfiguration(new WebSearchIndexing.BuildingBlocks.Persistence.Configurations.OutboxMessageConfiguration());
+        modelBuilder.ApplyConfiguration(new BuildingBlocks.Persistence.Configurations.OutboxMessageConfiguration());
 
         var settings = modelBuilder.Entity<Settings>();
         settings.ToTable("Settings");

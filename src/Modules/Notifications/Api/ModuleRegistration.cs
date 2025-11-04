@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +15,8 @@ public static class NotificationsModule
     public static IEndpointRouteBuilder MapNotificationsModuleEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
+
+        var notificationGroup = endpoints.MapGroup("api/v1/notifications");
         return endpoints;
     }
 }

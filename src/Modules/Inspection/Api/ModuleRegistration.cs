@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +15,9 @@ public static class InspectionModule
     public static IEndpointRouteBuilder MapInspectionModuleEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
+
+        var inspectionGroup = endpoints.MapGroup("/api/v1/inspection");
+
         return endpoints;
     }
 }

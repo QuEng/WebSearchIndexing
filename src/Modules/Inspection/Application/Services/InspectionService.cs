@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Polly;
 using WebSearchIndexing.BuildingBlocks.Messaging;
-using WebSearchIndexing.Modules.Catalog.Domain;
-using WebSearchIndexing.Modules.Inspection.Application.Events;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
+using WebSearchIndexing.Modules.Inspection.Application.Abstractions;
+using WebSearchIndexing.Modules.Inspection.Application.IntegrationEvents;
 
 namespace WebSearchIndexing.Modules.Inspection.Application.Services;
 

@@ -1,6 +1,7 @@
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
+using WebSearchIndexing.Modules.Inspection.Application.Services;
 
-namespace WebSearchIndexing.Modules.Inspection.Application.Services;
+namespace WebSearchIndexing.Modules.Inspection.Application.Abstractions;
 
 /// <summary>
 /// Service for inspecting URL status and analyzing errors

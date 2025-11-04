@@ -1,6 +1,6 @@
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
-namespace WebSearchIndexing.Modules.Crawler.Application.Services;
+namespace WebSearchIndexing.Modules.Crawler.Application.Abstractions;
 
 /// <summary>
 /// Service for crawling and verifying URLs

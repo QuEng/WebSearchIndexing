@@ -1,5 +1,6 @@
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Application.DTOs;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Application.Queries.Urls;
 
@@ -16,7 +17,7 @@ public sealed class GetUrlsHandler
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        List<Domain.UrlItem> urlItems;
+        List<UrlItem> urlItems;
 
         if (query.ServiceAccountId.HasValue && query.SubtractTime.HasValue)
         {

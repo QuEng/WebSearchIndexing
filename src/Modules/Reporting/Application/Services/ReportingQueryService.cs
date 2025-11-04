@@ -1,8 +1,8 @@
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
-using WebSearchIndexing.Modules.Catalog.Domain;
-using WebSearchIndexing.Modules.Core.Application;
+using WebSearchIndexing.Modules.Core.Application.Abstractions;
 using WebSearchIndexing.Modules.Reporting.Application.DTOs;
-using WebSearchIndexing.Modules.Reporting.Application.Queries;
+using WebSearchIndexing.Modules.Reporting.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Reporting.Application.Services;
 

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Application.Commands.Urls.DeleteBatch;
 
@@ -24,7 +25,7 @@ public sealed class DeleteUrlsBatchHandler
         }
 
         // Get all URL items by their IDs
-        var urlItems = new List<Domain.UrlItem>();
+        var urlItems = new List<UrlItem>();
         foreach (var id in command.Ids)
         {
             var urlItem = await _repository.GetByIdAsync(id, cancellationToken);

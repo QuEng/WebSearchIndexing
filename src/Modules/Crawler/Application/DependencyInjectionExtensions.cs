@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using WebSearchIndexing.Modules.Crawler.Application.Abstractions;
 using WebSearchIndexing.Modules.Crawler.Application.Services;
 
 namespace WebSearchIndexing.Modules.Crawler.Application;

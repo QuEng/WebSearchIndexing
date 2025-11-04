@@ -1,6 +1,6 @@
 using WebSearchIndexing.Modules.Reporting.Application.DTOs;
 
-namespace WebSearchIndexing.Modules.Reporting.Application.Queries;
+namespace WebSearchIndexing.Modules.Reporting.Application.Abstractions;
 
 public interface IReportingQueryService
 {

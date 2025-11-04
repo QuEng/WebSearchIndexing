@@ -1,13 +1,13 @@
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc;
-using WebSearchIndexing.Modules.Catalog.Application.Commands.Urls.UpdateStatus;
-using WebSearchIndexing.Modules.Catalog.Application.Commands.Urls.Update;
+using Microsoft.AspNetCore.Routing;
 using WebSearchIndexing.Modules.Catalog.Application.Commands.Urls.Delete;
 using WebSearchIndexing.Modules.Catalog.Application.Commands.Urls.DeleteBatch;
+using WebSearchIndexing.Modules.Catalog.Application.Commands.Urls.Update;
+using WebSearchIndexing.Modules.Catalog.Application.Commands.Urls.UpdateStatus;
 using WebSearchIndexing.Modules.Catalog.Application.Queries.Urls;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Api;
 
@@ -46,8 +46,8 @@ internal static class UrlsEndpoints
             var query = new GetUrlsQuery(
                 count,
                 offset,
-                status.HasValue ? (WebSearchIndexing.Modules.Catalog.Domain.UrlItemStatus)status.Value : null,
-                type.HasValue ? (WebSearchIndexing.Modules.Catalog.Domain.UrlItemType)type.Value : null,
+                status.HasValue ? (UrlItemStatus)status.Value : null,
+                type.HasValue ? (UrlItemType)type.Value : null,
                 serviceAccountId,
                 subtractTimeHours.HasValue ? TimeSpan.FromHours(subtractTimeHours.Value) : null);
 
@@ -71,8 +71,8 @@ internal static class UrlsEndpoints
         try
         {
             var query = new GetUrlsCountQuery(
-                status.HasValue ? (WebSearchIndexing.Modules.Catalog.Domain.UrlItemStatus)status.Value : null,
-                type.HasValue ? (WebSearchIndexing.Modules.Catalog.Domain.UrlItemType)type.Value : null,
+                status.HasValue ? (UrlItemStatus)status.Value : null,
+                type.HasValue ? (UrlItemType)type.Value : null,
                 serviceAccountId,
                 subtractTimeHours.HasValue ? TimeSpan.FromHours(subtractTimeHours.Value) : null);
 
@@ -126,12 +126,12 @@ internal static class UrlsEndpoints
         {
             var command = new DeleteUrlCommand(id);
             var result = await handler.HandleAsync(command, cancellationToken);
-            
+
             if (result)
             {
                 return Results.NoContent();
             }
-            
+
             return Results.NotFound(new { message = $"UrlItem with ID '{id}' not found." });
         }
         catch (ArgumentException ex)
@@ -154,12 +154,12 @@ internal static class UrlsEndpoints
             }
 
             var result = await handler.HandleAsync(command, cancellationToken);
-            
+
             if (result)
             {
                 return Results.NoContent();
             }
-            
+
             return Results.BadRequest(new { message = "Failed to delete some or all URLs." });
         }
         catch (ArgumentException ex)

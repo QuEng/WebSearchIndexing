@@ -1,6 +1,6 @@
 using WebSearchIndexing.BuildingBlocks.Abstractions.Entities;
 
-namespace WebSearchIndexing.Modules.Catalog.Domain;
+namespace WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 public sealed class UrlBatch : IEntity<Guid>
 {

@@ -1,6 +1,6 @@
 using WebSearchIndexing.BuildingBlocks.Abstractions.Entities;
 
-namespace WebSearchIndexing.Modules.Core.Domain;
+namespace WebSearchIndexing.Modules.Core.Domain.Entities;
 
 public sealed class Settings : IEntity<Guid>
 {

@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
 using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
 using WebSearchIndexing.Modules.Catalog.Application.DTOs;
-using ContractDto = WebSearchIndexing.Contracts.Catalog.ServiceAccountDto;
 
 namespace WebSearchIndexing.Modules.Catalog.Api;
 
@@ -52,8 +51,8 @@ internal static class ServiceAccountsEndpoints
         try
         {
             var serviceAccount = await repository.GetByIdAsync(id);
-            return serviceAccount is not null 
-                ? Results.Ok(ServiceAccountDto.FromDomain(serviceAccount).ToContract()) 
+            return serviceAccount is not null
+                ? Results.Ok(ServiceAccountDto.FromDomain(serviceAccount).ToContract())
                 : Results.NotFound(new { message = "Service account not found" });
         }
         catch (Exception ex)
@@ -64,7 +63,7 @@ internal static class ServiceAccountsEndpoints
 
     private static async Task<IResult> HandleUpdateServiceAccount(
         Guid id,
-        WebSearchIndexing.Contracts.Catalog.UpdateServiceAccountRequest request,
+        Contracts.Catalog.UpdateServiceAccountRequest request,
         IServiceAccountRepository repository,
         CancellationToken cancellationToken)
     {
@@ -78,9 +77,9 @@ internal static class ServiceAccountsEndpoints
 
             serviceAccount.UpdateQuota(request.QuotaLimitPerDay);
             var updated = await repository.UpdateAsync(serviceAccount);
-            
-            return updated 
-                ? Results.Ok(ServiceAccountDto.FromDomain(serviceAccount).ToContract()) 
+
+            return updated
+                ? Results.Ok(ServiceAccountDto.FromDomain(serviceAccount).ToContract())
                 : Results.Problem("Failed to update service account");
         }
         catch (Exception ex)
@@ -97,8 +96,8 @@ internal static class ServiceAccountsEndpoints
         try
         {
             var deleted = await repository.DeleteAsync(id);
-            return deleted 
-                ? Results.NoContent() 
+            return deleted
+                ? Results.NoContent()
                 : Results.NotFound(new { message = "Service account not found" });
         }
         catch (Exception ex)

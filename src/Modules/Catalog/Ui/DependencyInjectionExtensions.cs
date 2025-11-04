@@ -6,6 +6,7 @@ using WebSearchIndexing.BuildingBlocks.Web;
 using WebSearchIndexing.BuildingBlocks.Web.Navigation;
 using WebSearchIndexing.Modules.Catalog.Ui.Services;
 using WebSearchIndexing.Contracts.Catalog;
+using WebSearchIndexing.Modules.Catalog.Ui.Contracts;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui;
 

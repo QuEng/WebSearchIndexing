@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using WebSearchIndexing.BuildingBlocks.Abstractions.Entities;
 
-namespace WebSearchIndexing.Modules.Catalog.Domain;
+namespace WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 public sealed class Site : IEntity<Guid>
 {

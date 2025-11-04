@@ -1,6 +1,7 @@
 using WebSearchIndexing.Modules.Core.Application.DTOs;
+using WebSearchIndexing.Modules.Core.Ui.Models;
 
-namespace WebSearchIndexing.Modules.Core.Application.Services;
+namespace WebSearchIndexing.Modules.Core.Ui.Contracts;
 
 public interface ICoreApiService
 {
@@ -8,5 +9,3 @@ public interface ICoreApiService
     Task<SettingsDto> UpdateSettingsAsync(UpdateSettingsRequest request, CancellationToken cancellationToken = default);
     Task TriggerProcessingAsync(CancellationToken cancellationToken = default);
 }
-
-public record UpdateSettingsRequest(int RequestsPerDay, bool? IsEnabled = null);

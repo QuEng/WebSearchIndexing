@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using WebSearchIndexing.Modules.Reporting.Application.Queries;
+using WebSearchIndexing.Modules.Reporting.Application.Abstractions;
 
 namespace WebSearchIndexing.Modules.Reporting.Api.Endpoints;
 

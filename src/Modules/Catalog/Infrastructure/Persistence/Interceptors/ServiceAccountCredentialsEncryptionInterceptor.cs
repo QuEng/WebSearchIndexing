@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.DataProtection;
 using System.Data.Common;
 using System.Threading;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Interceptors;
 

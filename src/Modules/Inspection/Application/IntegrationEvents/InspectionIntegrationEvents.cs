@@ -1,6 +1,6 @@
 using WebSearchIndexing.BuildingBlocks.Messaging;
 
-namespace WebSearchIndexing.Modules.Inspection.Application.Events;
+namespace WebSearchIndexing.Modules.Inspection.Application.IntegrationEvents;
 
 /// <summary>
 /// Integration event raised when URL inspection succeeds

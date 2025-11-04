@@ -1,7 +1,8 @@
 using WebSearchIndexing.Modules.Catalog.Application.DTOs;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
+using WebSearchIndexing.Modules.Catalog.Ui.Models;
 
-namespace WebSearchIndexing.Modules.Catalog.Ui.Services;
+namespace WebSearchIndexing.Modules.Catalog.Ui.Contracts;
 
 public interface IUrlsApiService
 {
@@ -40,8 +41,3 @@ public interface IUrlsApiService
         Guid? siteId = null,
         CancellationToken cancellationToken = default);
 }
-
-public sealed record ImportUrlEntry(
-    string Url,
-    UrlItemType Type,
-    UrlItemPriority Priority);

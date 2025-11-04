@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Polly;
 using WebSearchIndexing.BuildingBlocks.Messaging;
-using WebSearchIndexing.Modules.Catalog.Domain;
-using WebSearchIndexing.Modules.Submission.Application.Events;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
+using WebSearchIndexing.Modules.Submission.Application.Abstractions;
+using WebSearchIndexing.Modules.Submission.Application.IntegrationEvents;
 
 namespace WebSearchIndexing.Modules.Submission.Application.Services;
 
@@ -148,6 +149,6 @@ public sealed class SubmissionService : ISubmissionService
     private static bool IsValidUrl(string url)
     {
         return Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
-               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 }

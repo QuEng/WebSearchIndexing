@@ -1,5 +1,5 @@
 using WebSearchIndexing.Modules.Catalog.Application.DTOs;
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.Urls.Components;
 

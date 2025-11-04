@@ -1,6 +1,6 @@
-using WebSearchIndexing.Modules.Catalog.Domain;
+using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
-namespace WebSearchIndexing.Modules.Submission.Application.Services;
+namespace WebSearchIndexing.Modules.Submission.Application.Abstractions;
 
 /// <summary>
 /// Service for handling URL batch submissions

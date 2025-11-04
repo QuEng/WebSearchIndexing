@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using WebSearchIndexing.Modules.Reporting.Application.Queries;
+using WebSearchIndexing.Modules.Reporting.Application.Abstractions;
 using WebSearchIndexing.Modules.Reporting.Application.Services;
 
 namespace WebSearchIndexing.Modules.Reporting.Application;

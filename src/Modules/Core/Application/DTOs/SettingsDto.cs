@@ -1,4 +1,4 @@
-using WebSearchIndexing.Modules.Core.Domain;
+using WebSearchIndexing.Modules.Core.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Core.Application.DTOs;
 

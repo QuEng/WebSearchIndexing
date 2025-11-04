@@ -1,6 +1,6 @@
 using WebSearchIndexing.BuildingBlocks.Messaging;
 
-namespace WebSearchIndexing.Modules.Submission.Application.Events;
+namespace WebSearchIndexing.Modules.Submission.Application.IntegrationEvents;
 
 /// <summary>
 /// Integration event raised when a URL batch is submitted for processing

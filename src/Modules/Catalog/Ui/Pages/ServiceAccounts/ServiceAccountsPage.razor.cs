@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using WebSearchIndexing.Contracts.Catalog;
 using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
 using WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts.Dialogs;
-using WebSearchIndexing.Modules.Core.Ui.Services;
-using WebSearchIndexing.Contracts.Catalog;
+using WebSearchIndexing.Modules.Core.Ui.Contracts;
+using WebSearchIndexing.Modules.Core.Ui.Models;
 
 namespace WebSearchIndexing.Modules.Catalog.Ui.Pages.ServiceAccounts;
 

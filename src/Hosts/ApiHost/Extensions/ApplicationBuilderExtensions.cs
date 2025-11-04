@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence;
-using WebSearchIndexing.Modules.Core.Infrastructure;
+using WebSearchIndexing.Modules.Core.Infrastructure.Persistence;
 
 namespace WebSearchIndexing.Hosts.ApiHost.Extensions;
 

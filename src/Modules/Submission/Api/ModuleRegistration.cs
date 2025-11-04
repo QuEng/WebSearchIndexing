@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +15,9 @@ public static class SubmissionModule
     public static IEndpointRouteBuilder MapSubmissionModuleEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
+
+        var submissonGroup = endpoints.MapGroup("/api/v1/submission");
+
         return endpoints;
     }
 }
