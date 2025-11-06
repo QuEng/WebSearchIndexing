@@ -1,17 +1,22 @@
 ﻿@inherits LayoutComponentBase
 @inject INavigationService NavigationService
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+@inject WebSearchIndexing.Modules.Identity.Ui.State.IdentityStateManager StateManager
+@inject NavigationManager Navigation
 @using WebSearchIndexing.Hosts.WasmHost.Theming
 @using WebSearchIndexing.Hosts.WasmHost.Styling
 @using WebSearchIndexing.Hosts.WasmHost.Layout
+@using WebSearchIndexing.Modules.Identity.Ui.Components
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@implements IDisposable
 
 <CustomThemeProvider @ref="_themeProvider" IsDarkMode="_isDarkMode" Theme="_customTheme" />
-<MudDialogProvider CloseButton="true" FullWidth="true" CloseOnEscapeKey="true" />
+<MudDialogProvider CloseButton="true" FullWidth="true" CloseOnEscapeKey="true" NoHeader="false" />
 <MudSnackbarProvider />
 <ColorClassProvider />
 
-<AccessComponent IsVisible="(!_hasAccess && _isReady)" AccessAllowed="AllowAccess" />
-
-@if (_isReady && _hasAccess)
+@if (_isReady)
 {
     <script>
         // Safe way to hide loader from Blazor component
@@ -26,57 +31,111 @@
             }
         }, 100);
     </script>
-
-    <MudLayout>
-        <MudAppBar Elevation="1">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
-            <MudSpacer />
-            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/queng" Target="_blank" />
-            <MudSwitch Color="Color.Primary"
-                       UnCheckedColor="Color.Tertiary"
-                       Size="Size.Large"
-                       ThumbIcon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Outlined.LightMode)"
-                       @bind-Value="_isDarkMode" />
-        </MudAppBar>
-
-        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Responsive">
-            <MudNavMenu Class="mt-3">
-                @foreach (var item in _navigation)
-                {
-                    if (item.IsGroup)
-                    {
-                        <MudNavGroup Title="@item.Title" Icon="@item.Icon">
-                            @foreach (var child in item.Children)
-                            {
-                                <MudNavLink ActiveClass="drawer__item--active"
-                                            Match="@child.Match"
-                                            Icon="@child.Icon"
-                                            Href="@child.Href">
-                                    @child.Title
-                                </MudNavLink>
-                            }
-                        </MudNavGroup>
-                    }
-                    else if (!string.IsNullOrWhiteSpace(item.Href))
-                    {
-                        <MudNavLink ActiveClass="drawer__item--active"
-                                    Match="@item.Match"
-                                    Icon="@item.Icon"
-                                    Href="@item.Href">
-                            @item.Title
-                        </MudNavLink>
-                    }
-                }                
-            </MudNavMenu>
-        </MudDrawer>
-
-        <MudMainContent>
-            <div class="mt-6 mx-6">
-                @Body
-            </div>
-        </MudMainContent>
-    </MudLayout>
 }
+
+<CascadingAuthenticationState>
+    <AuthorizedView>
+        <AuthorizedContent>
+            @if (_isReady)
+            {                
+                <MudLayout>
+                    <MudAppBar Elevation="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+                        
+                        <MudSpacer />
+                        
+                        <!-- Token Status Display -->
+                        <div class="me-3">
+                            <TokenStatus />
+                        </div>
+                        
+                        <!-- User Menu -->
+                        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                            <MudMenuItem Icon="@Icons.Material.Filled.Person">
+                                @StateManager.User.DisplayName
+                            </MudMenuItem>
+                            <MudDivider />
+                            <MudMenuItem Icon="@Icons.Material.Filled.Settings" OnClick="NavigateToProfile">
+                                Profile
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="LogoutAsync">
+                                Sign Out
+                            </MudMenuItem>
+                        </MudMenu>
+                        
+                        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/queng" Target="_blank" />
+                        <MudSwitch Color="Color.Primary"
+                                   UnCheckedColor="Color.Tertiary"
+                                   Size="Size.Large"
+                                   ThumbIcon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Outlined.LightMode)"
+                                   @bind-Value="_isDarkMode" />
+                    </MudAppBar>
+
+                    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1" Variant="DrawerVariant.Responsive">
+                        <div class="pa-4">
+                            <TenantSelector OnTenantSelected="OnTenantSelected" />
+                        </div>
+                        
+                        <MudNavMenu Class="mt-3">
+                            @foreach (var item in _navigation)
+                            {
+                                if (item.IsGroup)
+                                {
+                                    <MudNavGroup Title="@item.Title" Icon="@item.Icon">
+                                        @foreach (var child in item.Children)
+                                        {
+                                            <MudNavLink ActiveClass="drawer__item--active"
+                                                        Match="@child.Match"
+                                                        Icon="@child.Icon"
+                                                        Href="@child.Href">
+                                                @child.Title
+                                            </MudNavLink>
+                                        }
+                                    </MudNavGroup>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(item.Href))
+                                {
+                                    <MudNavLink ActiveClass="drawer__item--active"
+                                                Match="@item.Match"
+                                                Icon="@item.Icon"
+                                                Href="@item.Href">
+                                        @item.Title
+                                    </MudNavLink>
+                                }
+                            }                
+                        </MudNavMenu>
+                    </MudDrawer>
+
+                    <MudMainContent>
+                        <div class="mt-6 mx-6">
+                            @Body
+                        </div>
+                    </MudMainContent>
+                </MudLayout>
+            }
+        </AuthorizedContent>
+        <NotAuthorizedContent>
+            @if (_isReady)
+            {
+                if (ShouldRedirectToLogin())
+                {
+                    return;
+                }
+                
+                <MudLayout>
+                    <MudAppBar Elevation="1">
+                        <MudText Typo="Typo.h6">WebSearchIndexing</MudText>
+                        <MudSpacer />
+                        <MudButton Color="Color.Inherit" Href="/auth/login">Увійти</MudButton>
+                    </MudAppBar>
+                    <MudMainContent>
+                        @Body
+                    </MudMainContent>
+                </MudLayout>
+            }
+        </NotAuthorizedContent>
+    </AuthorizedView>
+</CascadingAuthenticationState>
 
 
 @code
@@ -85,13 +144,15 @@
     private bool _drawerOpen = true;
     private bool _isDarkMode;
     private bool _isReady;
-    private bool _hasAccess;
     private CustomThemeProvider? _themeProvider;
     private readonly GlobalTheme _customTheme = new();
 
     protected override void OnInitialized()
     {
         _navigation.AddRange(NavigationService.GetItems());
+
+        // Subscribe to state changes
+        StateManager.StateChanged += OnStateChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -103,15 +164,52 @@
 
         _isDarkMode = false;
         _isReady = true;
-    }
-
-    private void AllowAccess()
-    {
-        _hasAccess = true;
+        StateHasChanged();
     }
 
     private void ToggleDrawer()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private void NavigateToProfile()
+    {
+        Navigation.NavigateTo("/profile");
+    }
+
+    private async Task LogoutAsync()
+    {
+        await StateManager.LogoutAsync();
+        Navigation.NavigateTo("/auth/login");
+    }
+
+    private async Task OnTenantSelected(WebSearchIndexing.Modules.Identity.Ui.Models.TenantInfo tenant)
+    {
+        await StateManager.SelectTenantAsync(tenant);
+    }
+
+    private void OnStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool ShouldRedirectToLogin()
+    {
+        // Check if user is on auth pages - don't redirect if already on login/register
+        var currentPath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLowerInvariant();
+        if (currentPath.StartsWith("auth/"))
+        {
+            return false;
+        }
+
+        // Redirect to login with return URL
+        var returnUrl = Uri.EscapeDataString(Navigation.Uri);
+        Navigation.NavigateTo($"/auth/login?returnUrl={returnUrl}", forceLoad: false);
+        return true;
+    }
+
+    public void Dispose()
+    {
+        StateManager.StateChanged -= OnStateChanged;
     }
 }

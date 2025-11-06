@@ -32,7 +32,7 @@ public static class DependencyInjectionExtensions
     {
         public void Configure(NavigationBuilder builder)
         {
-            builder.AddLink("Dashboard", Icons.Material.Filled.Dashboard, "/", NavLinkMatch.All, order: 0);
+            builder.AddLink("Dashboard", Icons.Material.Filled.Dashboard, "/dashboard", NavLinkMatch.All, order: 0);
         }
     }
 }

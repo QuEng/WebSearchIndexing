@@ -1,0 +1,83 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@implements IDisposable
+
+@if (isAuthenticated)
+{
+    @if (AuthorizedContent != null)
+    {
+        @AuthorizedContent
+    }
+    else
+    {
+        @ChildContent
+    }
+}
+else
+{
+    @if (NotAuthorizedContent != null)
+    {
+        @NotAuthorizedContent
+    }
+    else if (!string.IsNullOrEmpty(RedirectUrl))
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-lock me-2"></i>
+            You need to sign in to access this content.
+            <a href="@RedirectUrl" class="btn btn-sm btn-primary ms-2">Sign In</a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-lock me-2"></i>
+            You are not authorized to view this content.
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? AuthorizedContent { get; set; }
+    [Parameter] public RenderFragment? NotAuthorizedContent { get; set; }
+    [Parameter] public string? RequiredRole { get; set; }
+    [Parameter] public string? RequiredPolicy { get; set; }
+    [Parameter] public string RedirectUrl { get; set; } = "/auth/login";
+
+    private bool isAuthenticated = false;
+    private bool hasRequiredRole = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthentication();
+        
+        // Subscribe to authentication state changes
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
+
+    private async Task CheckAuthentication()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        
+        isAuthenticated = user.Identity?.IsAuthenticated == true;
+        
+        if (isAuthenticated && !string.IsNullOrEmpty(RequiredRole))
+        {
+            hasRequiredRole = user.IsInRole(RequiredRole);
+            isAuthenticated = hasRequiredRole;
+        }
+        
+        StateHasChanged();
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        await CheckAuthentication();
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}

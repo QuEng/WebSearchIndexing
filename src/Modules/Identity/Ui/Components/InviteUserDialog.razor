@@ -1,0 +1,158 @@
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Invite User to Workspace</MudText>
+        
+        <MudTextField
+            @bind-Value="model.Email"
+            Label="Email Address"
+            Required="true"
+            Variant="Variant.Outlined"
+            Class="mb-3"
+            HelperText="Enter the email address of the user you want to invite"
+            Validation="@(new EmailAddressAttribute())" />
+            
+        <MudSelect
+            @bind-Value="model.Role"
+            Label="Role"
+            Required="true"
+            Variant="Variant.Outlined"
+            Class="mb-3"
+            HelperText="Select the role for the invited user">
+            <MudSelectItem Value="@("Admin")">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="Icons.Material.Filled.AdminPanelSettings" Class="mr-2" Color="Color.Error" />
+                    <div>
+                        <MudText>Admin</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Default">Full access to workspace settings and members</MudText>
+                    </div>
+                </div>
+            </MudSelectItem>
+            <MudSelectItem Value="@("User")">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="Icons.Material.Filled.Person" Class="mr-2" Color="Color.Primary" />
+                    <div>
+                        <MudText>User</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Default">Standard user with limited permissions</MudText>
+                    </div>
+                </div>
+            </MudSelectItem>
+            <MudSelectItem Value="@("Viewer")">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="Icons.Material.Filled.Visibility" Class="mr-2" Color="Color.Default" />
+                    <div>
+                        <MudText>Viewer</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Default">Read-only access to workspace</MudText>
+                    </div>
+                </div>
+            </MudSelectItem>
+        </MudSelect>
+
+        @if (!string.IsNullOrEmpty(model.Email) && model.Role != "Viewer")
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-3">
+                @model.Email will be invited as a <strong>@model.Role</strong> and will receive an email invitation.
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton 
+            Color="Color.Primary" 
+            Variant="Variant.Filled"
+            OnClick="SendInvitation"
+            Disabled="@(!IsFormValid() || isLoading)">
+            @if (isLoading)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                <MudText Class="ms-2">Sending...</MudText>
+            }
+            else
+            {
+                <MudText>Send Invitation</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Guid TenantId { get; set; }
+    
+    private InviteUserModel model = new();
+    private bool isLoading = false;
+    
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(model.Email) && 
+               IsValidEmail(model.Email) &&
+               !string.IsNullOrWhiteSpace(model.Role);
+    }
+    
+    private static bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    
+    private async Task SendInvitation()
+    {
+        if (!IsFormValid()) return;
+        
+        try
+        {
+            isLoading = true;
+            
+            var request = new
+            {
+                email = model.Email.Trim().ToLowerInvariant(),
+                role = model.Role
+            };
+            
+            var response = await HttpClient.PostAsJsonAsync($"/api/v1/identity/tenants/{TenantId}/invite", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Invitation sent to {model.Email} successfully!", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    Snackbar.Add("This user is already a member of the workspace or has a pending invitation.", Severity.Warning);
+                }
+                else
+                {
+                    Snackbar.Add($"Error sending invitation: {errorContent}", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error sending invitation: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+    
+    private class InviteUserModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = "User";
+    }
+}

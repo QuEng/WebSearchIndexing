@@ -15,14 +15,16 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.10" />
     <PackageReference Include="MudBlazor" Version="6.19.1" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\Core\Ui\WebSearchIndexing.Modules.Core.Ui.csproj" />
     <ProjectReference Include="..\..\Modules\Catalog\Ui\WebSearchIndexing.Modules.Catalog.Ui.csproj" />
     <ProjectReference Include="..\..\Modules\Reporting\Ui\WebSearchIndexing.Modules.Reporting.Ui.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\Ui\WebSearchIndexing.Modules.Identity.Ui.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Web\WebSearchIndexing.BuildingBlocks.Web.csproj" />
   </ItemGroup>
 

@@ -31,6 +31,8 @@
     <ProjectReference Include="..\..\Modules\Inspection\Api\WebSearchIndexing.Modules.Inspection.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Crawler\Api\WebSearchIndexing.Modules.Crawler.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Notifications\Api\WebSearchIndexing.Modules.Notifications.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\Api\WebSearchIndexing.Modules.Identity.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\Infrastructure\WebSearchIndexing.Modules.Identity.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

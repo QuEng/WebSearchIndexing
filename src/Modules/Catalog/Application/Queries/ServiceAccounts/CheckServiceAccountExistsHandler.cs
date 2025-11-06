@@ -1,4 +1,4 @@
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Repositories;
 
 namespace WebSearchIndexing.Modules.Catalog.Application.Queries.ServiceAccounts;
 

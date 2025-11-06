@@ -2,6 +2,7 @@
 @using CoreUi = WebSearchIndexing.Modules.Core.Ui
 @using CatalogUi = WebSearchIndexing.Modules.Catalog.Ui  
 @using ReportingUi = WebSearchIndexing.Modules.Reporting.Ui
+@using IdentityUi = WebSearchIndexing.Modules.Identity.Ui
 
 <Router AppAssembly="@typeof(App).Assembly" 
         AdditionalAssemblies="@_moduleAssemblies"
@@ -28,7 +29,8 @@
         {
             typeof(CoreUi.DependencyInjectionExtensions).Assembly, // Core.Ui
             typeof(CatalogUi.DependencyInjectionExtensions).Assembly, // Catalog.Ui
-            typeof(ReportingUi.DependencyInjectionExtensions).Assembly // Reporting.Ui
+            typeof(ReportingUi.DependencyInjectionExtensions).Assembly, // Reporting.Ui
+            typeof(IdentityUi.DependencyInjectionExtensions).Assembly // Identity.Ui
         });
     }
 

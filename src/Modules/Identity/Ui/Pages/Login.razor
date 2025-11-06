@@ -1,0 +1,60 @@
+@page "/auth/login"
+@using WebSearchIndexing.Modules.Identity.Ui.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Sign In - WebSearchIndexing</PageTitle>
+
+@if (isAuthenticated)
+{
+    <!-- Redirect to return URL or home if already authenticated -->
+    var redirectUrl = !string.IsNullOrEmpty(ReturnUrl) ? ReturnUrl : "/";
+    Navigation.NavigateTo(redirectUrl);
+}
+else
+{
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h1>WebSearchIndexing</h1>
+                <p>Sign in to your account</p>
+            </div>
+            
+            <div class="login-form-container">
+                <LoginForm ReturnUrl="@ReturnUrl" />
+            </div>
+            
+            <div class="login-footer">
+                <p>Don't have an account? <a href="/auth/register">Create one here</a></p>
+            </div>
+        </div>
+        
+        <div class="login-background">
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+                <div class="shape shape-4"></div>
+                <div class="shape shape-5"></div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+    
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
+    }
+}

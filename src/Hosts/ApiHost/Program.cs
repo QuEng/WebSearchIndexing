@@ -13,6 +13,8 @@ using WebSearchIndexing.Modules.Catalog.Api;
 using WebSearchIndexing.Modules.Core.Api;
 using WebSearchIndexing.Modules.Core.Application;
 using WebSearchIndexing.Modules.Crawler.Api;
+using WebSearchIndexing.Modules.Identity.Api;
+using WebSearchIndexing.Modules.Identity.Infrastructure;
 using WebSearchIndexing.Modules.Inspection.Api;
 using WebSearchIndexing.Modules.Notifications.Api;
 using WebSearchIndexing.Modules.Reporting.Api;
@@ -20,12 +22,14 @@ using WebSearchIndexing.Modules.Submission.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog basic setup
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateLogger();
+// Observability (includes Serilog + Seq + OTEL)
+builder.Services.AddObservability(
+    builder.Configuration,
+    configureResource: rb => 
+    {
+        // Additional resource attributes can be added here if needed
+    },
+    enableConsoleExporter: builder.Environment.IsDevelopment());
 
 builder.Host.UseSerilog();
 
@@ -196,9 +200,6 @@ builder.Services.AddRateLimiter(options =>
 // Problem Details for consistent error handling
 builder.Services.AddProblemDetails();
 
-// Observability (OTEL)
-builder.Services.AddObservability();
-
 var connectionString = builder.Configuration.GetConnectionString("IndexingDb");
 
 // Multi-tenant: default in-memory store with a default tenant
@@ -218,6 +219,7 @@ builder.Services
 
 // Infrastructure and modules
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddIdentityInfrastructure(builder.Configuration);
 
 builder.Services
     .AddCoreModule()
@@ -227,6 +229,7 @@ builder.Services
     .AddCrawlerModule()
     .AddNotificationsModule()
     .AddReportingModule()
+    .AddIdentityModule(builder.Configuration)
     .AddCoreApplicationModule();
 
 // Add outbox background service for processing integration events
@@ -293,6 +296,7 @@ app.MapInspectionModuleEndpoints();
 app.MapCrawlerModuleEndpoints();
 app.MapNotificationsModuleEndpoints();
 app.MapReportingModuleEndpoints();
+app.MapIdentityModuleEndpoints();
 
 app.Run();
 

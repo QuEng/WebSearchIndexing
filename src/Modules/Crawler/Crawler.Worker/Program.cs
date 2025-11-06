@@ -12,7 +12,7 @@ builder.Services.AddSerilog((serviceProvider, configuration) =>
         .WriteTo.Console());
 
 // Add observability (OpenTelemetry)
-builder.Services.AddObservability();
+builder.Services.AddObservability(builder.Configuration);
 
 // Add modules
 builder.Services.AddCrawlerModule();

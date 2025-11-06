@@ -13,6 +13,11 @@ namespace WebSearchIndexing.Modules.Catalog.Api;
 
 internal static class UrlsEndpoints
 {
+    /// <summary>
+    /// Maps URL endpoints to the route group
+    /// </summary>
+    /// <param name="catalogGroup">Catalog route group builder</param>
+    /// <returns>Configured route group builder</returns>
     public static RouteGroupBuilder MapUrlsEndpoints(this RouteGroupBuilder catalogGroup)
     {
         ArgumentNullException.ThrowIfNull(catalogGroup);

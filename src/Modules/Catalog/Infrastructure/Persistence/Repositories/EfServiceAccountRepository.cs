@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebSearchIndexing.BuildingBlocks.Messaging;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Repositories;
 using WebSearchIndexing.Modules.Catalog.Application.IntegrationEvents;
 using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 

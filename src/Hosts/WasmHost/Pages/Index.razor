@@ -1,0 +1,78 @@
+@page "/"
+@using Microsoft.AspNetCore.Components
+@using MudBlazor
+
+<PageTitle>Home - WebSearchIndexing</PageTitle>
+
+<div class="welcome-container">
+    <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+        <div class="text-center mb-6">
+            <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
+            <MudText Typo="Typo.h3" GutterBottom="true">Ласкаво просимо до WebSearchIndexing</MudText>
+            <MudText Typo="Typo.h6" Color="Color.Default">
+                Потужна платформа для індексації та пошуку веб-контенту
+            </MudText>
+        </div>
+
+        <MudGrid Justify="Justify.Center" Spacing="4">
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2" Class="h-100">
+                    <MudCardContent Class="text-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="Size.Large" Class="mb-3" />
+                        <MudText Typo="Typo.h6" Class="mb-2">Швидкий пошук</MudText>
+                        <MudText Typo="Typo.body2">
+                            Миттєвий пошук по індексованому контенту з розширеними фільтрами
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2" Class="h-100">
+                    <MudCardContent Class="text-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Analytics" Color="Color.Secondary" Size="Size.Large" Class="mb-3" />
+                        <MudText Typo="Typo.h6" Class="mb-2">Аналітика</MudText>
+                        <MudText Typo="Typo.body2">
+                            Детальна аналітика індексації та статистика використання
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2" Class="h-100">
+                    <MudCardContent Class="text-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Tertiary" Size="Size.Large" Class="mb-3" />
+                        <MudText Typo="Typo.h6" Class="mb-2">Безпека</MudText>
+                        <MudText Typo="Typo.body2">
+                            Розширена автентифікація та авторизація з multi-tenant підтримкою
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <div class="text-center mt-8">
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary" 
+                Size="Size.Large"
+                StartIcon="@Icons.Material.Filled.GetApp"
+                Href="/auth/login">
+                Розпочати роботу
+            </MudButton>
+        </div>
+    </MudContainer>
+</div>
+
+<style>
+    .welcome-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .h-100 {
+        height: 100%;
+    }
+</style>

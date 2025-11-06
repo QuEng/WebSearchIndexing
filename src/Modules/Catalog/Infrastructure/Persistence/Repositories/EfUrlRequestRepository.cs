@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Repositories;
 using WebSearchIndexing.Modules.Catalog.Domain.Entities;
 
 namespace WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Repositories;

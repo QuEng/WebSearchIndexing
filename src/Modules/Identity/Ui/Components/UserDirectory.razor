@@ -1,0 +1,387 @@
+@page "/identity/users"
+@using WebSearchIndexing.Modules.Identity.Application.UserManagement.DTOs
+@using WebSearchIndexing.Modules.Identity.Application.UserManagement.Queries.GetUsers
+@using WebSearchIndexing.Modules.Identity.Application.UserManagement.Commands.InviteUser
+@using WebSearchIndexing.Modules.Identity.Application.Authorization.Commands.AssignRole
+@using WebSearchIndexing.Modules.Identity.Domain.Constants
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar
+
+<PageTitle>User Directory</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">User Directory</MudText>
+    
+    <!-- Actions Bar -->
+    <MudCard Class="mb-4">
+        <MudCardContent>
+            <MudGrid AlignItems="Center">
+                <MudItem xs="12" md="6">
+                    <MudTextField
+                        @bind-Value="_searchTerm"
+                        Label="Search users"
+                        Variant="Variant.Outlined"
+                        Margin="Margin.Dense"
+                        Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Search"
+                        OnKeyPress="@OnSearchKeyPress" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudSelect
+                        @bind-Value="_roleFilter"
+                        Label="Filter by Role"
+                        Variant="Variant.Outlined"
+                        Margin="Margin.Dense">
+                        <MudSelectItem Value="string.Empty">All Roles</MudSelectItem>
+                        @foreach (var role in RoleConstants.GetAllRoles())
+                        {
+                            <MudSelectItem Value="@role">@role</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudButton
+                        Color="Color.Primary"
+                        Variant="Variant.Filled"
+                        StartIcon="@Icons.Material.Filled.PersonAdd"
+                        OnClick="@OpenInviteDialog"
+                        Class="ml-2">
+                        Invite User
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <!-- Users Table -->
+    <MudCard>
+        <MudCardContent>
+            <MudDataGrid
+                T="UserDto"
+                Items="@_filteredUsers"
+                Loading="@_loading"
+                SortMode="SortMode.Single"
+                Filterable="false"
+                Hideable="true"
+                ColumnResizeMode="ResizeMode.Column">
+                
+                <Columns>
+                    <PropertyColumn Property="x => x.FirstName" Title="First Name" />
+                    <PropertyColumn Property="x => x.LastName" Title="Last Name" />
+                    <PropertyColumn Property="x => x.Email" Title="Email" />
+                    <PropertyColumn Property="x => x.IsActive" Title="Status">
+                        <CellTemplate>
+                            <MudChip
+                                Color="@(context.Item.IsActive ? Color.Success : Color.Error)"
+                                Size="Size.Small">
+                                @(context.Item.IsActive ? "Active" : "Inactive")
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.IsEmailVerified" Title="Email Verified">
+                        <CellTemplate>
+                            <MudIcon
+                                Icon="@(context.Item.IsEmailVerified ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)"
+                                Color="@(context.Item.IsEmailVerified ? Color.Success : Color.Warning)" />
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.LastLoginAt" Title="Last Login" Format="yyyy-MM-dd HH:mm" />
+                    <TemplateColumn Title="Roles" Sortable="false">
+                        <CellTemplate>
+                            @if (context.Item.Roles?.Any() == true)
+                            {
+                                @foreach (var role in context.Item.Roles.Take(2))
+                                {
+                                    <MudChip Size="Size.Small" Class="mr-1">@role</MudChip>
+                                }
+                                @if (context.Item.Roles.Count() > 2)
+                                {
+                                    <MudChip Size="Size.Small" Color="Color.Info">+@(context.Item.Roles.Count() - 2) more</MudChip>
+                                }
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Actions" Sortable="false">
+                        <CellTemplate>
+                            <MudIconButton
+                                Icon="@Icons.Material.Filled.Edit"
+                                Size="Size.Small"
+                                OnClick="@(() => EditUser(context.Item))"
+                                Title="Edit User" />
+                            <MudIconButton
+                                Icon="@Icons.Material.Filled.Security"
+                                Size="Size.Small"
+                                OnClick="@(() => ManageRoles(context.Item))"
+                                Title="Manage Roles" />
+                            <MudIconButton
+                                Icon="@(context.Item.IsActive ? Icons.Material.Filled.Block : Icons.Material.Filled.CheckCircle)"
+                                Size="Size.Small"
+                                Color="@(context.Item.IsActive ? Color.Warning : Color.Success)"
+                                OnClick="@(() => ToggleUserStatus(context.Item))"
+                                Title="@(context.Item.IsActive ? "Deactivate" : "Activate")" />
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </MudDataGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <!-- Session Management -->
+    <MudCard Class="mt-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Active Sessions</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Class="mb-2">Token Status: 
+                <MudChip Color="@GetTokenStatusColor()" Size="Size.Small">@GetTokenStatusText()</MudChip>
+            </MudText>
+            <MudText Class="mb-2">Access Token Expires: @GetAccessTokenExpiry()</MudText>
+            <MudText Class="mb-4">Refresh Token Valid: @GetRefreshTokenStatus()</MudText>
+            
+            <MudButton
+                Color="Color.Warning"
+                Variant="Variant.Outlined"
+                StartIcon="@Icons.Material.Filled.Logout"
+                OnClick="@RevokeAllSessions">
+                Revoke All Sessions
+            </MudButton>
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+<!-- Invite User Dialog -->
+<MudDialog @bind-IsVisible="_showInviteDialog">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Invite User</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_inviteForm" @bind-IsValid="@_inviteFormValid">
+            <MudTextField
+                @bind-Value="_inviteModel.Email"
+                Label="Email Address"
+                Variant="Variant.Outlined"
+                Required="true"
+                RequiredError="Email is required"
+                Validation="@(new EmailAddressAttribute())"
+                Class="mb-3" />
+            
+            <MudSelect
+                @bind-Value="_inviteModel.Role"
+                Label="Role"
+                Variant="Variant.Outlined"
+                Required="true"
+                RequiredError="Role is required"
+                Class="mb-3">
+                @foreach (var role in RoleConstants.Tenant.RolePermissions.Keys)
+                {
+                    <MudSelectItem Value="@role">@role</MudSelectItem>
+                }
+            </MudSelect>
+            
+            <MudTextField
+                @bind-Value="_inviteModel.PersonalMessage"
+                Label="Personal Message (Optional)"
+                Variant="Variant.Outlined"
+                Lines="3"
+                Class="mb-3" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@CloseInviteDialog">Cancel</MudButton>
+        <MudButton
+            Color="Color.Primary"
+            Variant="Variant.Filled"
+            OnClick="@SendInvitation"
+            Disabled="@(!_inviteFormValid || _sendingInvite)">
+            @if (_sendingInvite)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Send Invitation
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<UserDto> _users = new();
+    private List<UserDto> _filteredUsers = new();
+    private bool _loading = true;
+    private string _searchTerm = string.Empty;
+    private string _roleFilter = string.Empty;
+
+    // Invite dialog
+    private bool _showInviteDialog = false;
+    private MudForm _inviteForm = default!;
+    private bool _inviteFormValid = false;
+    private bool _sendingInvite = false;
+    private InviteUserModel _inviteModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+        ApplyFilters();
+    }
+
+    private async Task LoadUsers()
+    {
+        _loading = true;
+        try
+        {
+            // TODO: Implement actual user loading
+            _users = new List<UserDto>(); // Mock data
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading users: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        _filteredUsers = _users.Where(user =>
+            (string.IsNullOrEmpty(_searchTerm) ||
+             user.FirstName.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+             user.LastName.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+             user.Email.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(_roleFilter) ||
+             user.Roles?.Contains(_roleFilter) == true)
+        ).ToList();
+    }
+
+    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            ApplyFilters();
+        }
+    }
+
+    private void OpenInviteDialog()
+    {
+        _inviteModel = new InviteUserModel();
+        _showInviteDialog = true;
+    }
+
+    private void CloseInviteDialog()
+    {
+        _showInviteDialog = false;
+        _sendingInvite = false;
+    }
+
+    private async Task SendInvitation()
+    {
+        if (!_inviteFormValid) return;
+
+        _sendingInvite = true;
+        try
+        {
+            // TODO: Implement actual invitation sending
+            await Task.Delay(1000); // Simulate API call
+            
+            Snackbar.Add($"Invitation sent to {_inviteModel.Email}", Severity.Success);
+            CloseInviteDialog();
+            await LoadUsers();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error sending invitation: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _sendingInvite = false;
+        }
+    }
+
+    private void EditUser(UserDto user)
+    {
+        // TODO: Navigate to user edit page
+        Snackbar.Add($"Edit user {user.Email} - Not implemented yet", Severity.Info);
+    }
+
+    private void ManageRoles(UserDto user)
+    {
+        // TODO: Open role management dialog
+        Snackbar.Add($"Manage roles for {user.Email} - Not implemented yet", Severity.Info);
+    }
+
+    private async Task ToggleUserStatus(UserDto user)
+    {
+        try
+        {
+            // TODO: Implement actual user status toggle
+            await Task.Delay(500); // Simulate API call
+            
+            var action = user.IsActive ? "deactivated" : "activated";
+            Snackbar.Add($"User {user.Email} has been {action}", Severity.Success);
+            await LoadUsers();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating user status: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Color GetTokenStatusColor()
+    {
+        // TODO: Implement actual token status check
+        return Color.Success; // Mock
+    }
+
+    private string GetTokenStatusText()
+    {
+        // TODO: Implement actual token status
+        return "Valid"; // Mock
+    }
+
+    private string GetAccessTokenExpiry()
+    {
+        // TODO: Implement actual token expiry check
+        return DateTime.UtcNow.AddMinutes(15).ToString("HH:mm:ss"); // Mock
+    }
+
+    private string GetRefreshTokenStatus()
+    {
+        // TODO: Implement actual refresh token status
+        return "Yes"; // Mock
+    }
+
+    private async Task RevokeAllSessions()
+    {
+        try
+        {
+            // TODO: Implement actual session revocation
+            await Task.Delay(500); // Simulate API call
+            Snackbar.Add("All sessions have been revoked", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error revoking sessions: {ex.Message}", Severity.Error);
+        }
+    }
+
+    public class InviteUserModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public string PersonalMessage { get; set; } = string.Empty;
+    }
+
+    public class UserDto
+    {
+        public Guid Id { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public bool IsEmailVerified { get; set; }
+        public DateTime? LastLoginAt { get; set; }
+        public IEnumerable<string>? Roles { get; set; }
+    }
+}

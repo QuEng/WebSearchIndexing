@@ -1,0 +1,291 @@
+@page "/workspaces/{TenantId:guid}"
+@inject HttpClient HttpClient
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(tenant?.Name ?? "Workspace Details")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height: 400px;">
+            <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+        </div>
+    }
+    else if (tenant == null)
+    {
+        <MudPaper Class="pa-6 text-center">
+            <MudIcon Icon="Icons.Material.Filled.Error" Size="Size.Large" Color="Color.Error" Class="mb-4" />
+            <MudText Typo="Typo.h5" Class="mb-2">Workspace Not Found</MudText>
+            <MudText Typo="Typo.body1" Class="mb-4">The requested workspace could not be found or you don't have access to it.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GoBackToWorkspaces">
+                Back to Workspaces
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <!-- Workspace Header -->
+        <MudPaper Class="pa-6 mb-4">
+            <div class="d-flex justify-space-between align-center">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="Icons.Material.Filled.Business" Size="Size.Large" Class="mr-4" />
+                    <div>
+                        <MudText Typo="Typo.h4">@tenant.Name</MudText>
+                        <div class="d-flex align-center mt-2">
+                            <MudChip Color="GetPlanColor(tenant.Plan)" Size="Size.Small" Class="mr-2">
+                                @tenant.Plan
+                            </MudChip>
+                            <MudChip Color="@(tenant.IsActive ? Color.Success : Color.Default)" 
+                                     Size="Size.Small"
+                                     Icon="@(tenant.IsActive ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)"
+                                     Class="mr-2">
+                                @(tenant.IsActive ? "Active" : "Inactive")
+                            </MudChip>
+                            <MudChip Color="GetRoleColor(tenant.UserRole)" Size="Size.Small" Variant="Variant.Outlined">
+                                Your Role: @tenant.UserRole
+                            </MudChip>
+                        </div>
+                    </div>
+                </div>
+                
+                @if (tenant.UserRole == "Admin")
+                {
+                    <div>
+                        <MudButtonGroup Variant="Variant.Filled">
+                            <MudButton Color="Color.Primary"
+                                       StartIcon="Icons.Material.Filled.PersonAdd"
+                                       OnClick="OpenInviteDialog">
+                                Invite User
+                            </MudButton>
+                            <MudButton Color="Color.Secondary"
+                                       StartIcon="Icons.Material.Filled.Edit"
+                                       OnClick="OpenEditDialog">
+                                Edit Workspace
+                            </MudButton>
+                        </MudButtonGroup>
+                    </div>
+                }
+            </div>
+        </MudPaper>
+
+        <!-- Workspace Info -->
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="Icons.Material.Filled.Info" Class="mr-2" />
+                        Workspace Information
+                    </MudText>
+                    <MudSimpleTable>
+                        <tbody>
+                            <tr>
+                                <td><strong>Name:</strong></td>
+                                <td>@tenant.Name</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Plan:</strong></td>
+                                <td>
+                                    <MudChip Color="GetPlanColor(tenant.Plan)" Size="Size.Small">
+                                        @tenant.Plan
+                                    </MudChip>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>@tenant.CreatedAt.ToString("MMMM dd, yyyy")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    <MudChip Color="@(tenant.IsActive ? Color.Success : Color.Default)" 
+                                             Size="Size.Small"
+                                             Icon="@(tenant.IsActive ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
+                                        @(tenant.IsActive ? "Active" : "Inactive")
+                                    </MudChip>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Your Role:</strong></td>
+                                <td>
+                                    <MudChip Color="GetRoleColor(tenant.UserRole)" Size="Size.Small" Variant="Variant.Outlined">
+                                        @tenant.UserRole
+                                    </MudChip>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="Icons.Material.Filled.People" Class="mr-2" />
+                        Quick Actions
+                    </MudText>
+                    <MudStack Spacing="2">
+                        @if (tenant.UserRole == "Admin")
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="Icons.Material.Filled.PersonAdd"
+                                       FullWidth="true"
+                                       OnClick="OpenInviteDialog">
+                                Invite New User
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="Icons.Material.Filled.Edit"
+                                       FullWidth="true"
+                                       OnClick="OpenEditDialog">
+                                Edit Workspace Settings
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Default"
+                                       StartIcon="Icons.Material.Filled.People"
+                                       FullWidth="true"
+                                       OnClick="ViewMembers">
+                                Manage Members
+                            </MudButton>
+                        }
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   StartIcon="Icons.Material.Filled.ArrowBack"
+                                   FullWidth="true"
+                                   OnClick="GoBackToWorkspaces">
+                            Back to Workspaces
+                        </MudButton>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Members Section (placeholder for future implementation) -->
+        <MudPaper Class="pa-6 mt-4">
+            <MudText Typo="Typo.h6" Class="mb-3">
+                <MudIcon Icon="Icons.Material.Filled.People" Class="mr-2" />
+                Members
+            </MudText>
+            <MudAlert Severity="Severity.Info">
+                Members management will be implemented in Phase 3.
+            </MudAlert>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public Guid TenantId { get; set; }
+    
+    private TenantDto? tenant;
+    private bool isLoading = true;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTenant();
+    }
+    
+    private async Task LoadTenant()
+    {
+        try
+        {
+            isLoading = true;
+            var response = await HttpClient.GetAsync($"/api/v1/identity/tenants/{TenantId}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                tenant = await response.Content.ReadFromJsonAsync<TenantDto>();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                tenant = null; // Will show not found message
+            }
+            else
+            {
+                Snackbar.Add("Error loading workspace details", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading workspace: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private async Task OpenEditDialog()
+    {
+        if (tenant == null) return;
+        
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        
+        var parameters = new DialogParameters<EditTenantDialog>
+        {
+            { x => x.TenantId, tenant.Id },
+            { x => x.Name, tenant.Name },
+            { x => x.Plan, tenant.Plan },
+            { x => x.IsActive, tenant.IsActive },
+            { x => x.OnTenantUpdated, EventCallback.Factory.Create(this, LoadTenant) }
+        };
+        
+        await DialogService.ShowAsync<EditTenantDialog>(
+            "Edit Workspace", 
+            parameters,
+            options);
+    }
+    
+    private async Task OpenInviteDialog()
+    {
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        
+        var parameters = new DialogParameters<InviteUserDialog>
+        {
+            { x => x.TenantId, TenantId }
+        };
+        
+        await DialogService.ShowAsync<InviteUserDialog>(
+            "Invite User", 
+            parameters,
+            options);
+    }
+    
+    private void ViewMembers()
+    {
+        // Placeholder for future members management
+        Snackbar.Add("Members management will be implemented in Phase 3", Severity.Info);
+    }
+    
+    private void GoBackToWorkspaces()
+    {
+        Navigation.NavigateTo("/workspaces");
+    }
+    
+    private Color GetPlanColor(string plan) => plan switch
+    {
+        "Free" => Color.Default,
+        "Pro" => Color.Primary,
+        "Enterprise" => Color.Secondary,
+        _ => Color.Default
+    };
+    
+    private Color GetRoleColor(string role) => role switch
+    {
+        "Admin" => Color.Error,
+        "User" => Color.Primary,
+        "Viewer" => Color.Default,
+        _ => Color.Default
+    };
+}

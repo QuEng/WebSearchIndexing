@@ -1,20 +1,24 @@
 ﻿@using System.Security.Cryptography
 @using System.Text
-<MudDialog IsVisible="IsVisible" Options="new() { FullWidth = true }">
-    <TitleContent>
-        <MudText Typo="Typo.h6">
-            Access Denied
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-        <p>Enter access key: @ApplicationAccessKey</p>
-        <MudTextField Variant="Variant.Outlined"
-                      Margin="Margin.Dense"
-                      InputType="InputType.Password"
-                      Immediate="true"
-                      @bind-Value="_accessKey" />
-    </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitAccessKeyAsync" Class="px-10">Submit</MudButton>
-    </DialogActions>
-</MudDialog>
+
+@if (IsVisible)
+{
+    <MudDialog IsVisible="true" Options="new() { FullWidth = true, CloseButton = false }">
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                Access Denied
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <p>Enter access key: @ApplicationAccessKey</p>
+            <MudTextField Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          InputType="InputType.Password"
+                          Immediate="true"
+                          @bind-Value="_accessKey" />
+        </DialogContent>
+        <DialogActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitAccessKeyAsync" Class="px-10">Submit</MudButton>
+        </DialogActions>
+    </MudDialog>
+}

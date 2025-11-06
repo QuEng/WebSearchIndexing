@@ -1,0 +1,452 @@
+/* ==========================================================================
+   Identity Module Styles
+   ========================================================================== */
+
+.login-form .card {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.login-form .card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    border-radius: 10px 10px 0 0;
+}
+
+.login-form .card-header h3 {
+    margin: 0;
+    color: #333;
+    font-weight: 300;
+}
+
+.login-form .card-body {
+    padding: 2rem;
+}
+
+.login-form .form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.login-form .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.login-form .btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.login-form .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.login-form .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.register-form .card {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.register-form .card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    border-radius: 10px 10px 0 0;
+}
+
+.register-form .card-header h3 {
+    margin: 0;
+    color: #333;
+    font-weight: 300;
+}
+
+.register-form .card-body {
+    padding: 2rem;
+}
+
+.register-form .form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.register-form .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.register-form .btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.register-form .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+/* Tenant Selector Styles */
+.tenant-selector {
+    padding: 1rem;
+}
+
+.tenant-selector .dropdown-toggle {
+    width: 100%;
+    text-align: left;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e9ecef;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.tenant-selector .dropdown-toggle:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.tenant-selector .dropdown-menu {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0;
+    min-width: 250px;
+}
+
+.tenant-selector .dropdown-item {
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.tenant-selector .dropdown-item:hover {
+    background: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.tenant-selector .dropdown-item.active {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    color: white;
+}
+
+.tenant-selector .dropdown-item div strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.tenant-selector .dropdown-item div small {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Token Status Styles */
+.token-status {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+.token-status .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.token-status .bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+.token-status .bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
+}
+
+.token-status .bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%) !important;
+}
+
+.token-status .text-muted {
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+.token-status .fa-exclamation-triangle {
+    font-size: 0.9rem;
+    animation: pulse 2s infinite;
+}
+
+/* User Profile Styles */
+.user-profile {
+    padding: 1rem;
+}
+
+.user-profile .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.user-profile .card-header {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    color: white;
+    border: none;
+    padding: 1.5rem;
+}
+
+.user-profile .card-header h4 {
+    margin: 0;
+    font-weight: 300;
+}
+
+.user-profile .card-body {
+    padding: 2rem;
+}
+
+.user-profile .row {
+    margin-bottom: 1rem;
+}
+
+.user-profile strong {
+    color: #495057;
+    font-weight: 600;
+}
+
+.user-profile .badge {
+    font-size: 0.8rem;
+    padding: 0.4em 0.8em;
+    border-radius: 6px;
+}
+
+.user-profile .table {
+    margin-top: 1rem;
+}
+
+.user-profile .table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    background: #f8f9fa;
+}
+
+.user-profile .table td {
+    border-top: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.user-profile code {
+    background: #f8f9fa;
+    color: #e83e8c;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+/* Authorized View Styles */
+.authorized-view {
+    min-height: 100vh;
+}
+
+.authorized-view .loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    flex-direction: column;
+}
+
+.authorized-view .loading-container .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    color: #007bff;
+}
+
+.authorized-view .loading-container p {
+    margin-top: 1rem;
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+/* General Animations */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 8px;
+    border: none;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+/* Form Validation Styles */
+.validation-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.form-control.invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-form, .register-form {
+        padding: 1rem;
+    }
+    
+    .login-form .card, .register-form .card {
+        margin: 1rem;
+        max-width: none;
+    }
+    
+    .login-form .card-body, .register-form .card-body {
+        padding: 1.5rem;
+    }
+    
+    .tenant-selector .dropdown-menu {
+        min-width: 200px;
+    }
+    
+    .user-profile .card-body {
+        padding: 1rem;
+    }
+    
+    .token-status {
+        padding: 0.25rem;
+    }
+    
+    .token-status .text-muted {
+        display: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .login-form .card, .register-form .card {
+        background: rgba(33, 37, 41, 0.95);
+        color: #f8f9fa;
+    }
+    
+    .login-form .card-header, .register-form .card-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .login-form .card-header h3, .register-form .card-header h3 {
+        color: #f8f9fa;
+    }
+    
+    .form-control {
+        background: #495057;
+        border-color: #6c757d;
+        color: #f8f9fa;
+    }
+    
+    .form-control:focus {
+        background: #495057;
+        color: #f8f9fa;
+    }
+    
+    .tenant-selector .dropdown-toggle {
+        background: #495057;
+        border-color: #6c757d;
+        color: #f8f9fa;
+    }
+    
+    .tenant-selector .dropdown-menu {
+        background: #343a40;
+        color: #f8f9fa;
+    }
+    
+    .tenant-selector .dropdown-item:hover {
+        background: #495057;
+    }
+    
+    .user-profile .card {
+        background: #343a40;
+        color: #f8f9fa;
+    }
+    
+    .user-profile .table th {
+        background: #495057;
+        color: #f8f9fa;
+    }
+    
+    .user-profile code {
+        background: #495057;
+        color: #f8f9fa;
+    }
+}

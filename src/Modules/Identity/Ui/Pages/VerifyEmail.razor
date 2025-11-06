@@ -1,0 +1,176 @@
+@page "/verify-email"
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Verify Email - WebSearchIndexing</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-6" Elevation="3">
+        <div class="text-center">
+            @if (isLoading)
+            {
+                <MudProgressCircular Size="Size.Large" Indeterminate="true" Color="Color.Primary" />
+                <MudText Typo="Typo.h5" Class="mt-4">Verifying your email...</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                    Please wait while we verify your email address.
+                </MudText>
+            }
+            else if (isSuccess)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" Class="mb-4" Style="font-size: 4rem;" />
+                <MudText Typo="Typo.h5" Color="Color.Success" Class="mb-3">
+                    Email Verified Successfully!
+                </MudText>
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    Your email address has been verified. You now have full access to all features.
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Redirecting to your profile in @countdown seconds...
+                </MudText>
+                <MudButton 
+                    Variant="Variant.Filled" 
+                    Color="Color.Primary" 
+                    OnClick="NavigateToProfile"
+                    Class="mt-4">
+                    Go to Profile Now
+                </MudButton>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" Class="mb-4" Style="font-size: 4rem;" />
+                <MudText Typo="Typo.h5" Color="Color.Error" Class="mb-3">
+                    Verification Failed
+                </MudText>
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    @errorMessage
+                </MudText>
+                <MudButton 
+                    Variant="Variant.Filled" 
+                    Color="Color.Primary" 
+                    OnClick="NavigateToProfile"
+                    Class="mt-2">
+                    Go to Profile
+                </MudButton>
+            }
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+    
+    private bool isLoading = true;
+    private bool isSuccess = false;
+    private string errorMessage = "The verification link is invalid or has expired.";
+    private int countdown = 3;
+    private System.Threading.Timer? countdownTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            isLoading = false;
+            errorMessage = "No verification token provided.";
+            return;
+        }
+
+        await VerifyEmailAsync();
+    }
+
+    private async Task VerifyEmailAsync()
+    {
+        try
+        {
+            isLoading = true;
+
+            var payload = new { token = Token };
+            var response = await HttpClient.PostAsJsonAsync("/api/v1/identity/email-verification/verify", payload);
+
+            if (response.IsSuccessStatusCode)
+            {
+                isSuccess = true;
+                Snackbar.Add("Email verified successfully!", Severity.Success);
+                StartCountdown();
+            }
+            else
+            {
+                isSuccess = false;
+                var errorContent = await response.Content.ReadAsStringAsync();
+                
+                // Log full error details for debugging
+                Console.WriteLine($"Error Status: {response.StatusCode}");
+                Console.WriteLine($"Error Content: {errorContent}");
+                
+                // Try to parse error message
+                try
+                {
+                    var errorJson = System.Text.Json.JsonDocument.Parse(errorContent);
+                    if (errorJson.RootElement.TryGetProperty("error", out var errorProp))
+                    {
+                        errorMessage = errorProp.GetString() ?? errorMessage;
+                    }
+                    else if (errorJson.RootElement.TryGetProperty("Error", out var errorProp2))
+                    {
+                        errorMessage = errorProp2.GetString() ?? errorMessage;
+                    }
+                    else if (errorJson.RootElement.TryGetProperty("detail", out var detailProp))
+                    {
+                        errorMessage = detailProp.GetString() ?? errorMessage;
+                    }
+                }
+                catch
+                {
+                    // Use response status and content as fallback
+                    errorMessage = $"Status: {response.StatusCode}. Content: {errorContent}";
+                }
+                
+                Snackbar.Add($"Debug - Token: {Token}", Severity.Info);
+                Snackbar.Add(errorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+            Console.WriteLine($"Exception: {ex}");
+            Snackbar.Add(errorMessage, Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void StartCountdown()
+    {
+        countdownTimer = new System.Threading.Timer(_ =>
+        {
+            countdown--;
+            
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+                
+                if (countdown <= 0)
+                {
+                    countdownTimer?.Dispose();
+                    NavigateToProfile();
+                }
+            });
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    private void NavigateToProfile()
+    {
+        countdownTimer?.Dispose();
+        Navigation.NavigateTo("/profile");
+    }
+
+    public void Dispose()
+    {
+        countdownTimer?.Dispose();
+    }
+}

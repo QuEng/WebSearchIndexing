@@ -1,0 +1,89 @@
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@using WebSearchIndexing.Modules.Identity.Ui.Services
+@inject ISecureTokenStorage TokenStorage
+@implements IDisposable
+
+<div class="token-status">
+    @if (tokenStatus.IsAuthenticated)
+    {
+        <div class="d-flex align-items-center">
+            <span class="badge me-2 @GetStatusBadgeClass()">
+                @tokenStatus.ExpiryStatus
+            </span>
+            
+            @if (tokenStatus.TimeUntilExpiry.HasValue)
+            {
+                <small class="text-muted">
+                    Expires in @FormatTimeSpan(tokenStatus.TimeUntilExpiry.Value)
+                </small>
+            }
+
+            @if (tokenStatus.IsExpiringSoon)
+            {
+                <i class="fas fa-exclamation-triangle text-warning ms-2" title="Token expiring soon"></i>
+            }
+        </div>
+    }
+    else
+    {
+        <span class="badge bg-secondary">Not Authenticated</span>
+    }
+</div>
+
+@code {
+    private TokenStatusModel tokenStatus = new();
+    private Timer? refreshTimer;
+
+    protected override void OnInitialized()
+    {
+        UpdateTokenStatus();
+        
+        // Update status every 30 seconds
+        refreshTimer = new Timer(async _ => 
+        {
+            await InvokeAsync(() =>
+            {
+                UpdateTokenStatus();
+                StateHasChanged();
+            });
+        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+    }
+
+    private void UpdateTokenStatus()
+    {
+        tokenStatus = new TokenStatusModel
+        {
+            IsAuthenticated = TokenStorage.IsAccessTokenValid(),
+            AccessTokenExpiresAt = TokenStorage.GetAccessTokenExpiry(),
+            HasRefreshToken = true // Assume we have refresh token if authenticated
+        };
+    }
+
+    private string GetStatusBadgeClass()
+    {
+        return tokenStatus.ExpiryStatus switch
+        {
+            "Expired" => "bg-danger",
+            "Expiring Soon" => "bg-warning",
+            "Valid" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string FormatTimeSpan(TimeSpan timeSpan)
+    {
+        if (timeSpan.TotalMinutes < 1)
+            return "< 1 min";
+        if (timeSpan.TotalHours < 1)
+            return $"{(int)timeSpan.TotalMinutes} min";
+        if (timeSpan.TotalDays < 1)
+            return $"{(int)timeSpan.TotalHours}h {timeSpan.Minutes}m";
+        
+        return $"{(int)timeSpan.TotalDays}d {timeSpan.Hours}h";
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Dispose();
+    }
+}

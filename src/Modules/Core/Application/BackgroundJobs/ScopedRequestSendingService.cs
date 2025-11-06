@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Repositories;
 using WebSearchIndexing.Modules.Catalog.Domain.Entities;
-using WebSearchIndexing.Modules.Core.Application.Abstractions;
+using WebSearchIndexing.Modules.Core.Domain.Repositories;
 
 namespace WebSearchIndexing.Modules.Core.Application.BackgroundJobs;
 

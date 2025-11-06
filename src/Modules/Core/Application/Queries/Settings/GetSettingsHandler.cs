@@ -1,4 +1,4 @@
-using WebSearchIndexing.Modules.Core.Application.Abstractions;
+using WebSearchIndexing.Modules.Core.Domain.Repositories;
 using WebSearchIndexing.Modules.Core.Application.DTOs;
 
 namespace WebSearchIndexing.Modules.Core.Application.Queries.Settings;

@@ -1,0 +1,104 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@inject AuthenticationStateProvider AuthStateProvider
+@inject HttpClient HttpClient
+
+<div class="tenant-selector">
+    @if (tenants.Any())
+    {
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                @(selectedTenant?.Name ?? "Select Workspace")
+            </button>
+            <ul class="dropdown-menu">
+                @foreach (var tenant in tenants)
+                {
+                    <li>
+                        <button class="dropdown-item @(selectedTenant?.Id == tenant.Id ? "active" : "")" 
+                                @onclick="() => SelectTenant(tenant)">
+                            <div>
+                                <strong>@tenant.Name</strong>
+                                <small class="text-muted d-block">@tenant.Role</small>
+                            </div>
+                        </button>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+    else if (isLoading)
+    {
+        <div class="btn btn-outline-secondary" disabled>
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Loading...
+        </div>
+    }
+    else
+    {
+        <div class="btn btn-outline-secondary" disabled>
+            No Workspaces
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public EventCallback<TenantInfo> OnTenantSelected { get; set; }
+    
+    private List<TenantInfo> tenants = new();
+    private TenantInfo? selectedTenant;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTenants();
+    }
+
+    private async Task LoadTenants()
+    {
+        try
+        {
+            isLoading = true;
+            
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                var response = await HttpClient.GetAsync("/api/v1/identity/tenants");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    tenants = System.Text.Json.JsonSerializer.Deserialize<List<TenantInfo>>(content, new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<TenantInfo>();
+
+                    // Auto-select first tenant if available
+                    if (tenants.Any() && selectedTenant == null)
+                    {
+                        selectedTenant = tenants.First();
+                        await OnTenantSelected.InvokeAsync(selectedTenant);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tenants: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SelectTenant(TenantInfo tenant)
+    {
+        selectedTenant = tenant;
+        await OnTenantSelected.InvokeAsync(tenant);
+        StateHasChanged();
+    }
+
+    public async Task RefreshTenants()
+    {
+        await LoadTenants();
+    }
+}

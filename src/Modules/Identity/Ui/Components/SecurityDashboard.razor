@@ -1,0 +1,448 @@
+@page "/identity/security"
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar
+
+<PageTitle>Security Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Security Dashboard</MudText>
+
+    <!-- Token Status Card -->
+    <MudCard Class="mb-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Authentication Status</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudChip Color="@GetOverallSecurityColor()" Size="Size.Small">@GetOverallSecurityStatus()</MudChip>
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="0" Class="border-solid border-2 mud-border-lines-default">
+                        <MudCardContent>
+                            <div class="d-flex align-items-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Token" Class="mr-2" />
+                                <MudText Typo="Typo.h6">Access Token</MudText>
+                            </div>
+                            <MudText Class="mb-2">Status: 
+                                <MudChip Color="@GetAccessTokenColor()" Size="Size.Small">@GetAccessTokenStatus()</MudChip>
+                            </MudText>
+                            <MudText Class="mb-2">Expires: @GetAccessTokenExpiry()</MudText>
+                            <MudText>Remaining: @GetAccessTokenRemaining()</MudText>
+                            <MudProgressLinear Value="@GetAccessTokenProgress()" Color="@GetAccessTokenColor()" Class="mt-2" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="0" Class="border-solid border-2 mud-border-lines-default">
+                        <MudCardContent>
+                            <div class="d-flex align-items-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Refresh" Class="mr-2" />
+                                <MudText Typo="Typo.h6">Refresh Token</MudText>
+                            </div>
+                            <MudText Class="mb-2">Status: 
+                                <MudChip Color="@GetRefreshTokenColor()" Size="Size.Small">@GetRefreshTokenStatus()</MudChip>
+                            </MudText>
+                            <MudText Class="mb-2">Valid Until: @GetRefreshTokenExpiry()</MudText>
+                            <MudText>Auto-refresh: @(IsAutoRefreshEnabled() ? "Enabled" : "Disabled")</MudText>
+                            <MudProgressLinear Value="@GetRefreshTokenProgress()" Color="@GetRefreshTokenColor()" Class="mt-2" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <!-- Active Sessions Card -->
+    <MudCard Class="mb-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Active Sessions</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudButton
+                    Color="Color.Warning"
+                    Variant="Variant.Outlined"
+                    Size="Size.Small"
+                    OnClick="@RefreshSessions">
+                    Refresh
+                </MudButton>
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudDataGrid
+                T="UserSessionDto"
+                Items="@_sessions"
+                Loading="@_loadingSessions"
+                SortMode="SortMode.Single"
+                Filterable="false"
+                Dense="true">
+                
+                <Columns>
+                    <PropertyColumn Property="x => x.DeviceInfo" Title="Device" />
+                    <PropertyColumn Property="x => x.IpAddress" Title="IP Address" />
+                    <PropertyColumn Property="x => x.Location" Title="Location" />
+                    <PropertyColumn Property="x => x.LastActivity" Title="Last Activity" Format="yyyy-MM-dd HH:mm" />
+                    <PropertyColumn Property="x => x.IsCurrentSession" Title="Current">
+                        <CellTemplate>
+                            @if (context.Item.IsCurrentSession)
+                            {
+                                <MudChip Color="Color.Success" Size="Size.Small">Current</MudChip>
+                            }
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <TemplateColumn Title="Actions" Sortable="false">
+                        <CellTemplate>
+                            @if (!context.Item.IsCurrentSession)
+                            {
+                                <MudIconButton
+                                    Icon="@Icons.Material.Filled.Logout"
+                                    Size="Size.Small"
+                                    Color="Color.Warning"
+                                    OnClick="@(() => RevokeSession(context.Item.Id))"
+                                    Title="Revoke Session" />
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </MudDataGrid>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton
+                Color="Color.Error"
+                Variant="Variant.Outlined"
+                OnClick="@RevokeAllOtherSessions"
+                Disabled="@_revokingAllSessions">
+                @if (_revokingAllSessions)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Revoke All Other Sessions
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+    <!-- Security Events Card -->
+    <MudCard Class="mb-4">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Recent Security Events</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudButton
+                    Color="Color.Primary"
+                    Variant="Variant.Text"
+                    Size="Size.Small"
+                    OnClick="@(() => NavigateToFullSecurityLog())">
+                    View All
+                </MudButton>
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudDataGrid
+                T="SecurityEventDto"
+                Items="@_recentSecurityEvents"
+                Loading="@_loadingEvents"
+                SortMode="SortMode.Single"
+                Filterable="false"
+                Dense="true">
+                
+                <Columns>
+                    <PropertyColumn Property="x => x.EventType" Title="Event Type">
+                        <CellTemplate>
+                            <MudChip
+                                Color="@GetEventTypeColor(context.Item.EventType)"
+                                Size="Size.Small">
+                                @context.Item.EventType
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.Description" Title="Description" />
+                    <PropertyColumn Property="x => x.IpAddress" Title="IP Address" />
+                    <PropertyColumn Property="x => x.OccurredAt" Title="Occurred At" Format="yyyy-MM-dd HH:mm:ss" />
+                    <PropertyColumn Property="x => x.Severity" Title="Severity">
+                        <CellTemplate>
+                            <MudIcon
+                                Icon="@GetSeverityIcon(context.Item.Severity)"
+                                Color="@GetSeverityColor(context.Item.Severity)" />
+                        </CellTemplate>
+                    </PropertyColumn>
+                </Columns>
+            </MudDataGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <!-- Security Settings Card -->
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Security Preferences</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudSwitch
+                        @bind-Value="_emailAlerts"
+                        Color="Color.Primary"
+                        Label="Email alerts for suspicious activity" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSwitch
+                        @bind-Value="_autoLogout"
+                        Color="Color.Primary"
+                        Label="Auto-logout on token expiry" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSwitch
+                        @bind-Value="_requireEmailVerification"
+                        Color="Color.Primary"
+                        Label="Require email verification for new devices" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSwitch
+                        @bind-Value="_logSecurityEvents"
+                        Color="Color.Primary"
+                        Label="Log all security events" />
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton
+                Color="Color.Primary"
+                Variant="Variant.Filled"
+                OnClick="@SaveSecuritySettings"
+                Disabled="@_savingSettings">
+                @if (_savingSettings)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Save Settings
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private List<UserSessionDto> _sessions = new();
+    private List<SecurityEventDto> _recentSecurityEvents = new();
+    private bool _loadingSessions = true;
+    private bool _loadingEvents = true;
+    private bool _revokingAllSessions = false;
+    private bool _savingSettings = false;
+
+    // Security settings
+    private bool _emailAlerts = true;
+    private bool _autoLogout = true;
+    private bool _requireEmailVerification = false;
+    private bool _logSecurityEvents = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSessionsAsync();
+        await LoadSecurityEventsAsync();
+        await LoadSecuritySettingsAsync();
+    }
+
+    private async Task LoadSessionsAsync()
+    {
+        _loadingSessions = true;
+        try
+        {
+            // TODO: Implement actual session loading
+            await Task.Delay(1000); // Simulate API call
+            _sessions = GetMockSessions();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading sessions: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingSessions = false;
+        }
+    }
+
+    private async Task LoadSecurityEventsAsync()
+    {
+        _loadingEvents = true;
+        try
+        {
+            // TODO: Implement actual security events loading
+            await Task.Delay(800); // Simulate API call
+            _recentSecurityEvents = GetMockSecurityEvents();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading security events: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingEvents = false;
+        }
+    }
+
+    private async Task LoadSecuritySettingsAsync()
+    {
+        // TODO: Load actual security settings from API
+        await Task.Delay(500);
+    }
+
+    private async Task RefreshSessions()
+    {
+        await LoadSessionsAsync();
+        Snackbar.Add("Sessions refreshed", Severity.Success);
+    }
+
+    private async Task RevokeSession(Guid sessionId)
+    {
+        try
+        {
+            // TODO: Implement actual session revocation
+            await Task.Delay(500);
+            _sessions.RemoveAll(s => s.Id == sessionId);
+            Snackbar.Add("Session revoked successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error revoking session: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task RevokeAllOtherSessions()
+    {
+        _revokingAllSessions = true;
+        try
+        {
+            // TODO: Implement actual bulk session revocation
+            await Task.Delay(1000);
+            _sessions.RemoveAll(s => !s.IsCurrentSession);
+            Snackbar.Add("All other sessions revoked successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error revoking sessions: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _revokingAllSessions = false;
+        }
+    }
+
+    private async Task SaveSecuritySettings()
+    {
+        _savingSettings = true;
+        try
+        {
+            // TODO: Implement actual settings save
+            await Task.Delay(1000);
+            Snackbar.Add("Security settings saved successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving settings: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _savingSettings = false;
+        }
+    }
+
+    private void NavigateToFullSecurityLog()
+    {
+        // TODO: Navigate to full security log page
+        Snackbar.Add("Navigate to full security log - Not implemented yet", Severity.Info);
+    }
+
+    // Helper methods for token status
+    private Color GetOverallSecurityColor() => Color.Success; // Mock
+    private string GetOverallSecurityStatus() => "Secure"; // Mock
+    private Color GetAccessTokenColor() => Color.Success; // Mock
+    private string GetAccessTokenStatus() => "Valid"; // Mock
+    private string GetAccessTokenExpiry() => DateTime.UtcNow.AddMinutes(15).ToString("HH:mm:ss"); // Mock
+    private string GetAccessTokenRemaining() => "14 minutes"; // Mock
+    private double GetAccessTokenProgress() => 70.0; // Mock
+    private Color GetRefreshTokenColor() => Color.Success; // Mock
+    private string GetRefreshTokenStatus() => "Valid"; // Mock
+    private string GetRefreshTokenExpiry() => DateTime.UtcNow.AddDays(7).ToString("yyyy-MM-dd HH:mm"); // Mock
+    private double GetRefreshTokenProgress() => 85.0; // Mock
+    private bool IsAutoRefreshEnabled() => true; // Mock
+
+    private Color GetEventTypeColor(string eventType)
+    {
+        return eventType switch
+        {
+            "Login" => Color.Success,
+            "Failed Login" => Color.Warning,
+            "Token Refresh" => Color.Info,
+            "Session Revoked" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private string GetSeverityIcon(string severity)
+    {
+        return severity switch
+        {
+            "High" => Icons.Material.Filled.Warning,
+            "Medium" => Icons.Material.Filled.Info,
+            "Low" => Icons.Material.Filled.CheckCircle,
+            _ => Icons.Material.Filled.Help
+        };
+    }
+
+    private Color GetSeverityColor(string severity)
+    {
+        return severity switch
+        {
+            "High" => Color.Error,
+            "Medium" => Color.Warning,
+            "Low" => Color.Success,
+            _ => Color.Default
+        };
+    }
+
+    // Mock data methods
+    private List<UserSessionDto> GetMockSessions()
+    {
+        return new List<UserSessionDto>
+        {
+            new() { Id = Guid.NewGuid(), DeviceInfo = "Chrome on Windows", IpAddress = "192.168.1.100", Location = "New York, US", LastActivity = DateTime.UtcNow.AddMinutes(-5), IsCurrentSession = true },
+            new() { Id = Guid.NewGuid(), DeviceInfo = "Safari on iPhone", IpAddress = "192.168.1.101", Location = "New York, US", LastActivity = DateTime.UtcNow.AddHours(-2), IsCurrentSession = false },
+            new() { Id = Guid.NewGuid(), DeviceInfo = "Firefox on Linux", IpAddress = "10.0.0.50", Location = "San Francisco, US", LastActivity = DateTime.UtcNow.AddDays(-1), IsCurrentSession = false }
+        };
+    }
+
+    private List<SecurityEventDto> GetMockSecurityEvents()
+    {
+        return new List<SecurityEventDto>
+        {
+            new() { EventType = "Login", Description = "Successful login", IpAddress = "192.168.1.100", OccurredAt = DateTime.UtcNow.AddMinutes(-5), Severity = "Low" },
+            new() { EventType = "Token Refresh", Description = "Access token refreshed", IpAddress = "192.168.1.100", OccurredAt = DateTime.UtcNow.AddMinutes(-15), Severity = "Low" },
+            new() { EventType = "Failed Login", Description = "Invalid password attempt", IpAddress = "203.0.113.1", OccurredAt = DateTime.UtcNow.AddHours(-1), Severity = "Medium" },
+            new() { EventType = "Session Revoked", Description = "Session manually revoked", IpAddress = "192.168.1.100", OccurredAt = DateTime.UtcNow.AddHours(-3), Severity = "Low" }
+        };
+    }
+
+    public class UserSessionDto
+    {
+        public Guid Id { get; set; }
+        public string DeviceInfo { get; set; } = string.Empty;
+        public string IpAddress { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public DateTime LastActivity { get; set; }
+        public bool IsCurrentSession { get; set; }
+    }
+
+    public class SecurityEventDto
+    {
+        public string EventType { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string IpAddress { get; set; } = string.Empty;
+        public DateTime OccurredAt { get; set; }
+        public string Severity { get; set; } = string.Empty;
+    }
+}

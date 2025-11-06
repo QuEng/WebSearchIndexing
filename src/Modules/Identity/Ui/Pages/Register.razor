@@ -1,0 +1,59 @@
+@page "/auth/register"
+@using WebSearchIndexing.Modules.Identity.Ui.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Create Account - WebSearchIndexing</PageTitle>
+
+@if (isAuthenticated)
+{
+    var redirectUrl = !string.IsNullOrEmpty(ReturnUrl) ? ReturnUrl : "/";
+    Navigation.NavigateTo(redirectUrl);
+}
+else
+{
+    <div class="register-page">
+        <div class="register-container">
+            <div class="register-header">
+                <div class="register-logo">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1>Join WebSearchIndexing</h1>
+                <p>Create your account to get started</p>
+            </div>
+            
+            <div class="register-form-container">
+                <RegisterForm ReturnUrl="@ReturnUrl" />
+            </div>
+            
+            <div class="register-footer">
+                <p>Already have an account? <a href="/auth/login">Sign in here</a></p>
+            </div>
+        </div>
+        
+        <div class="register-background">
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+                <div class="shape shape-4"></div>
+                <div class="shape shape-5"></div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+    
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
+    }
+}

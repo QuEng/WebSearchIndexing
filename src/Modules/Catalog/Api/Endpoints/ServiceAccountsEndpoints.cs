@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Repositories;
 using WebSearchIndexing.Modules.Catalog.Application.Commands.ServiceAccounts;
 using WebSearchIndexing.Modules.Catalog.Application.DTOs;
 
@@ -9,6 +9,11 @@ namespace WebSearchIndexing.Modules.Catalog.Api;
 
 internal static class ServiceAccountsEndpoints
 {
+    /// <summary>
+    /// Maps service account endpoints to the route group
+    /// </summary>
+    /// <param name="catalogGroup">Catalog route group builder</param>
+    /// <returns>Configured route group builder</returns>
     public static RouteGroupBuilder MapServiceAccountsEndpoints(this RouteGroupBuilder catalogGroup)
     {
         ArgumentNullException.ThrowIfNull(catalogGroup);

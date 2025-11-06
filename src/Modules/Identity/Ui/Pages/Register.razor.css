@@ -1,0 +1,206 @@
+﻿.register-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+}
+
+.register-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.register-logo {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 8px 25px rgba(17, 153, 142, 0.3);
+}
+
+    .register-logo i {
+        font-size: 2rem;
+        color: white;
+    }
+
+.register-header h1 {
+    color: #333;
+    font-weight: 300;
+    font-size: 2.5rem;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.5px;
+}
+
+.register-header p {
+    color: #666;
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+.register-form-container {
+    margin: 2rem 0;
+}
+
+.register-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+}
+
+    .register-footer p {
+        color: #666;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .register-footer a {
+        color: #11998e;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+        .register-footer a:hover {
+            color: #38ef7d;
+            text-decoration: underline;
+        }
+
+.register-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.floating-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.shape {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+.shape-1 {
+    width: 120px;
+    height: 120px;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.shape-2 {
+    width: 80px;
+    height: 80px;
+    top: 20%;
+    right: 20%;
+    animation-delay: 1s;
+}
+
+.shape-3 {
+    width: 100px;
+    height: 100px;
+    bottom: 20%;
+    left: 15%;
+    animation-delay: 2s;
+}
+
+.shape-4 {
+    width: 60px;
+    height: 60px;
+    bottom: 30%;
+    right: 10%;
+    animation-delay: 3s;
+}
+
+.shape-5 {
+    width: 140px;
+    height: 140px;
+    top: 50%;
+    left: 5%;
+    animation-delay: 4s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    33% {
+        transform: translateY(-20px) rotate(120deg);
+    }
+
+    66% {
+        transform: translateY(10px) rotate(240deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .register-page {
+        padding: 1rem;
+    }
+
+    .register-container {
+        padding: 2rem 1.5rem;
+        border-radius: 15px;
+    }
+
+    .register-header h1 {
+        font-size: 2rem;
+    }
+
+    .register-logo {
+        width: 60px;
+        height: 60px;
+    }
+
+        .register-logo i {
+            font-size: 1.5rem;
+        }
+
+    .shape {
+        display: none;
+    }
+}

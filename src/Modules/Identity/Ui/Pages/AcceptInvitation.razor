@@ -1,0 +1,287 @@
+@page "/invitations/accept"
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Accept Invitation</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-6">
+        @if (isLoading)
+        {
+            <div class="text-center">
+                <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+                <MudText Typo="Typo.h6" Class="mt-4">Loading invitation...</MudText>
+            </div>
+        }
+        else if (invitation == null)
+        {
+            <div class="text-center">
+                <MudIcon Icon="Icons.Material.Filled.Error" Size="Size.Large" Color="Color.Error" Class="mb-4" />
+                <MudText Typo="Typo.h5" Class="mb-2">Invalid Invitation</MudText>
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    This invitation link is invalid, expired, or has already been used.
+                </MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GoToInvitations">
+                    View My Invitations
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            <div class="text-center mb-4">
+                <MudIcon Icon="Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                <MudText Typo="Typo.h4" Class="mb-2">Workspace Invitation</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Default">
+                    You've been invited to join a workspace
+                </MudText>
+            </div>
+
+            <MudDivider Class="mb-4" />
+
+            <MudSimpleTable>
+                <tbody>
+                    <tr>
+                        <td><strong>Workspace:</strong></td>
+                        <td>@invitation.TenantName</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Role:</strong></td>
+                        <td>
+                            <MudChip Color="GetRoleColor(invitation.Role)" Size="Size.Small" Variant="Variant.Outlined">
+                                @invitation.Role
+                            </MudChip>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Invited by:</strong></td>
+                        <td>@(invitation.InvitedBy ?? "Unknown")</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sent:</strong></td>
+                        <td>@invitation.SentDate.ToString("MMMM dd, yyyy")</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Expires:</strong></td>
+                        <td>
+                            <MudText Color="@(invitation.IsExpired ? Color.Error : Color.Default)">
+                                @invitation.ExpiresAt.ToString("MMMM dd, yyyy")
+                            </MudText>
+                        </td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+
+            @if (invitation.IsExpired)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-4">
+                    This invitation has expired and can no longer be accepted.
+                </MudAlert>
+            }
+            else if (invitation.IsAccepted)
+            {
+                <MudAlert Severity="Severity.Success" Class="mt-4">
+                    You have already accepted this invitation.
+                </MudAlert>
+            }
+            else if (invitation.IsDeclined)
+            {
+                <MudAlert Severity="Severity.Warning" Class="mt-4">
+                    You have already declined this invitation.
+                </MudAlert>
+            }
+            else if (invitation.IsRevoked)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-4">
+                    This invitation has been revoked by the sender.
+                </MudAlert>
+            }
+
+            <MudStack Row="true" Justify="Justify.Center" Class="mt-6" Spacing="3">
+                @if (invitation.IsPending && !invitation.IsExpired)
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="Icons.Material.Filled.Check"
+                               OnClick="AcceptInvitationAsync"
+                               Disabled="@isProcessing">
+                        @if (isProcessing && actionType == "accept")
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                            <MudText Class="ms-2">Accepting...</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Accept Invitation</MudText>
+                        }
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               StartIcon="Icons.Material.Filled.Close"
+                               OnClick="DeclineInvitation"
+                               Disabled="@isProcessing">
+                        @if (isProcessing && actionType == "decline")
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                            <MudText Class="ms-2">Declining...</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Decline</MudText>
+                        }
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="GoToInvitations">
+                        View My Invitations
+                    </MudButton>
+                }
+            </MudStack>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Token { get; set; }
+    
+    private InvitationDto? invitation;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private string actionType = string.Empty;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            Snackbar.Add("Invalid invitation link", Severity.Error);
+            Navigation.NavigateTo("/invitations");
+            return;
+        }
+        
+        await LoadInvitation();
+    }
+    
+    private async Task LoadInvitation()
+    {
+        try
+        {
+            isLoading = true;
+            var response = await HttpClient.GetAsync($"/api/v1/identity/invitations/{Token}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                invitation = await response.Content.ReadFromJsonAsync<InvitationDto>();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                invitation = null; // Will show invalid invitation message
+            }
+            else
+            {
+                Snackbar.Add("Error loading invitation details", Severity.Error);
+                invitation = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading invitation: {ex.Message}", Severity.Error);
+            invitation = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private async Task AcceptInvitationAsync()
+    {
+        if (invitation == null) return;
+        
+        try
+        {
+            isProcessing = true;
+            actionType = "accept";
+            
+            var response = await HttpClient.PostAsync($"/api/v1/identity/invitations/{invitation.Id}/accept", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Welcome to {invitation.TenantName}! Invitation accepted successfully.", Severity.Success);
+                
+                // Wait a moment to show success message
+                await Task.Delay(2000);
+                
+                // Redirect to workspaces page
+                Navigation.NavigateTo("/workspaces");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error accepting invitation: {errorContent}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error accepting invitation: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+            actionType = string.Empty;
+        }
+    }
+    
+    private async Task DeclineInvitation()
+    {
+        if (invitation == null) return;
+        
+        try
+        {
+            isProcessing = true;
+            actionType = "decline";
+            
+            var response = await HttpClient.PostAsync($"/api/v1/identity/invitations/{invitation.Id}/decline", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Invitation to {invitation.TenantName} declined.", Severity.Info);
+                
+                // Wait a moment to show message
+                await Task.Delay(2000);
+                
+                // Redirect to invitations page
+                Navigation.NavigateTo("/invitations");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error declining invitation: {errorContent}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error declining invitation: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+            actionType = string.Empty;
+        }
+    }
+    
+    private void GoToInvitations()
+    {
+        Navigation.NavigateTo("/invitations");
+    }
+    
+    private Color GetRoleColor(string role) => role switch
+    {
+        "Admin" => Color.Error,
+        "User" => Color.Primary,
+        "Viewer" => Color.Default,
+        _ => Color.Default
+    };
+}

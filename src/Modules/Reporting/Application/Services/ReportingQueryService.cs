@@ -1,5 +1,5 @@
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
-using WebSearchIndexing.Modules.Core.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Repositories;
+using WebSearchIndexing.Modules.Core.Domain.Repositories;
 using WebSearchIndexing.Modules.Reporting.Application.DTOs;
 using WebSearchIndexing.Modules.Reporting.Application.Abstractions;
 using WebSearchIndexing.Modules.Catalog.Domain.Entities;

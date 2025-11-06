@@ -1,7 +1,7 @@
 using Finbuckle.MultiTenant;
 using Microsoft.EntityFrameworkCore;
 using WebSearchIndexing.BuildingBlocks.Messaging;
-using WebSearchIndexing.Modules.Core.Application.Abstractions;
+using WebSearchIndexing.Modules.Core.Domain.Repositories;
 using WebSearchIndexing.Modules.Core.Application.IntegrationEvents;
 using WebSearchIndexing.Modules.Core.Domain.Entities;
 using CoreSettings = WebSearchIndexing.Modules.Core.Domain.Entities.Settings;

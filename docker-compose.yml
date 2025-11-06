@@ -13,6 +13,22 @@ services:
     - target: 5432
       published: 5432
     restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  
+  seq:
+    container_name: "seq"
+    image: "datalust/seq:latest"
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINPASSWORD: "Admin123!"
+    ports:
+      - "5341:80"
+      - "5342:5341"
+    restart: unless-stopped
+    volumes:
+      - seq-data:/data
+  
   web:
     container_name: "web-search-indexing"
     image: "web-search-indexing"
@@ -22,6 +38,14 @@ services:
     environment:
       ConnectionStrings__IndexingDb: "Host=postgres;Port=5432;Username=postgres;Password={YOUR_POSTGRES_PASSWORD};Database=IndexingDb"
       ApplicationAccessKey: "{YOUR_APPLICATION_ACCESS_KEY}"
+      Seq__ServerUrl: "http://seq:80"
     ports:
       - "10005:8080"
     restart: unless-stopped
+    depends_on:
+      - postgres
+      - seq
+
+volumes:
+  postgres-data:
+  seq-data:

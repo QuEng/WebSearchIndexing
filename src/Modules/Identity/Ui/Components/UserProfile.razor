@@ -1,0 +1,212 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@inject AuthenticationStateProvider AuthStateProvider
+@inject HttpClient HttpClient
+@inject IDialogService DialogService
+
+<div class="user-profile">
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (userProfile != null)
+    {
+        <EmailVerificationBanner 
+            IsEmailVerified="@userProfile.IsEmailVerified"
+            UserId="@userProfile.Id" />
+        
+        <div class="card">
+            <div class="card-header">
+                <h4>User Profile</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Email:</strong> @userProfile.Email
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Status:</strong> 
+                        <span class="badge @(userProfile.IsActive ? "bg-success" : "bg-danger")">
+                            @(userProfile.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <strong>First Name:</strong> @userProfile.FirstName
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Last Name:</strong> @userProfile.LastName
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <strong>Member Since:</strong> @userProfile.CreatedAt.ToString("MMM dd, yyyy")
+                    </div>
+                </div>
+
+                @if (userProfile.Tenants.Any())
+                {
+                    <div class="mt-4">
+                        <h5>Workspaces</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>Slug</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var tenant in userProfile.Tenants)
+                                    {
+                                        <tr>
+                                            <td>@tenant.Name</td>
+                                            <td>
+                                                <span class="badge bg-primary">@tenant.Role</span>
+                                            </td>
+                                            <td><code>@tenant.Slug</code></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                @if (userProfile.Roles.Any())
+                {
+                    <div class="mt-4">
+                        <h5>Global Roles</h5>
+                        <div>
+                            @foreach (var role in userProfile.Roles)
+                            {
+                                <span class="badge bg-secondary me-2">@role</span>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="mt-4 d-flex gap-2">
+                    <MudButton 
+                        Variant="Variant.Outlined" 
+                        Color="Color.Primary"
+                        OnClick="OpenEditProfileDialog"
+                        StartIcon="@Icons.Material.Filled.Edit">
+                        Edit Profile
+                    </MudButton>
+                    <MudButton 
+                        Variant="Variant.Outlined" 
+                        Color="Color.Secondary"
+                        OnClick="OpenChangePasswordDialog"
+                        StartIcon="@Icons.Material.Filled.Lock">
+                        Change Password
+                    </MudButton>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            Unable to load user profile.
+        </div>
+    }
+</div>
+
+@code {
+    private UserProfileModel? userProfile;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserProfile();
+    }
+
+    private async Task LoadUserProfile()
+    {
+        try
+        {
+            isLoading = true;
+            
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                var response = await HttpClient.GetAsync("/api/v1/identity/users/profile");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    userProfile = System.Text.Json.JsonSerializer.Deserialize<UserProfileModel>(content, new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle error - could add error display here
+            Console.WriteLine($"Error loading profile: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OpenChangePasswordDialog()
+    {
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        
+        var dialog = await DialogService.ShowAsync<ChangePasswordDialog>(
+            "Change Password", 
+            options);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Data is bool success && success)
+        {
+
+        }
+    }
+
+    private async Task OpenEditProfileDialog()
+    {
+        if (userProfile == null) return;
+
+        var parameters = new DialogParameters
+        {
+            { "FirstName", userProfile.FirstName },
+            { "LastName", userProfile.LastName }
+        };
+
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        
+        var dialog = await DialogService.ShowAsync<EditProfileDialog>(
+            "Edit Profile", 
+            parameters,
+            options);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            // Reload profile after successful edit
+            await LoadUserProfile();
+        }
+    }
+}

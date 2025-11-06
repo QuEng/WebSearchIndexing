@@ -1,0 +1,16 @@
+@page "/profile"
+@using WebSearchIndexing.Modules.Identity.Ui.Components
+@using WebSearchIndexing.Modules.Identity.Ui.State
+@using Microsoft.AspNetCore.Components
+@using MudBlazor
+@inject IdentityStateManager StateManager
+
+<PageTitle>Profile - WebSearchIndexing</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudPaper Class="pa-6">
+        <MudText Typo="Typo.h4" Class="mb-4">User Profile</MudText>
+        
+        <UserProfile />
+    </MudPaper>
+</MudContainer>

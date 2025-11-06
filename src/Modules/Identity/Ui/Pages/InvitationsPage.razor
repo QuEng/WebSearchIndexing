@@ -1,0 +1,384 @@
+@page "/invitations"
+@inject HttpClient HttpClient
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Invitations</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Invitations</MudText>
+    
+    <MudTabs>
+        <MudTabPanel Text="Incoming">
+            <MudPaper Class="pa-4 mt-4">
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="Icons.Material.Filled.Inbox" Class="mr-2" />
+                        Incoming Invitations
+                    </MudText>
+                    <MudButton Variant="Variant.Text" 
+                               StartIcon="Icons.Material.Filled.Refresh"
+                               OnClick="RefreshIncoming"
+                               Disabled="@isLoadingIncoming">
+                        Refresh
+                    </MudButton>
+                </div>
+                
+                <MudTable
+                    Items="@incomingInvitations"
+                    Loading="@isLoadingIncoming"
+                    Hover="true"
+                    Breakpoint="Breakpoint.Sm"
+                    LoadingProgressColor="Color.Info">
+                    <HeaderContent>
+                        <MudTh>Workspace</MudTh>
+                        <MudTh>Role</MudTh>
+                        <MudTh>Invited By</MudTh>
+                        <MudTh>Sent</MudTh>
+                        <MudTh>Expires</MudTh>
+                        <MudTh>Status</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Workspace">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="Icons.Material.Filled.Business" Class="mr-2" />
+                                <MudText>@context.TenantName</MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Role">
+                            <MudChip Color="GetRoleColor(context.Role)" Size="Size.Small" Variant="Variant.Outlined">
+                                @context.Role
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Invited By">
+                            <MudText>@(context.InvitedBy ?? "Unknown")</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Sent">
+                            <MudText Typo="Typo.body2">
+                                @context.SentDate.ToString("MMM dd, yyyy")
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Expires">
+                            <MudText Typo="Typo.body2" Color="@(context.IsExpired ? Color.Error : Color.Default)">
+                                @context.ExpiresAt.ToString("MMM dd, yyyy")
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Status">
+                            <MudChip Color="GetStatusColor(context)" Size="Size.Small">
+                                @context.Status
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            @if (context.IsPending && !context.IsExpired)
+                            {
+                                <MudButtonGroup Size="Size.Small" Variant="Variant.Text">
+                                    <MudButton Color="Color.Success"
+                                               StartIcon="Icons.Material.Filled.Check"
+                                               OnClick="@(() => AcceptInvitation(context))"
+                                               Disabled="@isProcessing">
+                                        Accept
+                                    </MudButton>
+                                    <MudButton Color="Color.Error"
+                                               StartIcon="Icons.Material.Filled.Close"
+                                               OnClick="@(() => DeclineInvitation(context))"
+                                               Disabled="@isProcessing">
+                                        Decline
+                                    </MudButton>
+                                </MudButtonGroup>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Default">
+                                    @if (context.IsExpired) { <text>Expired</text> }
+                                    else { <text>No actions</text> }
+                                </MudText>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <div class="text-center pa-8">
+                            <MudIcon Icon="Icons.Material.Filled.Inbox" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                            <MudText Typo="Typo.h6" Class="mb-2">No incoming invitations</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Default">
+                                You don't have any pending workspace invitations
+                            </MudText>
+                        </div>
+                    </NoRecordsContent>
+                </MudTable>
+            </MudPaper>
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Outgoing">
+            <MudPaper Class="pa-4 mt-4">
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="Icons.Material.Filled.Send" Class="mr-2" />
+                        Outgoing Invitations
+                    </MudText>
+                    <MudButton Variant="Variant.Text" 
+                               StartIcon="Icons.Material.Filled.Refresh"
+                               OnClick="RefreshOutgoing"
+                               Disabled="@isLoadingOutgoing">
+                        Refresh
+                    </MudButton>
+                </div>
+                
+                <MudTable
+                    Items="@outgoingInvitations"
+                    Loading="@isLoadingOutgoing"
+                    Hover="true"
+                    Breakpoint="Breakpoint.Sm"
+                    LoadingProgressColor="Color.Info">
+                    <HeaderContent>
+                        <MudTh>Email</MudTh>
+                        <MudTh>Workspace</MudTh>
+                        <MudTh>Role</MudTh>
+                        <MudTh>Sent</MudTh>
+                        <MudTh>Expires</MudTh>
+                        <MudTh>Status</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Email">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="Icons.Material.Filled.Email" Class="mr-2" />
+                                <MudText>@context.Email</MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel="Workspace">
+                            <MudText>@context.TenantName</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Role">
+                            <MudChip Color="GetRoleColor(context.Role)" Size="Size.Small" Variant="Variant.Outlined">
+                                @context.Role
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Sent">
+                            <MudText Typo="Typo.body2">
+                                @context.SentDate.ToString("MMM dd, yyyy")
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Expires">
+                            <MudText Typo="Typo.body2" Color="@(context.IsExpired ? Color.Error : Color.Default)">
+                                @context.ExpiresAt.ToString("MMM dd, yyyy")
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Status">
+                            <MudChip Color="GetStatusColor(context)" Size="Size.Small">
+                                @context.Status
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            @if (context.IsPending && !context.IsExpired)
+                            {
+                                <MudButton Color="Color.Error"
+                                           Size="Size.Small"
+                                           Variant="Variant.Text"
+                                           StartIcon="Icons.Material.Filled.Cancel"
+                                           OnClick="@(() => RevokeInvitation(context))"
+                                           Disabled="@isProcessing">
+                                    Revoke
+                                </MudButton>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Default">
+                                    @if (context.IsExpired) { <text>Expired</text> }
+                                    else { <text>No actions</text> }
+                                </MudText>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <div class="text-center pa-8">
+                            <MudIcon Icon="Icons.Material.Filled.Send" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                            <MudText Typo="Typo.h6" Class="mb-2">No outgoing invitations</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Default">
+                                You haven't sent any workspace invitations yet
+                            </MudText>
+                        </div>
+                    </NoRecordsContent>
+                </MudTable>
+            </MudPaper>
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
+
+@code {
+    private List<InvitationDto> incomingInvitations = new();
+    private List<InvitationDto> outgoingInvitations = new();
+    private bool isLoadingIncoming = true;
+    private bool isLoadingOutgoing = true;
+    private bool isProcessing = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadIncomingInvitations(), LoadOutgoingInvitations());
+    }
+    
+    private async Task LoadIncomingInvitations()
+    {
+        try
+        {
+            isLoadingIncoming = true;
+            var response = await HttpClient.GetAsync("/api/v1/identity/invitations/incoming");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                incomingInvitations = await response.Content.ReadFromJsonAsync<List<InvitationDto>>() ?? new List<InvitationDto>();
+            }
+            else
+            {
+                Snackbar.Add("Error loading incoming invitations", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading incoming invitations: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoadingIncoming = false;
+        }
+    }
+    
+    private async Task LoadOutgoingInvitations()
+    {
+        try
+        {
+            isLoadingOutgoing = true;
+            var response = await HttpClient.GetAsync("/api/v1/identity/invitations/outgoing");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                outgoingInvitations = await response.Content.ReadFromJsonAsync<List<InvitationDto>>() ?? new List<InvitationDto>();
+            }
+            else
+            {
+                Snackbar.Add("Error loading outgoing invitations", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading outgoing invitations: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoadingOutgoing = false;
+        }
+    }
+    
+    private async Task RefreshIncoming()
+    {
+        await LoadIncomingInvitations();
+    }
+    
+    private async Task RefreshOutgoing()
+    {
+        await LoadOutgoingInvitations();
+    }
+    
+    private async Task AcceptInvitation(InvitationDto invitation)
+    {
+        try
+        {
+            isProcessing = true;
+            var response = await HttpClient.PostAsync($"/api/v1/identity/invitations/{invitation.Id}/accept", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Invitation to {invitation.TenantName} accepted successfully!", Severity.Success);
+                await LoadIncomingInvitations();
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error accepting invitation: {errorContent}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error accepting invitation: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    
+    private async Task DeclineInvitation(InvitationDto invitation)
+    {
+        try
+        {
+            isProcessing = true;
+            var response = await HttpClient.PostAsync($"/api/v1/identity/invitations/{invitation.Id}/decline", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Invitation to {invitation.TenantName} declined", Severity.Info);
+                await LoadIncomingInvitations();
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error declining invitation: {errorContent}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error declining invitation: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    
+    private async Task RevokeInvitation(InvitationDto invitation)
+    {
+        try
+        {
+            isProcessing = true;
+            var response = await HttpClient.PostAsync($"/api/v1/identity/invitations/{invitation.Id}/revoke", null);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Invitation to {invitation.Email} revoked", Severity.Info);
+                await LoadOutgoingInvitations();
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error revoking invitation: {errorContent}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error revoking invitation: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    
+    private Color GetRoleColor(string role) => role switch
+    {
+        "Admin" => Color.Error,
+        "User" => Color.Primary,
+        "Viewer" => Color.Default,
+        _ => Color.Default
+    };
+    
+    private Color GetStatusColor(InvitationDto invitation) => invitation.Status switch
+    {
+        "Pending" when invitation.IsExpired => Color.Warning,
+        "Pending" => Color.Info,
+        "Accepted" => Color.Success,
+        "Declined" => Color.Default,
+        "Revoked" => Color.Error,
+        _ => Color.Default
+    };
+}

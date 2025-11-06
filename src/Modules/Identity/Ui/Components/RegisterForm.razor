@@ -1,0 +1,133 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@using WebSearchIndexing.Modules.Identity.Ui.Services
+@inject HybridAuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<EditForm
+    class="register-form"
+    Model="@registerModel"
+    OnValidSubmit="@HandleRegister">
+    <DataAnnotationsValidator />
+    
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <InputText
+            id="email"
+            class="form-control"
+            @bind-Value="registerModel.Email" />
+        <ValidationMessage For="@(() => registerModel.Email)" />
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="firstName" class="form-label">First Name</label>
+            <InputText
+                id="firstName"
+                class="form-control"
+                @bind-Value="registerModel.FirstName" />
+            <ValidationMessage For="@(() => registerModel.FirstName)" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="lastName" class="form-label">Last Name</label>
+            <InputText
+                id="lastName"
+                class="form-control"
+                @bind-Value="registerModel.LastName" />
+            <ValidationMessage For="@(() => registerModel.LastName)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <InputText
+            id="password"
+            type="password"
+            class="form-control"
+            @bind-Value="registerModel.Password" />
+        <ValidationMessage For="@(() => registerModel.Password)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <InputText
+            id="confirmPassword"
+            type="password"
+            class="form-control"
+            @bind-Value="registerModel.ConfirmPassword" />
+        <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
+    </div>
+
+    <div class="d-grid">
+        <button
+            type="submit"
+            class="btn btn-success"
+            disabled="@isLoading">
+            @if (isLoading)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            }
+            Create Account
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public string? ReturnUrl { get; set; }
+    private RegisterModel registerModel = new();
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+    private bool isLoading = false;
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
+            var result = await AuthService.RegisterAsync(
+                registerModel.Email, 
+                registerModel.Password, 
+                registerModel.FirstName, 
+                registerModel.LastName);
+            
+            if (result.IsSuccess)
+            {
+                successMessage = "Account created successfully! Redirecting to login...";
+                await Task.Delay(2000); // Show success message briefly
+                Navigation.NavigateTo("/auth/login?returnUrl=" + Uri.EscapeDataString(ReturnUrl ?? "/"));
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "Registration failed. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An unexpected error occurred. Please try again.";
+            await JSRuntime.InvokeVoidAsync("console.error", "Registration error:", ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

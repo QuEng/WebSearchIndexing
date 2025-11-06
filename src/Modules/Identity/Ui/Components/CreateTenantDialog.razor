@@ -1,0 +1,105 @@
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Create New Workspace</MudText>
+        
+        <MudTextField
+            @bind-Value="model.Name"
+            Label="Workspace Name"
+            Required="true"
+            Variant="Variant.Outlined"
+            Class="mb-3"
+            HelperText="Enter a unique name for your workspace" />
+            
+        <MudSelect
+            @bind-Value="model.Plan"
+            Label="Plan"
+            Required="true"
+            Variant="Variant.Outlined"
+            Class="mb-3">
+            <MudSelectItem Value="@("Free")">Free</MudSelectItem>
+            <MudSelectItem Value="@("Pro")">Pro</MudSelectItem>
+            <MudSelectItem Value="@("Enterprise")">Enterprise</MudSelectItem>
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton 
+            Color="Color.Primary" 
+            Variant="Variant.Filled"
+            OnClick="CreateTenant"
+            Disabled="@(!IsFormValid() || isLoading)">
+            @if (isLoading)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                <MudText Class="ms-2">Creating...</MudText>
+            }
+            else
+            {
+                <MudText>Create Workspace</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public EventCallback OnTenantCreated { get; set; }
+    
+    private CreateTenantModel model = new();
+    private bool isLoading = false;
+    
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(model.Name) && 
+               !string.IsNullOrWhiteSpace(model.Plan);
+    }
+    
+    private async Task CreateTenant()
+    {
+        if (!IsFormValid()) return;
+        
+        try
+        {
+            isLoading = true;
+            
+            var request = new
+            {
+                name = model.Name.Trim(),
+                plan = model.Plan
+            };
+            
+            var response = await HttpClient.PostAsJsonAsync("/api/v1/identity/tenants", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Workspace '{model.Name}' created successfully!", Severity.Success);
+                await OnTenantCreated.InvokeAsync();
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error creating workspace: {errorContent}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating workspace: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+    
+    private class CreateTenantModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Plan { get; set; } = "Free";
+    }
+}

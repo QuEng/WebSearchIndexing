@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Repositories;
 
 namespace WebSearchIndexing.Modules.Catalog.Application.Commands.Urls.Delete;
 

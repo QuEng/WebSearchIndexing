@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using WebSearchIndexing.BuildingBlocks.Messaging;
 using WebSearchIndexing.BuildingBlocks.Persistence;
-using WebSearchIndexing.Modules.Catalog.Application.Abstractions;
+using WebSearchIndexing.Modules.Catalog.Domain.Repositories;
 using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence;
 using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Repositories;
 using WebSearchIndexing.Modules.Catalog.Infrastructure.Persistence.Interceptors;

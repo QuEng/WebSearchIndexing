@@ -1,0 +1,85 @@
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+
+@if (!IsEmailVerified)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4" Variant="Variant.Filled">
+        <div class="d-flex justify-space-between align-center">
+            <div>
+                <MudText Typo="Typo.body1" Class="mb-1">
+                    <strong>Email Verification Required</strong>
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    Your email address has not been verified. Please verify your email to access all features.
+                </MudText>
+            </div>
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Dark"
+                OnClick="SendVerificationEmail" 
+                Disabled="@isLoading"
+                Class="ml-4">
+                @if (isLoading)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <span>Sending...</span>
+                }
+                else if (emailSent)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" />
+                    <span>Email Sent</span>
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-2" />
+                    <span>Send Verification Email</span>
+                }
+            </MudButton>
+        </div>
+    </MudAlert>
+}
+
+@code {
+    [Parameter] public bool IsEmailVerified { get; set; }
+    [Parameter] public Guid UserId { get; set; }
+    
+    private bool isLoading = false;
+    private bool emailSent = false;
+
+    private async Task SendVerificationEmail()
+    {
+        if (UserId == Guid.Empty)
+        {
+            Snackbar.Add("Unable to send verification email. User ID is missing.", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            isLoading = true;
+            emailSent = false;
+
+            var payload = new { userId = UserId };
+            var response = await HttpClient.PostAsJsonAsync("/api/v1/identity/email-verification/send", payload);
+
+            if (response.IsSuccessStatusCode)
+            {
+                emailSent = true;
+                Snackbar.Add("Verification email sent successfully! Please check your inbox.", Severity.Success);
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Failed to send verification email. {errorContent}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

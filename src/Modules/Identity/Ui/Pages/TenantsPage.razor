@@ -1,0 +1,198 @@
+@page "/workspaces"
+@inject HttpClient HttpClient
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>My Workspaces</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudPaper Class="pa-6">
+        <div class="d-flex justify-space-between align-center mb-4">
+            <MudText Typo="Typo.h4">My Workspaces</MudText>
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary"
+                StartIcon="Icons.Material.Filled.Add"
+                OnClick="OpenCreateDialog">
+                Create Workspace
+            </MudButton>
+        </div>
+        
+        <MudTable
+            Items="@tenants"
+            Loading="@isLoading"
+            Hover="true"
+            Breakpoint="Breakpoint.Sm"
+            LoadingProgressColor="Color.Info">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Plan</MudTh>
+                <MudTh>Your Role</MudTh>
+                <MudTh>Created</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="Icons.Material.Filled.Business" Class="mr-3" />
+                        <MudText Typo="Typo.body1">@context.Name</MudText>
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="Plan">
+                    <MudChip Color="GetPlanColor(context.Plan)" Size="Size.Small">
+                        @context.Plan
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Your Role">
+                    <MudChip Color="GetRoleColor(context.UserRole)" Size="Size.Small" Variant="Variant.Outlined">
+                        @context.UserRole
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Created">
+                    <MudText Typo="Typo.body2">
+                        @context.CreatedAt.ToString("MMM dd, yyyy")
+                    </MudText>
+                </MudTd>
+                <MudTd DataLabel="Status">
+                    <MudChip Color="@(context.IsActive ? Color.Success : Color.Default)" 
+                             Size="Size.Small"
+                             Icon="@(context.IsActive ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
+                        @(context.IsActive ? "Active" : "Inactive")
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudButtonGroup Size="Size.Small" Variant="Variant.Text">
+                        <MudIconButton Icon="Icons.Material.Filled.Visibility"
+                                       Color="Color.Primary"
+                                       OnClick="@(() => ViewTenant(context.Id))"
+                                       Title="View Details" />
+                        @if (context.UserRole == "Admin")
+                        {
+                            <MudIconButton Icon="Icons.Material.Filled.Edit"
+                                           Color="Color.Secondary"
+                                           OnClick="@(() => EditTenant(context))"
+                                           Title="Edit Workspace" />
+                        }
+                    </MudButtonGroup>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <div class="text-center pa-8">
+                    <MudIcon Icon="Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" Class="mb-2">No workspaces found</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Default">
+                        Get started by creating your first workspace
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               StartIcon="Icons.Material.Filled.Add"
+                               OnClick="OpenCreateDialog"
+                               Class="mt-4">
+                        Create Workspace
+                    </MudButton>
+                </div>
+            </NoRecordsContent>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private List<TenantDto> tenants = new();
+    private bool isLoading = true;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTenants();
+    }
+    
+    private async Task LoadTenants()
+    {
+        try
+        {
+            isLoading = true;
+            var response = await HttpClient.GetAsync("/api/v1/identity/tenants");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                tenants = await response.Content.ReadFromJsonAsync<List<TenantDto>>() ?? new List<TenantDto>();
+            }
+            else
+            {
+                Snackbar.Add("Error loading workspaces", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading workspaces: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private async Task OpenCreateDialog()
+    {
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        
+        var dialog = await DialogService.ShowAsync<CreateTenantDialog>(
+            "Create Workspace", 
+            new DialogParameters<CreateTenantDialog>
+            {
+                { x => x.OnTenantCreated, EventCallback.Factory.Create(this, LoadTenants) }
+            },
+            options);
+    }
+    
+    private void ViewTenant(Guid tenantId)
+    {
+        Navigation.NavigateTo($"/workspaces/{tenantId}");
+    }
+    
+    private async Task EditTenant(TenantDto tenant)
+    {
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+        
+        var parameters = new DialogParameters<EditTenantDialog>
+        {
+            { x => x.TenantId, tenant.Id },
+            { x => x.Name, tenant.Name },
+            { x => x.Plan, tenant.Plan },
+            { x => x.IsActive, tenant.IsActive },
+            { x => x.OnTenantUpdated, EventCallback.Factory.Create(this, LoadTenants) }
+        };
+        
+        await DialogService.ShowAsync<EditTenantDialog>(
+            "Edit Workspace", 
+            parameters,
+            options);
+    }
+    
+    private Color GetPlanColor(string plan) => plan switch
+    {
+        "Free" => Color.Default,
+        "Pro" => Color.Primary,
+        "Enterprise" => Color.Secondary,
+        _ => Color.Default
+    };
+    
+    private Color GetRoleColor(string role) => role switch
+    {
+        "Admin" => Color.Error,
+        "User" => Color.Primary,
+        "Viewer" => Color.Default,
+        _ => Color.Default
+    };
+}

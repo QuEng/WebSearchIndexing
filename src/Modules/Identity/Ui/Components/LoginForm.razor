@@ -1,0 +1,103 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@using WebSearchIndexing.Modules.Identity.Ui.Services
+@inject HybridAuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<EditForm
+    class="login-form"
+    Model="@loginModel"
+    OnValidSubmit="@HandleLogin">
+    <DataAnnotationsValidator />
+    
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <InputText
+            id="email"
+            class="form-control"
+            @bind-Value="loginModel.Email" />
+        <ValidationMessage For="@(() => loginModel.Email)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <InputText
+            id="password"
+            type="password"
+            class="form-control"
+            @bind-Value="loginModel.Password" />
+        <ValidationMessage For="@(() => loginModel.Password)" />
+    </div>
+
+    <div class="mb-3 form-check">
+        <InputCheckbox
+            id="rememberMe"
+            class="form-check-input"
+            @bind-Value="loginModel.RememberMe" />
+        <label class="form-check-label" for="rememberMe">
+            Remember me for 7 days
+        </label>
+    </div>
+
+    <div class="d-grid">
+        <button
+            type="submit"
+            class="btn btn-primary"
+            disabled="@isLoading">
+            @if (isLoading)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            }
+            Sign In
+        </button>
+    </div>
+</EditForm>
+
+
+@code {
+    private LoginModel loginModel = new();
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+
+    [Parameter] public string? ReturnUrl { get; set; }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            var result = await AuthService.LoginAsync(loginModel.Email, loginModel.Password, loginModel.RememberMe);
+            
+            if (result.IsSuccess)
+            {
+                // Navigate to return URL or default
+                var redirectUrl = !string.IsNullOrEmpty(ReturnUrl) ? ReturnUrl : "/";
+                Navigation.NavigateTo(redirectUrl);
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "Login failed. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An unexpected error occurred. Please try again.";
+            await JSRuntime.InvokeVoidAsync("console.error", "Login error:", ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
