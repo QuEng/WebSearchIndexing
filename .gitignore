@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/.github/copilot-instructions.md
+/docs/identity-module-ai-roadmap.md
+/docs/identity-module-ui-implementation-plan.md
+/docs/tenant_full_model.md
