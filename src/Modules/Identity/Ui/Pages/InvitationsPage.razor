@@ -1,4 +1,5 @@
 @page "/invitations"
+@using WebSearchIndexing.Modules.Identity.Domain.Constants
 @inject HttpClient HttpClient
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
@@ -14,20 +15,21 @@
             <MudPaper Class="pa-4 mt-4">
                 <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">
-                        <MudIcon Icon="Icons.Material.Filled.Inbox" Class="mr-2" />
+                        <MudIcon Icon="@Icons.Material.Filled.Inbox" Class="mr-2" />
                         Incoming Invitations
                     </MudText>
-                    <MudButton Variant="Variant.Text" 
-                               StartIcon="Icons.Material.Filled.Refresh"
-                               OnClick="RefreshIncoming"
-                               Disabled="@isLoadingIncoming">
+                    <MudButton
+                        Variant="Variant.Text" 
+                        StartIcon="Icons.Material.Filled.Refresh"
+                        OnClick="RefreshIncoming"
+                        Disabled="@_isLoadingIncoming">
                         Refresh
                     </MudButton>
                 </div>
                 
                 <MudTable
-                    Items="@incomingInvitations"
-                    Loading="@isLoadingIncoming"
+                    Items="@_incomingInvitations"
+                    Loading="@_isLoadingIncoming"
                     Hover="true"
                     Breakpoint="Breakpoint.Sm"
                     LoadingProgressColor="Color.Info">
@@ -74,16 +76,18 @@
                             @if (context.IsPending && !context.IsExpired)
                             {
                                 <MudButtonGroup Size="Size.Small" Variant="Variant.Text">
-                                    <MudButton Color="Color.Success"
-                                               StartIcon="Icons.Material.Filled.Check"
-                                               OnClick="@(() => AcceptInvitation(context))"
-                                               Disabled="@isProcessing">
+                                    <MudButton
+                                        Color="Color.Success"
+                                        StartIcon="@Icons.Material.Filled.Check"
+                                        OnClick="@(() => AcceptInvitation(context))"
+                                        Disabled="@_isProcessing">
                                         Accept
                                     </MudButton>
-                                    <MudButton Color="Color.Error"
-                                               StartIcon="Icons.Material.Filled.Close"
-                                               OnClick="@(() => DeclineInvitation(context))"
-                                               Disabled="@isProcessing">
+                                    <MudButton
+                                        Color="Color.Error"
+                                        StartIcon="@Icons.Material.Filled.Close"
+                                        OnClick="@(() => DeclineInvitation(context))"
+                                        Disabled="@_isProcessing">
                                         Decline
                                     </MudButton>
                                 </MudButtonGroup>
@@ -99,7 +103,7 @@
                     </RowTemplate>
                     <NoRecordsContent>
                         <div class="text-center pa-8">
-                            <MudIcon Icon="Icons.Material.Filled.Inbox" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                            <MudIcon Icon="@Icons.Material.Filled.Inbox" Size="Size.Large" Color="Color.Default" Class="mb-4" />
                             <MudText Typo="Typo.h6" Class="mb-2">No incoming invitations</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Default">
                                 You don't have any pending workspace invitations
@@ -114,20 +118,21 @@
             <MudPaper Class="pa-4 mt-4">
                 <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">
-                        <MudIcon Icon="Icons.Material.Filled.Send" Class="mr-2" />
+                        <MudIcon Icon="@Icons.Material.Filled.Send" Class="mr-2" />
                         Outgoing Invitations
                     </MudText>
-                    <MudButton Variant="Variant.Text" 
-                               StartIcon="Icons.Material.Filled.Refresh"
-                               OnClick="RefreshOutgoing"
-                               Disabled="@isLoadingOutgoing">
+                    <MudButton
+                        Variant="Variant.Text" 
+                        StartIcon="Icons.Material.Filled.Refresh"
+                        OnClick="RefreshOutgoing"
+                        Disabled="@_isLoadingOutgoing">
                         Refresh
                     </MudButton>
                 </div>
                 
                 <MudTable
-                    Items="@outgoingInvitations"
-                    Loading="@isLoadingOutgoing"
+                    Items="@_outgoingInvitations"
+                    Loading="@_isLoadingOutgoing"
                     Hover="true"
                     Breakpoint="Breakpoint.Sm"
                     LoadingProgressColor="Color.Info">
@@ -143,7 +148,7 @@
                     <RowTemplate>
                         <MudTd DataLabel="Email">
                             <div class="d-flex align-center">
-                                <MudIcon Icon="Icons.Material.Filled.Email" Class="mr-2" />
+                                <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-2" />
                                 <MudText>@context.Email</MudText>
                             </div>
                         </MudTd>
@@ -173,12 +178,13 @@
                         <MudTd DataLabel="Actions">
                             @if (context.IsPending && !context.IsExpired)
                             {
-                                <MudButton Color="Color.Error"
-                                           Size="Size.Small"
-                                           Variant="Variant.Text"
-                                           StartIcon="Icons.Material.Filled.Cancel"
-                                           OnClick="@(() => RevokeInvitation(context))"
-                                           Disabled="@isProcessing">
+                                <MudButton
+                                    Color="Color.Error"
+                                    Size="Size.Small"
+                                    Variant="Variant.Text"
+                                    StartIcon="@Icons.Material.Filled.Cancel"
+                                    OnClick="@(() => RevokeInvitation(context))"
+                                    Disabled="@_isProcessing">
                                     Revoke
                                 </MudButton>
                             }
@@ -206,12 +212,13 @@
     </MudTabs>
 </MudContainer>
 
-@code {
-    private List<InvitationDto> incomingInvitations = new();
-    private List<InvitationDto> outgoingInvitations = new();
-    private bool isLoadingIncoming = true;
-    private bool isLoadingOutgoing = true;
-    private bool isProcessing = false;
+@code
+{
+    private List<InvitationDto> _incomingInvitations = new();
+    private List<InvitationDto> _outgoingInvitations = new();
+    private bool _isLoadingIncoming = true;
+    private bool _isLoadingOutgoing = true;
+    private bool _isProcessing = false;
     
     protected override async Task OnInitializedAsync()
     {
@@ -222,12 +229,12 @@
     {
         try
         {
-            isLoadingIncoming = true;
+            _isLoadingIncoming = true;
             var response = await HttpClient.GetAsync("/api/v1/identity/invitations/incoming");
             
             if (response.IsSuccessStatusCode)
             {
-                incomingInvitations = await response.Content.ReadFromJsonAsync<List<InvitationDto>>() ?? new List<InvitationDto>();
+                _incomingInvitations = await response.Content.ReadFromJsonAsync<List<InvitationDto>>() ?? new List<InvitationDto>();
             }
             else
             {
@@ -240,7 +247,7 @@
         }
         finally
         {
-            isLoadingIncoming = false;
+            _isLoadingIncoming = false;
         }
     }
     
@@ -248,12 +255,12 @@
     {
         try
         {
-            isLoadingOutgoing = true;
+            _isLoadingOutgoing = true;
             var response = await HttpClient.GetAsync("/api/v1/identity/invitations/outgoing");
             
             if (response.IsSuccessStatusCode)
             {
-                outgoingInvitations = await response.Content.ReadFromJsonAsync<List<InvitationDto>>() ?? new List<InvitationDto>();
+                _outgoingInvitations = await response.Content.ReadFromJsonAsync<List<InvitationDto>>() ?? new List<InvitationDto>();
             }
             else
             {
@@ -266,7 +273,7 @@
         }
         finally
         {
-            isLoadingOutgoing = false;
+            _isLoadingOutgoing = false;
         }
     }
     
@@ -284,7 +291,7 @@
     {
         try
         {
-            isProcessing = true;
+            _isProcessing = true;
             var response = await HttpClient.PostAsync($"/api/v1/identity/invitations/{invitation.Id}/accept", null);
             
             if (response.IsSuccessStatusCode)
@@ -304,7 +311,7 @@
         }
         finally
         {
-            isProcessing = false;
+            _isProcessing = false;
         }
     }
     
@@ -312,7 +319,7 @@
     {
         try
         {
-            isProcessing = true;
+            _isProcessing = true;
             var response = await HttpClient.PostAsync($"/api/v1/identity/invitations/{invitation.Id}/decline", null);
             
             if (response.IsSuccessStatusCode)
@@ -332,7 +339,7 @@
         }
         finally
         {
-            isProcessing = false;
+            _isProcessing = false;
         }
     }
     
@@ -340,7 +347,7 @@
     {
         try
         {
-            isProcessing = true;
+            _isProcessing = true;
             var response = await HttpClient.PostAsync($"/api/v1/identity/invitations/{invitation.Id}/revoke", null);
             
             if (response.IsSuccessStatusCode)
@@ -360,15 +367,15 @@
         }
         finally
         {
-            isProcessing = false;
+            _isProcessing = false;
         }
     }
     
     private Color GetRoleColor(string role) => role switch
     {
-        "Admin" => Color.Error,
-        "User" => Color.Primary,
-        "Viewer" => Color.Default,
+        Roles.Admin => Color.Error,
+        Roles.Member => Color.Primary,
+        Roles.Viewer => Color.Default,
         _ => Color.Default
     };
     

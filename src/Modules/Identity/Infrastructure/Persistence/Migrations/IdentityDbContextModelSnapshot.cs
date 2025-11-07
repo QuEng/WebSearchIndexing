@@ -116,6 +116,72 @@ namespace WebSearchIndexing.Modules.Identity.Infrastructure.Persistence.Migratio
                     b.ToTable("EmailVerificationTokens", "identity");
                 });
 
+            modelBuilder.Entity("WebSearchIndexing.Modules.Identity.Domain.Entities.LoginHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("DeviceInfo")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("device_info");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<bool>("IsSuccessful")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_successful");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("location");
+
+                    b.Property<DateTime>("LoginAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("login_at");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("UserAgent")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("user_agent");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoginAt")
+                        .HasDatabaseName("ix_login_histories_login_at");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_login_histories_user_id");
+
+                    b.HasIndex("IpAddress", "LoginAt")
+                        .HasDatabaseName("ix_login_histories_ip_login_at");
+
+                    b.HasIndex("UserId", "LoginAt")
+                        .HasDatabaseName("ix_login_histories_user_login_at");
+
+                    b.ToTable("login_histories", "identity");
+                });
+
             modelBuilder.Entity("WebSearchIndexing.Modules.Identity.Domain.Entities.PasswordHistory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -566,6 +632,17 @@ namespace WebSearchIndexing.Modules.Identity.Infrastructure.Persistence.Migratio
                 });
 
             modelBuilder.Entity("WebSearchIndexing.Modules.Identity.Domain.Entities.EmailVerificationToken", b =>
+                {
+                    b.HasOne("WebSearchIndexing.Modules.Identity.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WebSearchIndexing.Modules.Identity.Domain.Entities.LoginHistory", b =>
                 {
                     b.HasOne("WebSearchIndexing.Modules.Identity.Domain.Entities.User", "User")
                         .WithMany()

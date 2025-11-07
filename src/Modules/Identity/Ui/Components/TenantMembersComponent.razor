@@ -1,0 +1,279 @@
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@using WebSearchIndexing.Modules.Identity.Domain.Constants
+
+<MudPaper
+    Class="pa-6"
+    Elevation="2">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText
+            Typo="Typo.h5"
+            Color="Color.Primary">
+            Members
+        </MudText>
+        <MudText
+            Typo="Typo.body2"
+            Color="Color.Secondary">
+            @(_members.Count) member(s)
+        </MudText>
+    </div>
+
+    <MudTable
+        Items="@_members"
+        Loading="@_isLoading"
+        Hover="true"
+        Striped="true"
+        Dense="true">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Role</MudTh>
+            <MudTh>Joined</MudTh>
+            <MudTh>Status</MudTh>
+            @if (IsAdmin)
+            {
+                <MudTh>Actions</MudTh>
+            }
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">
+                <div class="d-flex align-center">
+                    <MudAvatar
+                        Class="mr-3"
+                        Size="Size.Small"
+                        Color="Color.Primary">
+                        @context.Name.Substring(0, 1).ToUpper()
+                    </MudAvatar>
+                    <MudText>@context.Name</MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="Email">
+                <MudText>@context.Email</MudText>
+            </MudTd>
+            <MudTd DataLabel="Role">
+                @if (IsAdmin && context.UserId != _currentUserId)
+                {
+                    <MudSelect
+                        Value="@context.Role"
+                        T="string"
+                        Variant="Variant.Text"
+                        Dense="true"
+                        ValueChanged="@((string newRole) => UpdateMemberRole(context.UserId, newRole))">
+                        <MudSelectItem Value="@Roles.Owner">Owner</MudSelectItem>
+                        <MudSelectItem Value="@Roles.Admin">Admin</MudSelectItem>
+                        <MudSelectItem Value="@Roles.Member">Member</MudSelectItem>
+                        <MudSelectItem Value="@Roles.Viewer">Viewer</MudSelectItem>
+                    </MudSelect>
+                }
+                else
+                {
+                    <MudChip
+                        Size="Size.Small"
+                        Color="@GetRoleColor(context.Role)">
+                        @context.Role
+                    </MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="Joined">
+                <MudText
+                    Typo="Typo.body2"
+                    Color="Color.Secondary">
+                    @context.JoinedAt.ToString("MMM dd, yyyy")
+                </MudText>
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip
+                    Size="Size.Small"
+                    Color="@(context.IsActive ? Color.Success : Color.Default)"
+                    Variant="Variant.Text">
+                    @(context.IsActive ? "Active" : "Inactive")
+                </MudChip>
+            </MudTd>
+            @if (IsAdmin)
+            {
+                <MudTd DataLabel="Actions">
+                    @if (context.UserId != _currentUserId)
+                    {
+                        <MudIconButton
+                            Icon="Icons.Material.Filled.Delete"
+                            Color="Color.Error"
+                            Size="Size.Small"
+                            OnClick="@(() => RemoveMember(context))"
+                            title="Remove member">
+                        </MudIconButton>
+                    }
+                    else
+                    {
+                        <MudText
+                            Typo="Typo.caption"
+                            Color="Color.Secondary">
+                            (You)
+                        </MudText>
+                    }
+                </MudTd>
+            }
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudAlert
+                Severity="Severity.Info"
+                Class="ma-4">
+                No members found for this workspace.
+            </MudAlert>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudProgressLinear
+                Color="Color.Primary"
+                Indeterminate="true" />
+        </LoadingContent>
+    </MudTable>
+</MudPaper>
+
+@code
+{
+    [Parameter] public Guid TenantId { get; set; }
+    [Parameter] public bool IsAdmin { get; set; }
+    
+    private List<TenantMemberDto> _members = new();
+    private bool _isLoading = true;
+    private Guid _currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCurrentUserId();
+        await LoadMembersAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (TenantId != Guid.Empty)
+        {
+            await LoadMembersAsync();
+        }
+    }
+
+    private async Task GetCurrentUserId()
+    {
+        try
+        {
+            var response = await HttpClient.GetAsync("/api/v1/identity/users/me");
+            if (response.IsSuccessStatusCode)
+            {
+                var user = await response.Content.ReadFromJsonAsync<UserProfileDto>();
+                _currentUserId = user?.Id ?? Guid.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to get current user: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadMembersAsync()
+    {
+        if (TenantId == Guid.Empty) return;
+
+        _isLoading = true;
+        try
+        {
+            var response = await HttpClient.GetAsync($"/api/v1/identity/tenants/{TenantId}/members");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var members = await response.Content.ReadFromJsonAsync<List<TenantMemberDto>>();
+                _members = members ?? new List<TenantMemberDto>();
+            }
+            else
+            {
+                Snackbar.Add("Failed to load members", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading members: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task UpdateMemberRole(Guid userId, string newRole)
+    {
+        try
+        {
+            var payload = new { Role = newRole };
+            var response = await HttpClient.PutAsJsonAsync(
+                $"/api/v1/identity/tenants/{TenantId}/members/{userId}/role", 
+                payload);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Member role updated successfully", Severity.Success);
+                await LoadMembersAsync();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Failed to update role: {error}", Severity.Error);
+                // Reload to reset the select value
+                await LoadMembersAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating role: {ex.Message}", Severity.Error);
+            await LoadMembersAsync();
+        }
+    }
+
+    private async Task RemoveMember(TenantMemberDto member)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = $"Are you sure you want to remove {member.Name} from this workspace? This action cannot be undone.",
+            ["ButtonText"] = "Remove",
+            ["Color"] = Color.Error
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirm Removal", parameters);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            try
+            {
+                var response = await HttpClient.DeleteAsync(
+                    $"/api/v1/identity/tenants/{TenantId}/members/{member.UserId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add($"{member.Name} removed successfully", Severity.Success);
+                    await LoadMembersAsync();
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Snackbar.Add($"Failed to remove member: {error}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error removing member: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private Color GetRoleColor(string role)
+    {
+        return role.ToLower() switch
+        {
+            "owner" => Color.Secondary,
+            "admin" => Color.Primary,
+            "member" => Color.Info,
+            "viewer" => Color.Default,
+            _ => Color.Default
+        };
+    }
+}

@@ -6,7 +6,7 @@
         <MudText Typo="Typo.h6" Class="mb-4">Edit Workspace</MudText>
         
         <MudTextField
-            @bind-Value="model.Name"
+            @bind-Value="_model.Name"
             Label="Workspace Name"
             Required="true"
             Variant="Variant.Outlined"
@@ -14,7 +14,7 @@
             HelperText="Enter a unique name for your workspace" />
             
         <MudSelect
-            @bind-Value="model.Plan"
+            @bind-Value="_model.Plan"
             Label="Plan"
             Required="true"
             Variant="Variant.Outlined"
@@ -25,7 +25,7 @@
         </MudSelect>
         
         <MudSwitch
-            @bind-Value="model.IsActive"
+            @bind-Value="_model.IsActive"
             Label="Active"
             Color="Color.Primary"
             Class="mb-3" />
@@ -36,8 +36,8 @@
             Color="Color.Primary" 
             Variant="Variant.Filled"
             OnClick="UpdateTenant"
-            Disabled="@(!IsFormValid() || isLoading)">
-            @if (isLoading)
+            Disabled="@(!IsFormValid() || _isLoading)">
+            @if (_isLoading)
             {
                 <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
                 <MudText Class="ms-2">Saving...</MudText>
@@ -50,7 +50,8 @@
     </DialogActions>
 </MudDialog>
 
-@code {
+@code
+{
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Guid TenantId { get; set; }
     [Parameter] public string Name { get; set; } = string.Empty;
@@ -58,20 +59,20 @@
     [Parameter] public bool IsActive { get; set; }
     [Parameter] public EventCallback OnTenantUpdated { get; set; }
     
-    private EditTenantModel model = new();
-    private bool isLoading = false;
+    private EditTenantModel _model = new();
+    private bool _isLoading = false;
     
     protected override void OnParametersSet()
     {
-        model.Name = Name;
-        model.Plan = Plan;
-        model.IsActive = IsActive;
+        _model.Name = Name;
+        _model.Plan = Plan;
+        _model.IsActive = IsActive;
     }
     
     private bool IsFormValid()
     {
-        return !string.IsNullOrWhiteSpace(model.Name) && 
-               !string.IsNullOrWhiteSpace(model.Plan);
+        return !string.IsNullOrWhiteSpace(_model.Name) && 
+               !string.IsNullOrWhiteSpace(_model.Plan);
     }
     
     private async Task UpdateTenant()
@@ -80,20 +81,20 @@
         
         try
         {
-            isLoading = true;
+            _isLoading = true;
             
             var request = new
             {
-                name = model.Name.Trim(),
-                plan = model.Plan,
-                isActive = model.IsActive
+                name = _model.Name.Trim(),
+                plan = _model.Plan,
+                isActive = _model.IsActive
             };
             
             var response = await HttpClient.PutAsJsonAsync($"/api/v1/identity/tenants/{TenantId}", request);
             
             if (response.IsSuccessStatusCode)
             {
-                Snackbar.Add($"Workspace '{model.Name}' updated successfully!", Severity.Success);
+                Snackbar.Add($"Workspace '{_model.Name}' updated successfully!", Severity.Success);
                 await OnTenantUpdated.InvokeAsync();
                 MudDialog.Close(DialogResult.Ok(true));
             }
@@ -109,7 +110,7 @@
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
     

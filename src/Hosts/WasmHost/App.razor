@@ -1,4 +1,4 @@
-п»ї@using System.Reflection
+@using System.Reflection
 @using CoreUi = WebSearchIndexing.Modules.Core.Ui
 @using CatalogUi = WebSearchIndexing.Modules.Catalog.Ui  
 @using ReportingUi = WebSearchIndexing.Modules.Reporting.Ui
@@ -19,12 +19,13 @@
     </NotFound>
 </Router>
 
-@code {
+@code
+{
     private List<Assembly> _moduleAssemblies = new();
 
     protected override void OnInitialized()
     {
-        // Р”РѕРґР°РІР°РЅРЅСЏ РјРѕРґСѓР»СЊРЅРёС… assemblies РґР»СЏ РјР°СЂС€СЂСѓС‚РёР·Р°С†С–С—
+        // Додавання модульних assemblies для маршрутизації
         _moduleAssemblies.AddRange(new[]
         {
             typeof(CoreUi.DependencyInjectionExtensions).Assembly, // Core.Ui
@@ -36,8 +37,8 @@
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
-        // Р’ РјР°Р№Р±СѓС‚РЅСЊРѕРјСѓ С‚СѓС‚ РјРѕР¶РЅР° РґРѕРґР°С‚Рё lazy loading Р»РѕРіС–РєСѓ
-        // РЅР°РїСЂРёРєР»Р°Рґ, Р·Р°РІР°РЅС‚Р°Р¶СѓРІР°С‚Рё РєРѕРЅРєСЂРµС‚РЅС– РјРѕРґСѓР»С– С‚С–Р»СЊРєРё РєРѕР»Рё РїРѕС‚СЂС–Р±РЅРѕ
+        // В майбутньому тут можна додати lazy loading логіку
+        // наприклад, завантажувати конкретні модулі тільки коли потрібно
         await Task.CompletedTask;
     }
 }

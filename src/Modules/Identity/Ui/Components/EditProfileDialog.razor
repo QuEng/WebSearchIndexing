@@ -6,27 +6,27 @@
         <MudText Typo="Typo.h6" Class="mb-4">Edit Profile</MudText>
         
         <MudTextField 
-            @bind-Value="model.FirstName"
+            @bind-Value="_model.FirstName"
             Label="First Name"
             Variant="Variant.Outlined"
             Required="true"
             Class="mb-3"
-            Error="@(!string.IsNullOrEmpty(firstNameError))"
-            ErrorText="@firstNameError" />
+            Error="@(!string.IsNullOrEmpty(_firstNameError))"
+            ErrorText="@_firstNameError" />
             
         <MudTextField 
-            @bind-Value="model.LastName"
+            @bind-Value="_model.LastName"
             Label="Last Name"
             Variant="Variant.Outlined"
             Required="true"
             Class="mb-3"
-            Error="@(!string.IsNullOrEmpty(lastNameError))"
-            ErrorText="@lastNameError" />
+            Error="@(!string.IsNullOrEmpty(_lastNameError))"
+            ErrorText="@_lastNameError" />
 
-        @if (!string.IsNullOrEmpty(generalError))
+        @if (!string.IsNullOrEmpty(_generalError))
         {
             <MudAlert Severity="Severity.Error" Class="mt-3">
-                @generalError
+                @_generalError
             </MudAlert>
         }
     </DialogContent>
@@ -36,8 +36,8 @@
             Color="Color.Primary" 
             Variant="Variant.Filled"
             OnClick="SaveProfile"
-            Disabled="@(!IsFormValid() || isLoading)">
-            @if (isLoading)
+            Disabled="@(!IsFormValid() || _isLoading)">
+            @if (_isLoading)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                 <span>Saving...</span>
@@ -50,40 +50,41 @@
     </DialogActions>
 </MudDialog>
 
-@code {
+@code
+{
     [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public string FirstName { get; set; } = string.Empty;
     [Parameter] public string LastName { get; set; } = string.Empty;
     
-    private EditProfileModel model = new();
-    private bool isLoading = false;
+    private EditProfileModel _model = new();
+    private bool _isLoading = false;
     
-    private string firstNameError = string.Empty;
-    private string lastNameError = string.Empty;
-    private string generalError = string.Empty;
+    private string _firstNameError = string.Empty;
+    private string _lastNameError = string.Empty;
+    private string _generalError = string.Empty;
 
     protected override void OnParametersSet()
     {
-        model.FirstName = FirstName;
-        model.LastName = LastName;
+        _model.FirstName = FirstName;
+        _model.LastName = LastName;
     }
 
     private bool IsFormValid()
     {
-        firstNameError = string.Empty;
-        lastNameError = string.Empty;
+        _firstNameError = string.Empty;
+        _lastNameError = string.Empty;
 
         bool isValid = true;
 
-        if (string.IsNullOrWhiteSpace(model.FirstName))
+        if (string.IsNullOrWhiteSpace(_model.FirstName))
         {
-            firstNameError = "First name is required";
+            _firstNameError = "First name is required";
             isValid = false;
         }
 
-        if (string.IsNullOrWhiteSpace(model.LastName))
+        if (string.IsNullOrWhiteSpace(_model.LastName))
         {
-            lastNameError = "Last name is required";
+            _lastNameError = "Last name is required";
             isValid = false;
         }
 
@@ -99,13 +100,13 @@
 
         try
         {
-            isLoading = true;
-            generalError = string.Empty;
+            _isLoading = true;
+            _generalError = string.Empty;
 
             var payload = new 
             { 
-                firstName = model.FirstName.Trim(), 
-                lastName = model.LastName.Trim()
+                firstName = _model.FirstName.Trim(), 
+                lastName = _model.LastName.Trim()
             };
             
             var response = await HttpClient.PutAsJsonAsync("/api/v1/identity/users/profile", payload);
@@ -125,26 +126,26 @@
                     var errorJson = System.Text.Json.JsonDocument.Parse(errorContent);
                     if (errorJson.RootElement.TryGetProperty("message", out var messageProp))
                     {
-                        generalError = messageProp.GetString() ?? "Failed to update profile";
+                        _generalError = messageProp.GetString() ?? "Failed to update profile";
                     }
                     else
                     {
-                        generalError = "Failed to update profile. Please try again.";
+                        _generalError = "Failed to update profile. Please try again.";
                     }
                 }
                 catch
                 {
-                    generalError = "Failed to update profile. Please try again.";
+                    _generalError = "Failed to update profile. Please try again.";
                 }
             }
         }
         catch (Exception ex)
         {
-            generalError = $"An unexpected error occurred: {ex.Message}";
+            _generalError = $"An unexpected error occurred: {ex.Message}";
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
     

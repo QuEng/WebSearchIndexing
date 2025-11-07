@@ -2,7 +2,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @implements IDisposable
 
-@if (isAuthenticated)
+@if (_isAuthenticated)
 {
     @if (AuthorizedContent != null)
     {
@@ -36,7 +36,8 @@ else
     }
 }
 
-@code {
+@code
+{
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? AuthorizedContent { get; set; }
     [Parameter] public RenderFragment? NotAuthorizedContent { get; set; }
@@ -44,8 +45,8 @@ else
     [Parameter] public string? RequiredPolicy { get; set; }
     [Parameter] public string RedirectUrl { get; set; } = "/auth/login";
 
-    private bool isAuthenticated = false;
-    private bool hasRequiredRole = false;
+    private bool _isAuthenticated = false;
+    private bool _hasRequiredRole = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -60,12 +61,12 @@ else
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         
-        isAuthenticated = user.Identity?.IsAuthenticated == true;
+        _isAuthenticated = user.Identity?.IsAuthenticated == true;
         
-        if (isAuthenticated && !string.IsNullOrEmpty(RequiredRole))
+        if (_isAuthenticated && !string.IsNullOrEmpty(RequiredRole))
         {
-            hasRequiredRole = user.IsInRole(RequiredRole);
-            isAuthenticated = hasRequiredRole;
+            _hasRequiredRole = user.IsInRole(RequiredRole);
+            _isAuthenticated = _hasRequiredRole;
         }
         
         StateHasChanged();

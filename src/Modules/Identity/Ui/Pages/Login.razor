@@ -6,7 +6,7 @@
 
 <PageTitle>Sign In - WebSearchIndexing</PageTitle>
 
-@if (isAuthenticated)
+@if (_isAuthenticated)
 {
     <!-- Redirect to return URL or home if already authenticated -->
     var redirectUrl = !string.IsNullOrEmpty(ReturnUrl) ? ReturnUrl : "/";
@@ -45,16 +45,17 @@ else
     </div>
 }
 
-@code {
+@code
+{
     [Parameter]
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
     
-    private bool isAuthenticated = false;
+    private bool _isAuthenticated = false;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
+        _isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
     }
 }

@@ -74,8 +74,10 @@ public static class DependencyInjectionExtensions
         services.AddScoped<Persistence.Repositories.RoleRepository>(); // Register concrete type for decorator
 
         services.AddScoped<Domain.Repositories.IUserInvitationRepository, UserInvitationRepository>();
-        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<Domain.Repositories.IUserTenantRepository, UserTenantRepository>();
+        services.AddScoped<IRefreshTokenRepository, Persistence.Repositories.RefreshTokenRepository>();
         services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
+        services.AddScoped<Domain.Repositories.ILoginHistoryRepository, LoginHistoryRepository>();
 
         // Caching
         services.AddSingleton<Application.Caching.ICacheService, Caching.InMemoryCacheService>();

@@ -4,17 +4,17 @@
 @inject HttpClient HttpClient
 
 <div class="tenant-selector">
-    @if (tenants.Any())
+    @if (_tenants.Any())
     {
         <div class="dropdown">
             <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                @(selectedTenant?.Name ?? "Select Workspace")
+                @(_selectedTenant?.Name ?? "Select Workspace")
             </button>
             <ul class="dropdown-menu">
-                @foreach (var tenant in tenants)
+                @foreach (var tenant in _tenants)
                 {
                     <li>
-                        <button class="dropdown-item @(selectedTenant?.Id == tenant.Id ? "active" : "")" 
+                        <button class="dropdown-item @(_selectedTenant?.Id == tenant.Id ? "active" : "")" 
                                 @onclick="() => SelectTenant(tenant)">
                             <div>
                                 <strong>@tenant.Name</strong>
@@ -26,7 +26,7 @@
             </ul>
         </div>
     }
-    else if (isLoading)
+    else if (_isLoading)
     {
         <div class="btn btn-outline-secondary" disabled>
             <span class="spinner-border spinner-border-sm me-2"></span>
@@ -41,12 +41,13 @@
     }
 </div>
 
-@code {
+@code
+{
     [Parameter] public EventCallback<TenantInfo> OnTenantSelected { get; set; }
     
-    private List<TenantInfo> tenants = new();
-    private TenantInfo? selectedTenant;
-    private bool isLoading = true;
+    private List<TenantInfo> _tenants = new();
+    private TenantInfo? _selectedTenant;
+    private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,7 +58,7 @@
     {
         try
         {
-            isLoading = true;
+            _isLoading = true;
             
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             if (authState.User.Identity?.IsAuthenticated == true)
@@ -66,33 +67,33 @@
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    tenants = System.Text.Json.JsonSerializer.Deserialize<List<TenantInfo>>(content, new System.Text.Json.JsonSerializerOptions
+                    _tenants = System.Text.Json.JsonSerializer.Deserialize<List<TenantInfo>>(content, new System.Text.Json.JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     }) ?? new List<TenantInfo>();
 
                     // Auto-select first tenant if available
-                    if (tenants.Any() && selectedTenant == null)
+                    if (_tenants.Any() && _selectedTenant == null)
                     {
-                        selectedTenant = tenants.First();
-                        await OnTenantSelected.InvokeAsync(selectedTenant);
+                        _selectedTenant = _tenants.First();
+                        await OnTenantSelected.InvokeAsync(_selectedTenant);
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading tenants: {ex.Message}");
+            Console.WriteLine($"Error loading _tenants: {ex.Message}");
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 
     private async Task SelectTenant(TenantInfo tenant)
     {
-        selectedTenant = tenant;
+        _selectedTenant = tenant;
         await OnTenantSelected.InvokeAsync(tenant);
         StateHasChanged();
     }

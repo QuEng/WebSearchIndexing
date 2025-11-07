@@ -14,6 +14,13 @@ internal sealed class RefreshTokenRepository : IRefreshTokenRepository
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
+    public async Task<RefreshToken?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.RefreshTokens
+            .Include(rt => rt.User)
+            .FirstOrDefaultAsync(rt => rt.Id == id, cancellationToken);
+    }
+
     public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
     {
         return await _context.RefreshTokens
@@ -30,7 +37,7 @@ internal sealed class RefreshTokenRepository : IRefreshTokenRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<RefreshToken>> GetActiveByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<RefreshToken>> GetActiveByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var nowUtc = DateTime.UtcNow;
 
@@ -41,12 +48,22 @@ internal sealed class RefreshTokenRepository : IRefreshTokenRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<RefreshToken>> GetActiveSessions(CancellationToken cancellationToken = default)
+    {
+        return await _context.RefreshTokens
+            .Include(rt => rt.User)
+            .Where(rt => rt.IsValid)
+            .OrderByDescending(rt => rt.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<RefreshToken> AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(refreshToken);
         
-        await _context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
+        var entry = await _context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        return entry.Entity;
     }
 
     public async Task UpdateAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
@@ -57,7 +74,15 @@ internal sealed class RefreshTokenRepository : IRefreshTokenRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RevokeAllByUserIdAsync(Guid userId, string reason, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(refreshToken);
+        
+        _context.RefreshTokens.Remove(refreshToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task RevokeAllUserTokensAsync(Guid userId, string reason, CancellationToken cancellationToken = default)
     {
         var activeTokens = await GetActiveByUserIdAsync(userId, cancellationToken);
         

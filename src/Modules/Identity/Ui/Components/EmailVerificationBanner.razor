@@ -17,14 +17,14 @@
                 Variant="Variant.Filled" 
                 Color="Color.Dark"
                 OnClick="SendVerificationEmail" 
-                Disabled="@isLoading"
+                Disabled="@_isLoading"
                 Class="ml-4">
-                @if (isLoading)
+                @if (_isLoading)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                     <span>Sending...</span>
                 }
-                else if (emailSent)
+                else if (_emailSent)
                 {
                     <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" />
                     <span>Email Sent</span>
@@ -39,12 +39,13 @@
     </MudAlert>
 }
 
-@code {
+@code
+{
     [Parameter] public bool IsEmailVerified { get; set; }
     [Parameter] public Guid UserId { get; set; }
     
-    private bool isLoading = false;
-    private bool emailSent = false;
+    private bool _isLoading = false;
+    private bool _emailSent = false;
 
     private async Task SendVerificationEmail()
     {
@@ -56,15 +57,15 @@
 
         try
         {
-            isLoading = true;
-            emailSent = false;
+            _isLoading = true;
+            _emailSent = false;
 
             var payload = new { userId = UserId };
             var response = await HttpClient.PostAsJsonAsync("/api/v1/identity/email-verification/send", payload);
 
             if (response.IsSuccessStatusCode)
             {
-                emailSent = true;
+                _emailSent = true;
                 Snackbar.Add("Verification email sent successfully! Please check your inbox.", Severity.Success);
             }
             else
@@ -79,7 +80,7 @@
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 }

@@ -46,10 +46,11 @@ public class Tenant : AggregateRoot<Guid>
         AddDomainEvent(new TenantCreatedDomainEvent(Id, Name, Slug, OwnerId, Plan, CreatedAt));
     }
 
-    public void UpdateDetails(string name, string slug)
+    public void UpdateDetails(string name, string slug, bool isActive)
     {
         Name = name;
         Slug = slug.ToLowerInvariant();
+        IsActive = isActive;
     }
 
     public void ChangePlan(string newPlan)

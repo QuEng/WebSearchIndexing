@@ -30,6 +30,7 @@ public sealed class IdentityDbContext : DbContext
     public DbSet<UserInvitation> UserInvitations { get; set; } = null!;
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; } = null!;
     public DbSet<PasswordHistory> PasswordHistory { get; set; } = null!;
+    public DbSet<LoginHistory> LoginHistories { get; set; } = null!;
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -49,14 +50,14 @@ public sealed class IdentityDbContext : DbContext
         modelBuilder.ApplyConfiguration(new UserDomainConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
         modelBuilder.ApplyConfiguration(new UserInvitationConfiguration());
+        modelBuilder.ApplyConfiguration(new LoginHistoryConfiguration());
 
         // Set default schema for Identity module
         modelBuilder.HasDefaultSchema("identity");
 
         // Apply tenant filtering for multi-tenant entities
-        modelBuilder.Entity<UserTenant>()
-            .HasQueryFilter(entity => entity.TenantId == CurrentTenantId);
-
+        // Note: UserTenant is NOT filtered by tenant as it's a cross-tenant relationship table
+        
         modelBuilder.Entity<OutboxMessage>()
             .HasQueryFilter(entity => entity.TenantId == CurrentTenantId);
     }

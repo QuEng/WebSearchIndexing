@@ -4,21 +4,21 @@
 @implements IDisposable
 
 <div class="token-status">
-    @if (tokenStatus.IsAuthenticated)
+    @if (_tokenStatus.IsAuthenticated)
     {
         <div class="d-flex align-items-center">
             <span class="badge me-2 @GetStatusBadgeClass()">
-                @tokenStatus.ExpiryStatus
+                @_tokenStatus.ExpiryStatus
             </span>
             
-            @if (tokenStatus.TimeUntilExpiry.HasValue)
+            @if (_tokenStatus.TimeUntilExpiry.HasValue)
             {
                 <small class="text-muted">
-                    Expires in @FormatTimeSpan(tokenStatus.TimeUntilExpiry.Value)
+                    Expires in @FormatTimeSpan(_tokenStatus.TimeUntilExpiry.Value)
                 </small>
             }
 
-            @if (tokenStatus.IsExpiringSoon)
+            @if (_tokenStatus.IsExpiringSoon)
             {
                 <i class="fas fa-exclamation-triangle text-warning ms-2" title="Token expiring soon"></i>
             }
@@ -30,16 +30,17 @@
     }
 </div>
 
-@code {
-    private TokenStatusModel tokenStatus = new();
-    private Timer? refreshTimer;
+@code
+{
+    private TokenStatusModel _tokenStatus = new();
+    private Timer? _refreshTimer;
 
     protected override void OnInitialized()
     {
         UpdateTokenStatus();
         
         // Update status every 30 seconds
-        refreshTimer = new Timer(async _ => 
+        _refreshTimer = new Timer(async _ => 
         {
             await InvokeAsync(() =>
             {
@@ -51,7 +52,7 @@
 
     private void UpdateTokenStatus()
     {
-        tokenStatus = new TokenStatusModel
+        _tokenStatus = new TokenStatusModel
         {
             IsAuthenticated = TokenStorage.IsAccessTokenValid(),
             AccessTokenExpiresAt = TokenStorage.GetAccessTokenExpiry(),
@@ -61,7 +62,7 @@
 
     private string GetStatusBadgeClass()
     {
-        return tokenStatus.ExpiryStatus switch
+        return _tokenStatus.ExpiryStatus switch
         {
             "Expired" => "bg-danger",
             "Expiring Soon" => "bg-warning",
@@ -84,6 +85,6 @@
 
     public void Dispose()
     {
-        refreshTimer?.Dispose();
+        _refreshTimer?.Dispose();
     }
 }

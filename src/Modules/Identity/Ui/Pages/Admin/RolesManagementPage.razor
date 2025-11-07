@@ -1,0 +1,332 @@
+@page "/admin/roles"
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@using WebSearchIndexing.Modules.Identity.Domain.Constants
+@using WebSearchIndexing.Modules.Identity.Ui.Components.Admin
+@inject HttpClient HttpClient
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Roles Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <div class="d-flex align-center justify-space-between mb-4">
+        <div class="d-flex align-center">
+            <MudIcon 
+                Icon="@Icons.Material.Filled.AdminPanelSettings" 
+                Size="Size.Large" 
+                Class="mr-3" 
+                Color="Color.Primary" />
+            <MudText Typo="Typo.h3">Roles Management</MudText>
+        </div>
+        
+        <MudButton
+            Variant="Variant.Filled"
+            Color="Color.Primary"
+            StartIcon="@Icons.Material.Filled.Add"
+            OnClick="OpenCreateDialog">
+            Create Role
+        </MudButton>
+    </div>
+
+    <!-- Roles Table -->
+    <MudPaper Class="pa-6">
+        <MudTable
+            Items="@_roles"
+            Loading="@_isLoading"
+            Hover="true"
+            Striped="true"
+            Dense="true"
+            Filter="new Func<RoleDto, bool>(FilterFunc)">
+            
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">System Roles</MudText>
+                <MudSpacer />
+                <MudTextField
+                    @bind-Value="_searchString"
+                    Placeholder="Search roles..."
+                    Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.Search"
+                    IconSize="Size.Medium"
+                    Class="mt-0" />
+            </ToolBarContent>
+            
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Type</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Permissions</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Created</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            
+            <RowTemplate>
+                <MudTd DataLabel="Name">
+                    <div class="d-flex align-center">
+                        <MudIcon 
+                            Icon="@GetRoleIcon(context.Type)" 
+                            Color="@GetRoleColor(context.Type)"
+                            Class="mr-2" />
+                        <MudText>@context.Name</MudText>
+                        @if (IsSystemRole(context.Name))
+                        {
+                            <MudChip Size="Size.Small" Color="Color.Info" Class="ml-2">System</MudChip>
+                        }
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="Type">
+                    <MudChip
+                        Size="Size.Small"
+                        Color="@GetRoleTypeColor(context.Type)">
+                        @context.Type
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Description">
+                    <MudText Class="text-truncate" Style="max-width: 200px;">
+                        @context.Description
+                    </MudText>
+                </MudTd>
+                <MudTd DataLabel="Permissions">
+                    @if (!string.IsNullOrEmpty(context.Permissions))
+                    {
+                        var permissionCount = context.Permissions.Split(',', StringSplitOptions.RemoveEmptyEntries).Length;
+                        <MudText Typo="Typo.body2">@permissionCount permission(s)</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">No permissions</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Status">
+                    <MudChip
+                        Size="Size.Small"
+                        Color="@(context.IsActive ? Color.Success : Color.Default)"
+                        Icon="@(context.IsActive ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
+                        @(context.IsActive ? "Active" : "Inactive")
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Created">
+                    <MudText Typo="Typo.body2">
+                        @context.CreatedAt.ToString("MMM dd, yyyy")
+                    </MudText>
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudIconButton
+                            Icon="@Icons.Material.Filled.Edit"
+                            Color="Color.Primary"
+                            Size="Size.Small"
+                            OnClick="@(() => OpenEditDialog(context))"
+                            Disabled="@IsSystemRole(context.Name)"
+                            title="Edit role">
+                        </MudIconButton>
+                        <MudIconButton
+                            Icon="@Icons.Material.Filled.Delete"
+                            Color="Color.Error"
+                            Size="Size.Small"
+                            OnClick="@(() => DeleteRole(context))"
+                            Disabled="@IsSystemRole(context.Name)"
+                            title="Delete role">
+                        </MudIconButton>
+                        <MudIconButton
+                            Icon="@Icons.Material.Filled.Info"
+                            Color="Color.Info"
+                            Size="Size.Small"
+                            OnClick="@(() => ViewRoleDetails(context))"
+                            title="View details">
+                        </MudIconButton>
+                    </MudButtonGroup>
+                </MudTd>
+            </RowTemplate>
+            
+            <NoRecordsContent>
+                <MudAlert Severity="Severity.Info" Class="ma-4">
+                    No roles found. Create your first role to get started.
+                </MudAlert>
+            </NoRecordsContent>
+            
+            <LoadingContent>
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+            </LoadingContent>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
+
+@code
+{
+    private List<RoleDto> _roles = new();
+    private bool _isLoading = true;
+    private string _searchString = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRolesAsync();
+    }
+
+    private async Task LoadRolesAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var response = await HttpClient.GetAsync("/api/v1/identity/roles");
+            if (response.IsSuccessStatusCode)
+            {
+                _roles = await response.Content.ReadFromJsonAsync<List<RoleDto>>() ?? new List<RoleDto>();
+            }
+            else
+            {
+                Snackbar.Add("Failed to load roles", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading roles: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+        
+        var dialog = await DialogService.ShowAsync<CreateRoleDialog>(
+            "Create New Role", 
+            options);
+            
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+        {
+            await LoadRolesAsync();
+        }
+    }
+
+    private async Task OpenEditDialog(RoleDto role)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Role"] = role
+        };
+        
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+        
+        var dialog = await DialogService.ShowAsync<EditRoleDialog>(
+            "Edit Role", 
+            parameters,
+            options);
+            
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+        {
+            await LoadRolesAsync();
+        }
+    }
+
+    private async Task DeleteRole(RoleDto role)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = $"Are you sure you want to delete the role '{role.Name}'? This action cannot be undone.",
+            ["ButtonText"] = "Delete Role",
+            ["Color"] = Color.Error
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirm Deletion", parameters);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            try
+            {
+                var response = await HttpClient.DeleteAsync($"/api/v1/identity/roles/{role.Id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add($"Role '{role.Name}' deleted successfully", Severity.Success);
+                    await LoadRolesAsync();
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Snackbar.Add($"Failed to delete role: {error}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error deleting role: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private void ViewRoleDetails(RoleDto role)
+    {
+        // TODO: Implement role details view
+        Snackbar.Add($"View details for {role.Name} - Not implemented yet", Severity.Info);
+    }
+
+    private bool FilterFunc(RoleDto role)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (role.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (role.Description.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (role.Type.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    private bool IsSystemRole(string roleName)
+    {
+        return Roles.Validation.AllRoles.Contains(roleName);
+    }
+
+    private string GetRoleIcon(string roleType)
+    {
+        return roleType.ToLower() switch
+        {
+            "global" => Icons.Material.Filled.SupervisedUserCircle,
+            "tenant" => Icons.Material.Filled.Business,
+            "domain" => Icons.Material.Filled.Domain,
+            _ => Icons.Material.Filled.Group
+        };
+    }
+
+    private Color GetRoleColor(string roleType)
+    {
+        return roleType.ToLower() switch
+        {
+            "global" => Color.Error,
+            "tenant" => Color.Primary,
+            "domain" => Color.Success,
+            _ => Color.Default
+        };
+    }
+
+    private Color GetRoleTypeColor(string roleType)
+    {
+        return roleType.ToLower() switch
+        {
+            "global" => Color.Error,
+            "tenant" => Color.Primary,
+            "domain" => Color.Success,
+            _ => Color.Default
+        };
+    }
+}

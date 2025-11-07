@@ -1,6 +1,8 @@
-@page "/identity/security"
 @using System.ComponentModel.DataAnnotations
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@inject HttpClient HttpClient
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Security Dashboard</PageTitle>
 
@@ -226,7 +228,8 @@
     </MudCard>
 </MudContainer>
 
-@code {
+@code
+{
     private List<UserSessionDto> _sessions = new();
     private List<SecurityEventDto> _recentSecurityEvents = new();
     private bool _loadingSessions = true;
@@ -252,13 +255,30 @@
         _loadingSessions = true;
         try
         {
-            // TODO: Implement actual session loading
-            await Task.Delay(1000); // Simulate API call
-            _sessions = GetMockSessions();
+            var response = await HttpClient.GetAsync("/api/v1/identity/security/active-sessions");
+            if (response.IsSuccessStatusCode)
+            {
+                var activeSessions = await response.Content.ReadFromJsonAsync<List<ActiveSessionDto>>();
+                _sessions = activeSessions?.Select(s => new UserSessionDto
+                {
+                    Id = s.Id,
+                    DeviceInfo = s.DeviceType,
+                    IpAddress = s.IpAddress,
+                    Location = s.Location,
+                    LastActivity = s.CreatedAt, // Using CreatedAt as LastActivity
+                    IsCurrentSession = s.IsCurrent
+                }).ToList() ?? new List<UserSessionDto>();
+            }
+            else
+            {
+                Snackbar.Add("Failed to load active sessions", Severity.Error);
+                _sessions = new List<UserSessionDto>();
+            }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error loading sessions: {ex.Message}", Severity.Error);
+            _sessions = new List<UserSessionDto>();
         }
         finally
         {
@@ -271,13 +291,29 @@
         _loadingEvents = true;
         try
         {
-            // TODO: Implement actual security events loading
-            await Task.Delay(800); // Simulate API call
-            _recentSecurityEvents = GetMockSecurityEvents();
+            var response = await HttpClient.GetAsync("/api/v1/identity/security/login-history");
+            if (response.IsSuccessStatusCode)
+            {
+                var loginHistory = await response.Content.ReadFromJsonAsync<List<LoginHistoryDto>>();
+                _recentSecurityEvents = loginHistory?.Select(lh => new SecurityEventDto
+                {
+                    EventType = lh.IsSuccessful ? "Login" : "Failed Login",
+                    Description = lh.IsSuccessful ? "Successful login" : $"Failed login: {lh.FailureReason}",
+                    IpAddress = lh.IpAddress,
+                    OccurredAt = lh.LoginAt,
+                    Severity = lh.IsSuccessful ? "Low" : "Medium"
+                }).Take(10).ToList() ?? new List<SecurityEventDto>();
+            }
+            else
+            {
+                Snackbar.Add("Failed to load login history", Severity.Error);
+                _recentSecurityEvents = new List<SecurityEventDto>();
+            }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error loading security events: {ex.Message}", Severity.Error);
+            _recentSecurityEvents = new List<SecurityEventDto>();
         }
         finally
         {
@@ -299,16 +335,36 @@
 
     private async Task RevokeSession(Guid sessionId)
     {
-        try
+        var parameters = new DialogParameters
         {
-            // TODO: Implement actual session revocation
-            await Task.Delay(500);
-            _sessions.RemoveAll(s => s.Id == sessionId);
-            Snackbar.Add("Session revoked successfully", Severity.Success);
-        }
-        catch (Exception ex)
+            ["ContentText"] = "Are you sure you want to revoke this session? You will be logged out from this device.",
+            ["ButtonText"] = "Revoke Session",
+            ["Color"] = Color.Error
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirm Session Revocation", parameters);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
         {
-            Snackbar.Add($"Error revoking session: {ex.Message}", Severity.Error);
+            try
+            {
+                var response = await HttpClient.DeleteAsync($"/api/v1/identity/security/sessions/{sessionId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    _sessions.RemoveAll(s => s.Id == sessionId);
+                    Snackbar.Add("Session revoked successfully", Severity.Success);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Snackbar.Add($"Failed to revoke session: {error}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error revoking session: {ex.Message}", Severity.Error);
+            }
         }
     }
 

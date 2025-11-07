@@ -33,6 +33,8 @@ public static class IdentityModule
         identityGroup.MapEmailVerificationEndpoints();
         identityGroup.MapInvitationEndpoints();
         identityGroup.MapInvitationManagementEndpoints();
+        identityGroup.MapSecurityEndpoints();
+        identityGroup.MapRolesEndpoints();
 
         return endpoints;
     }

@@ -1,0 +1,266 @@
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@using WebSearchIndexing.Modules.Identity.Domain.Constants
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Class="pa-0">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField
+                        @bind-Value="_model.Name"
+                        Label="Role Name"
+                        Required="true"
+                        Placeholder="Enter role name..."
+                        HelperText="A unique name for the role"
+                        Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Role Type: <strong>@Role.Type</strong> (cannot be changed)
+                    </MudText>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField
+                        @bind-Value="_model.Description"
+                        Label="Description"
+                        Lines="3"
+                        Placeholder="Describe the purpose of this role..."
+                        HelperText="A clear description of what this role is for"
+                        Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudSwitch
+                        @bind-Value="_model.IsActive"
+                        Color="Color.Primary"
+                        Label="Active"
+                        HelperText="Whether this role is active and can be assigned" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Permissions</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Select the permissions this role should have:
+                    </MudText>
+                    
+                    <MudGrid>
+                        <!-- User permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">User Management</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.UserRead]"
+                                Label="Read Users"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.UserWrite]"
+                                Label="Write Users"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.UserDelete]"
+                                Label="Delete Users"
+                                Size="Size.Small" />
+                        </MudItem>
+                        
+                        <!-- Tenant permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Tenant Management</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.TenantRead]"
+                                Label="Read Tenants"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.TenantWrite]"
+                                Label="Write Tenants"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.TenantDelete]"
+                                Label="Delete Tenants"
+                                Size="Size.Small" />
+                        </MudItem>
+                        
+                        <!-- Domain permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Domain Management</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.DomainRead]"
+                                Label="Read Domains"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.DomainWrite]"
+                                Label="Write Domains"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.DomainDelete]"
+                                Label="Delete Domains"
+                                Size="Size.Small" />
+                        </MudItem>
+                        
+                        <!-- Role permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Role Management</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.RoleRead]"
+                                Label="Read Roles"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.RoleWrite]"
+                                Label="Write Roles"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.RoleDelete]"
+                                Label="Delete Roles"
+                                Size="Size.Small" />
+                        </MudItem>
+                        
+                        <!-- Indexing permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Indexing</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.IndexingRead]"
+                                Label="Read Indexing Data"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.IndexingWrite]"
+                                Label="Submit URLs for Indexing"
+                                Size="Size.Small" />
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton 
+            Color="Color.Primary" 
+            Variant="Variant.Filled"
+            OnClick="UpdateRole"
+            Disabled="@(!IsFormValid() || _isSubmitting)">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Update Role
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public RoleDto Role { get; set; } = default!;
+    
+    private EditRoleModel _model = new();
+    private Dictionary<string, bool> _permissions = new();
+    private bool _isSubmitting = false;
+
+    protected override void OnParametersSet()
+    {
+        if (Role != null)
+        {
+            _model.Name = Role.Name;
+            _model.Description = Role.Description;
+            _model.IsActive = Role.IsActive;
+            
+            // Initialize permissions dictionary
+            InitializePermissions();
+            LoadExistingPermissions();
+        }
+    }
+    
+    private void InitializePermissions()
+    {
+        _permissions[Permissions.UserRead] = false;
+        _permissions[Permissions.UserWrite] = false;
+        _permissions[Permissions.UserDelete] = false;
+        _permissions[Permissions.TenantRead] = false;
+        _permissions[Permissions.TenantWrite] = false;
+        _permissions[Permissions.TenantDelete] = false;
+        _permissions[Permissions.DomainRead] = false;
+        _permissions[Permissions.DomainWrite] = false;
+        _permissions[Permissions.DomainDelete] = false;
+        _permissions[Permissions.RoleRead] = false;
+        _permissions[Permissions.RoleWrite] = false;
+        _permissions[Permissions.RoleDelete] = false;
+        _permissions[Permissions.IndexingRead] = false;
+        _permissions[Permissions.IndexingWrite] = false;
+    }
+    
+    private void LoadExistingPermissions()
+    {
+        if (!string.IsNullOrWhiteSpace(Role.Permissions))
+        {
+            var existingPermissions = Role.Permissions.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var permission in existingPermissions)
+            {
+                var trimmed = permission.Trim();
+                if (_permissions.ContainsKey(trimmed))
+                {
+                    _permissions[trimmed] = true;
+                }
+            }
+        }
+    }
+    
+    private async Task UpdateRole()
+    {
+        if (!IsFormValid()) return;
+
+        _isSubmitting = true;
+        try
+        {
+            var selectedPermissions = _permissions
+                .Where(p => p.Value)
+                .Select(p => p.Key)
+                .ToArray();
+            
+            var request = new
+            {
+                Name = _model.Name,
+                Description = _model.Description,
+                Permissions = string.Join(",", selectedPermissions),
+                IsActive = _model.IsActive
+            };
+
+            var response = await HttpClient.PutAsJsonAsync($"/api/v1/identity/roles/{Role.Id}", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Role '{_model.Name}' updated successfully", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Failed to update role: {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating role: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+    
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(_model.Name);
+    }
+    
+    private class EditRoleModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = true;
+    }
+}

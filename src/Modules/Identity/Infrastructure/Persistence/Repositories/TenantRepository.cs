@@ -19,8 +19,6 @@ public class TenantRepository : ITenantRepository
         return await _context.Tenants
             .Include(x => x.UserTenants)
                 .ThenInclude(x => x.User)
-            .Include(x => x.UserTenants)
-                .ThenInclude(x => x.Role)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -29,8 +27,6 @@ public class TenantRepository : ITenantRepository
         return await _context.Tenants
             .Include(x => x.UserTenants)
                 .ThenInclude(x => x.User)
-            .Include(x => x.UserTenants)
-                .ThenInclude(x => x.Role)
             .FirstOrDefaultAsync(x => x.Slug == slug, cancellationToken);
     }
 
@@ -49,7 +45,6 @@ public class TenantRepository : ITenantRepository
     {
         return await _context.Tenants
             .Include(x => x.UserTenants)
-                .ThenInclude(x => x.Role)
             .Where(x => x.UserTenants.Any(ut => ut.UserId == userId && ut.IsActive) && x.IsActive)
             .ToListAsync(cancellationToken);
     }

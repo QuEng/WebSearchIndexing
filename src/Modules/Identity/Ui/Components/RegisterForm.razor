@@ -8,21 +8,21 @@
 
 <EditForm
     class="register-form"
-    Model="@registerModel"
+    Model="@_registerModel"
     OnValidSubmit="@HandleRegister">
     <DataAnnotationsValidator />
     
-    @if (!string.IsNullOrEmpty(errorMessage))
+    @if (!string.IsNullOrEmpty(_errorMessage))
     {
         <div class="alert alert-danger">
-            @errorMessage
+            @_errorMessage
         </div>
     }
 
-    @if (!string.IsNullOrEmpty(successMessage))
+    @if (!string.IsNullOrEmpty(_successMessage))
     {
         <div class="alert alert-success">
-            @successMessage
+            @_successMessage
         </div>
     }
 
@@ -31,8 +31,8 @@
         <InputText
             id="email"
             class="form-control"
-            @bind-Value="registerModel.Email" />
-        <ValidationMessage For="@(() => registerModel.Email)" />
+            @bind-Value="_registerModel.Email" />
+        <ValidationMessage For="@(() => _registerModel.Email)" />
     </div>
 
     <div class="row">
@@ -41,16 +41,16 @@
             <InputText
                 id="firstName"
                 class="form-control"
-                @bind-Value="registerModel.FirstName" />
-            <ValidationMessage For="@(() => registerModel.FirstName)" />
+                @bind-Value="_registerModel.FirstName" />
+            <ValidationMessage For="@(() => _registerModel.FirstName)" />
         </div>
         <div class="col-md-6 mb-3">
             <label for="lastName" class="form-label">Last Name</label>
             <InputText
                 id="lastName"
                 class="form-control"
-                @bind-Value="registerModel.LastName" />
-            <ValidationMessage For="@(() => registerModel.LastName)" />
+                @bind-Value="_registerModel.LastName" />
+            <ValidationMessage For="@(() => _registerModel.LastName)" />
         </div>
     </div>
 
@@ -60,8 +60,8 @@
             id="password"
             type="password"
             class="form-control"
-            @bind-Value="registerModel.Password" />
-        <ValidationMessage For="@(() => registerModel.Password)" />
+            @bind-Value="_registerModel.Password" />
+        <ValidationMessage For="@(() => _registerModel.Password)" />
     </div>
 
     <div class="mb-3">
@@ -70,16 +70,16 @@
             id="confirmPassword"
             type="password"
             class="form-control"
-            @bind-Value="registerModel.ConfirmPassword" />
-        <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
+            @bind-Value="_registerModel.ConfirmPassword" />
+        <ValidationMessage For="@(() => _registerModel.ConfirmPassword)" />
     </div>
 
     <div class="d-grid">
         <button
             type="submit"
             class="btn btn-success"
-            disabled="@isLoading">
-            @if (isLoading)
+            disabled="@_isLoading">
+            @if (_isLoading)
             {
                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
             }
@@ -88,46 +88,47 @@
     </div>
 </EditForm>
 
-@code {
+@code
+{
     [Parameter] public string? ReturnUrl { get; set; }
-    private RegisterModel registerModel = new();
-    private string errorMessage = string.Empty;
-    private string successMessage = string.Empty;
-    private bool isLoading = false;
+    private RegisterModel _registerModel = new();
+    private string _errorMessage = string.Empty;
+    private string _successMessage = string.Empty;
+    private bool _isLoading = false;
 
     private async Task HandleRegister()
     {
         try
         {
-            isLoading = true;
-            errorMessage = string.Empty;
-            successMessage = string.Empty;
+            _isLoading = true;
+            _errorMessage = string.Empty;
+            _successMessage = string.Empty;
 
             var result = await AuthService.RegisterAsync(
-                registerModel.Email, 
-                registerModel.Password, 
-                registerModel.FirstName, 
-                registerModel.LastName);
+                _registerModel.Email, 
+                _registerModel.Password, 
+                _registerModel.FirstName, 
+                _registerModel.LastName);
             
             if (result.IsSuccess)
             {
-                successMessage = "Account created successfully! Redirecting to login...";
+                _successMessage = "Account created successfully! Redirecting to login...";
                 await Task.Delay(2000); // Show success message briefly
                 Navigation.NavigateTo("/auth/login?returnUrl=" + Uri.EscapeDataString(ReturnUrl ?? "/"));
             }
             else
             {
-                errorMessage = result.ErrorMessage ?? "Registration failed. Please try again.";
+                _errorMessage = result.ErrorMessage ?? "Registration failed. Please try again.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = "An unexpected error occurred. Please try again.";
+            _errorMessage = "An unexpected error occurred. Please try again.";
             await JSRuntime.InvokeVoidAsync("console.error", "Registration error:", ex.Message);
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 }

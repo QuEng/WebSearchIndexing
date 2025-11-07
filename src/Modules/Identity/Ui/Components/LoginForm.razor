@@ -8,14 +8,14 @@
 
 <EditForm
     class="login-form"
-    Model="@loginModel"
+    Model="@_loginModel"
     OnValidSubmit="@HandleLogin">
     <DataAnnotationsValidator />
     
-    @if (!string.IsNullOrEmpty(errorMessage))
+    @if (!string.IsNullOrEmpty(_errorMessage))
     {
         <div class="alert alert-danger">
-            @errorMessage
+            @_errorMessage
         </div>
     }
 
@@ -24,8 +24,8 @@
         <InputText
             id="email"
             class="form-control"
-            @bind-Value="loginModel.Email" />
-        <ValidationMessage For="@(() => loginModel.Email)" />
+            @bind-Value="_loginModel.Email" />
+        <ValidationMessage For="@(() => _loginModel.Email)" />
     </div>
 
     <div class="mb-3">
@@ -34,15 +34,15 @@
             id="password"
             type="password"
             class="form-control"
-            @bind-Value="loginModel.Password" />
-        <ValidationMessage For="@(() => loginModel.Password)" />
+            @bind-Value="_loginModel.Password" />
+        <ValidationMessage For="@(() => _loginModel.Password)" />
     </div>
 
     <div class="mb-3 form-check">
         <InputCheckbox
             id="rememberMe"
             class="form-check-input"
-            @bind-Value="loginModel.RememberMe" />
+            @bind-Value="_loginModel.RememberMe" />
         <label class="form-check-label" for="rememberMe">
             Remember me for 7 days
         </label>
@@ -52,8 +52,8 @@
         <button
             type="submit"
             class="btn btn-primary"
-            disabled="@isLoading">
-            @if (isLoading)
+            disabled="@_isLoading">
+            @if (_isLoading)
             {
                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
             }
@@ -63,10 +63,11 @@
 </EditForm>
 
 
-@code {
-    private LoginModel loginModel = new();
-    private string errorMessage = string.Empty;
-    private bool isLoading = false;
+@code
+{
+    private LoginModel _loginModel = new();
+    private string _errorMessage = string.Empty;
+    private bool _isLoading = false;
 
     [Parameter] public string? ReturnUrl { get; set; }
 
@@ -74,10 +75,10 @@
     {
         try
         {
-            isLoading = true;
-            errorMessage = string.Empty;
+            _isLoading = true;
+            _errorMessage = string.Empty;
 
-            var result = await AuthService.LoginAsync(loginModel.Email, loginModel.Password, loginModel.RememberMe);
+            var result = await AuthService.LoginAsync(_loginModel.Email, _loginModel.Password, _loginModel.RememberMe);
             
             if (result.IsSuccess)
             {
@@ -87,17 +88,17 @@
             }
             else
             {
-                errorMessage = result.ErrorMessage ?? "Login failed. Please try again.";
+                _errorMessage = result.ErrorMessage ?? "Login failed. Please try again.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = "An unexpected error occurred. Please try again.";
+            _errorMessage = "An unexpected error occurred. Please try again.";
             await JSRuntime.InvokeVoidAsync("console.error", "Login error:", ex.Message);
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 }

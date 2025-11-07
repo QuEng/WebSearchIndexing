@@ -5,7 +5,7 @@
 @inject IDialogService DialogService
 
 <div class="user-profile">
-    @if (isLoading)
+    @if (_isLoading)
     {
         <div class="d-flex justify-content-center">
             <div class="spinner-border" role="status">
@@ -13,11 +13,11 @@
             </div>
         </div>
     }
-    else if (userProfile != null)
+    else if (_userProfile != null)
     {
         <EmailVerificationBanner 
-            IsEmailVerified="@userProfile.IsEmailVerified"
-            UserId="@userProfile.Id" />
+            IsEmailVerified="@_userProfile.IsEmailVerified"
+            UserId="@_userProfile.Id" />
         
         <div class="card">
             <div class="card-header">
@@ -26,30 +26,30 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <strong>Email:</strong> @userProfile.Email
+                        <strong>Email:</strong> @_userProfile.Email
                     </div>
                     <div class="col-md-6">
                         <strong>Status:</strong> 
-                        <span class="badge @(userProfile.IsActive ? "bg-success" : "bg-danger")">
-                            @(userProfile.IsActive ? "Active" : "Inactive")
+                        <span class="badge @(_userProfile.IsActive ? "bg-success" : "bg-danger")">
+                            @(_userProfile.IsActive ? "Active" : "Inactive")
                         </span>
                     </div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-md-6">
-                        <strong>First Name:</strong> @userProfile.FirstName
+                        <strong>First Name:</strong> @_userProfile.FirstName
                     </div>
                     <div class="col-md-6">
-                        <strong>Last Name:</strong> @userProfile.LastName
+                        <strong>Last Name:</strong> @_userProfile.LastName
                     </div>
                 </div>
                 <div class="row mt-2">
                     <div class="col-md-6">
-                        <strong>Member Since:</strong> @userProfile.CreatedAt.ToString("MMM dd, yyyy")
+                        <strong>Member Since:</strong> @_userProfile.CreatedAt.ToString("MMM dd, yyyy")
                     </div>
                 </div>
 
-                @if (userProfile.Tenants.Any())
+                @if (_userProfile.Tenants.Any())
                 {
                     <div class="mt-4">
                         <h5>Workspaces</h5>
@@ -63,7 +63,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var tenant in userProfile.Tenants)
+                                    @foreach (var tenant in _userProfile.Tenants)
                                     {
                                         <tr>
                                             <td>@tenant.Name</td>
@@ -79,12 +79,12 @@
                     </div>
                 }
 
-                @if (userProfile.Roles.Any())
+                @if (_userProfile.Roles.Any())
                 {
                     <div class="mt-4">
                         <h5>Global Roles</h5>
                         <div>
-                            @foreach (var role in userProfile.Roles)
+                            @foreach (var role in _userProfile.Roles)
                             {
                                 <span class="badge bg-secondary me-2">@role</span>
                             }
@@ -119,9 +119,10 @@
     }
 </div>
 
-@code {
-    private UserProfileModel? userProfile;
-    private bool isLoading = true;
+@code
+{
+    private UserProfileModel? _userProfile;
+    private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,7 +133,7 @@
     {
         try
         {
-            isLoading = true;
+            _isLoading = true;
             
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             if (authState.User.Identity?.IsAuthenticated == true)
@@ -141,7 +142,7 @@
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    userProfile = System.Text.Json.JsonSerializer.Deserialize<UserProfileModel>(content, new System.Text.Json.JsonSerializerOptions
+                    _userProfile = System.Text.Json.JsonSerializer.Deserialize<UserProfileModel>(content, new System.Text.Json.JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
@@ -155,7 +156,7 @@
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 
@@ -181,12 +182,12 @@
 
     private async Task OpenEditProfileDialog()
     {
-        if (userProfile == null) return;
+        if (_userProfile == null) return;
 
         var parameters = new DialogParameters
         {
-            { "FirstName", userProfile.FirstName },
-            { "LastName", userProfile.LastName }
+            { "FirstName", _userProfile.FirstName },
+            { "LastName", _userProfile.LastName }
         };
 
         var options = new DialogOptions 

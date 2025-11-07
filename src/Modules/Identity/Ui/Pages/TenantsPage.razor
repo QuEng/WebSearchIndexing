@@ -1,4 +1,5 @@
 @page "/workspaces"
+@using WebSearchIndexing.Modules.Identity.Domain.Constants
 @inject HttpClient HttpClient
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
@@ -13,15 +14,15 @@
             <MudButton 
                 Variant="Variant.Filled" 
                 Color="Color.Primary"
-                StartIcon="Icons.Material.Filled.Add"
+                StartIcon="@Icons.Material.Filled.Add"
                 OnClick="OpenCreateDialog">
                 Create Workspace
             </MudButton>
         </div>
         
         <MudTable
-            Items="@tenants"
-            Loading="@isLoading"
+            Items="@_tenants"
+            Loading="@_isLoading"
             Hover="true"
             Breakpoint="Breakpoint.Sm"
             LoadingProgressColor="Color.Info">
@@ -36,7 +37,7 @@
             <RowTemplate>
                 <MudTd DataLabel="Name">
                     <div class="d-flex align-center">
-                        <MudIcon Icon="Icons.Material.Filled.Business" Class="mr-3" />
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-3" />
                         <MudText Typo="Typo.body1">@context.Name</MudText>
                     </div>
                 </MudTd>
@@ -56,40 +57,44 @@
                     </MudText>
                 </MudTd>
                 <MudTd DataLabel="Status">
-                    <MudChip Color="@(context.IsActive ? Color.Success : Color.Default)" 
-                             Size="Size.Small"
-                             Icon="@(context.IsActive ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
+                    <MudChip
+                        Color="@(context.IsActive ? Color.Success : Color.Default)" 
+                        Size="Size.Small"
+                        Icon="@(context.IsActive ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
                         @(context.IsActive ? "Active" : "Inactive")
                     </MudChip>
                 </MudTd>
                 <MudTd DataLabel="Actions">
                     <MudButtonGroup Size="Size.Small" Variant="Variant.Text">
-                        <MudIconButton Icon="Icons.Material.Filled.Visibility"
-                                       Color="Color.Primary"
-                                       OnClick="@(() => ViewTenant(context.Id))"
-                                       Title="View Details" />
-                        @if (context.UserRole == "Admin")
+                        <MudIconButton
+                            Icon="@Icons.Material.Filled.Visibility"
+                            Color="Color.Primary"
+                            OnClick="@(() => ViewTenant(context.Id))"
+                            Title="View Details" />
+                        @if (context.UserRole == Roles.Admin || context.UserRole == Roles.Owner)
                         {
-                            <MudIconButton Icon="Icons.Material.Filled.Edit"
-                                           Color="Color.Secondary"
-                                           OnClick="@(() => EditTenant(context))"
-                                           Title="Edit Workspace" />
+                            <MudIconButton
+                                Icon="@Icons.Material.Filled.Edit"
+                                Color="Color.Secondary"
+                                OnClick="@(() => EditTenant(context))"
+                                Title="Edit Workspace" />
                         }
                     </MudButtonGroup>
                 </MudTd>
             </RowTemplate>
             <NoRecordsContent>
                 <div class="text-center pa-8">
-                    <MudIcon Icon="Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Default" Class="mb-4" />
                     <MudText Typo="Typo.h6" Class="mb-2">No workspaces found</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Default">
                         Get started by creating your first workspace
                     </MudText>
-                    <MudButton Variant="Variant.Filled" 
-                               Color="Color.Primary" 
-                               StartIcon="Icons.Material.Filled.Add"
-                               OnClick="OpenCreateDialog"
-                               Class="mt-4">
+                    <MudButton
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary" 
+                        StartIcon="@Icons.Material.Filled.Add"
+                        OnClick="OpenCreateDialog"
+                        Class="mt-4">
                         Create Workspace
                     </MudButton>
                 </div>
@@ -98,9 +103,10 @@
     </MudPaper>
 </MudContainer>
 
-@code {
-    private List<TenantDto> tenants = new();
-    private bool isLoading = true;
+@code
+{
+    private List<TenantDto> _tenants = new();
+    private bool _isLoading = true;
     
     protected override async Task OnInitializedAsync()
     {
@@ -111,12 +117,12 @@
     {
         try
         {
-            isLoading = true;
+            _isLoading = true;
             var response = await HttpClient.GetAsync("/api/v1/identity/tenants");
             
             if (response.IsSuccessStatusCode)
             {
-                tenants = await response.Content.ReadFromJsonAsync<List<TenantDto>>() ?? new List<TenantDto>();
+                _tenants = await response.Content.ReadFromJsonAsync<List<TenantDto>>() ?? new List<TenantDto>();
             }
             else
             {
@@ -129,7 +135,7 @@
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
     
@@ -190,9 +196,9 @@
     
     private Color GetRoleColor(string role) => role switch
     {
-        "Admin" => Color.Error,
-        "User" => Color.Primary,
-        "Viewer" => Color.Default,
+        Roles.Admin => Color.Error,
+        Roles.Member => Color.Primary,
+        Roles.Viewer => Color.Default,
         _ => Color.Default
     };
 }

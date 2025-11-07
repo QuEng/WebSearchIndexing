@@ -8,7 +8,7 @@
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
     <MudPaper Class="pa-6" Elevation="3">
         <div class="text-center">
-            @if (isLoading)
+            @if (_isLoading)
             {
                 <MudProgressCircular Size="Size.Large" Indeterminate="true" Color="Color.Primary" />
                 <MudText Typo="Typo.h5" Class="mt-4">Verifying your email...</MudText>
@@ -16,7 +16,7 @@
                     Please wait while we verify your email address.
                 </MudText>
             }
-            else if (isSuccess)
+            else if (_isSuccess)
             {
                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" Class="mb-4" Style="font-size: 4rem;" />
                 <MudText Typo="Typo.h5" Color="Color.Success" Class="mb-3">
@@ -26,7 +26,7 @@
                     Your email address has been verified. You now have full access to all features.
                 </MudText>
                 <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    Redirecting to your profile in @countdown seconds...
+                    Redirecting to your profile in @_countdown seconds...
                 </MudText>
                 <MudButton 
                     Variant="Variant.Filled" 
@@ -43,7 +43,7 @@
                     Verification Failed
                 </MudText>
                 <MudText Typo="Typo.body1" Class="mb-4">
-                    @errorMessage
+                    @_errorMessage
                 </MudText>
                 <MudButton 
                     Variant="Variant.Filled" 
@@ -57,23 +57,24 @@
     </MudPaper>
 </MudContainer>
 
-@code {
+@code
+{
     [Parameter]
     [SupplyParameterFromQuery(Name = "token")]
     public string? Token { get; set; }
     
-    private bool isLoading = true;
-    private bool isSuccess = false;
-    private string errorMessage = "The verification link is invalid or has expired.";
-    private int countdown = 3;
-    private System.Threading.Timer? countdownTimer;
+    private bool _isLoading = true;
+    private bool _isSuccess = false;
+    private string _errorMessage = "The verification link is invalid or has expired.";
+    private int _countdown = 3;
+    private System.Threading.Timer? _countdownTimer;
 
     protected override async Task OnInitializedAsync()
     {
         if (string.IsNullOrWhiteSpace(Token))
         {
-            isLoading = false;
-            errorMessage = "No verification token provided.";
+            _isLoading = false;
+            _errorMessage = "No verification token provided.";
             return;
         }
 
@@ -84,20 +85,20 @@
     {
         try
         {
-            isLoading = true;
+            _isLoading = true;
 
             var payload = new { token = Token };
             var response = await HttpClient.PostAsJsonAsync("/api/v1/identity/email-verification/verify", payload);
 
             if (response.IsSuccessStatusCode)
             {
-                isSuccess = true;
+                _isSuccess = true;
                 Snackbar.Add("Email verified successfully!", Severity.Success);
                 StartCountdown();
             }
             else
             {
-                isSuccess = false;
+                _isSuccess = false;
                 var errorContent = await response.Content.ReadAsStringAsync();
                 
                 // Log full error details for debugging
@@ -110,53 +111,53 @@
                     var errorJson = System.Text.Json.JsonDocument.Parse(errorContent);
                     if (errorJson.RootElement.TryGetProperty("error", out var errorProp))
                     {
-                        errorMessage = errorProp.GetString() ?? errorMessage;
+                        _errorMessage = errorProp.GetString() ?? _errorMessage;
                     }
                     else if (errorJson.RootElement.TryGetProperty("Error", out var errorProp2))
                     {
-                        errorMessage = errorProp2.GetString() ?? errorMessage;
+                        _errorMessage = errorProp2.GetString() ?? _errorMessage;
                     }
                     else if (errorJson.RootElement.TryGetProperty("detail", out var detailProp))
                     {
-                        errorMessage = detailProp.GetString() ?? errorMessage;
+                        _errorMessage = detailProp.GetString() ?? _errorMessage;
                     }
                 }
                 catch
                 {
                     // Use response status and content as fallback
-                    errorMessage = $"Status: {response.StatusCode}. Content: {errorContent}";
+                    _errorMessage = $"Status: {response.StatusCode}. Content: {errorContent}";
                 }
                 
                 Snackbar.Add($"Debug - Token: {Token}", Severity.Info);
-                Snackbar.Add(errorMessage, Severity.Error);
+                Snackbar.Add(_errorMessage, Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            isSuccess = false;
-            errorMessage = $"An unexpected error occurred: {ex.Message}";
+            _isSuccess = false;
+            _errorMessage = $"An unexpected error occurred: {ex.Message}";
             Console.WriteLine($"Exception: {ex}");
-            Snackbar.Add(errorMessage, Severity.Error);
+            Snackbar.Add(_errorMessage, Severity.Error);
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 
     private void StartCountdown()
     {
-        countdownTimer = new System.Threading.Timer(_ =>
+        _countdownTimer = new System.Threading.Timer(_ =>
         {
-            countdown--;
+            _countdown--;
             
             InvokeAsync(() =>
             {
                 StateHasChanged();
                 
-                if (countdown <= 0)
+                if (_countdown <= 0)
                 {
-                    countdownTimer?.Dispose();
+                    _countdownTimer?.Dispose();
                     NavigateToProfile();
                 }
             });
@@ -165,12 +166,12 @@
 
     private void NavigateToProfile()
     {
-        countdownTimer?.Dispose();
+        _countdownTimer?.Dispose();
         Navigation.NavigateTo("/profile");
     }
 
     public void Dispose()
     {
-        countdownTimer?.Dispose();
+        _countdownTimer?.Dispose();
     }
 }

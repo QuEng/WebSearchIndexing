@@ -1,10 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
+using WebSearchIndexing.BuildingBlocks.Messaging;
 using WebSearchIndexing.Modules.Identity.Application.Abstractions;
 using WebSearchIndexing.Modules.Identity.Application.Services;
 using WebSearchIndexing.Modules.Identity.Application.Authorization;
 using WebSearchIndexing.Modules.Identity.Application.Authorization.Commands.AssignRole;
 using WebSearchIndexing.Modules.Identity.Application.UserManagement.Commands.InviteUser;
 using WebSearchIndexing.Modules.Identity.Application.UserManagement.Queries.GetUsers;
+using WebSearchIndexing.Modules.Identity.Application.IntegrationEventHandlers.Catalog;
+using WebSearchIndexing.Modules.Identity.Application.IntegrationEventHandlers.Core;
+using WebSearchIndexing.Modules.Identity.Application.IntegrationEvents.External;
 
 namespace WebSearchIndexing.Modules.Identity.Application;
 
@@ -29,6 +33,12 @@ public static class DependencyInjectionExtensions
 
         // Register authorization policies
         services.AddIdentityAuthorizationPolicies();
+
+        // Register Integration Event Handlers
+        services.AddIntegrationEventHandler<ServiceAccountCreatedEvent, ServiceAccountCreatedEventHandler>();
+        services.AddIntegrationEventHandler<ServiceAccountUpdatedEvent, ServiceAccountUpdatedEventHandler>();
+        services.AddIntegrationEventHandler<ServiceAccountDeletedEvent, ServiceAccountDeletedEventHandler>();
+        services.AddIntegrationEventHandler<SettingsChangedEvent, SettingsChangedEventHandler>();
 
         // TODO: Add MediatR handlers when they are implemented
         // TODO: Add validators

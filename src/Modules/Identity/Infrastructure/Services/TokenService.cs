@@ -266,7 +266,7 @@ internal sealed class TokenService : ITokenService
 
     public async Task RevokeAllUserTokensAsync(Guid userId, string reason, CancellationToken cancellationToken = default)
     {
-        await _refreshTokenRepository.RevokeAllByUserIdAsync(userId, reason, cancellationToken);
+        await _refreshTokenRepository.RevokeAllUserTokensAsync(userId, reason, cancellationToken);
     }
 
     private static string GenerateSecureRefreshToken()

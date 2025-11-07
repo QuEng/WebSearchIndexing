@@ -1,0 +1,253 @@
+@using WebSearchIndexing.Modules.Identity.Ui.Models
+@using WebSearchIndexing.Modules.Identity.Application.Commands.Roles
+@using WebSearchIndexing.Modules.Identity.Application.DTOs.Roles
+@using WebSearchIndexing.Modules.Identity.Domain.Constants
+@inject HttpClient HttpClient
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Class="pa-0">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField
+                        @bind-Value="_model.Name"
+                        Label="Role Name"
+                        Required="true"
+                        Placeholder="Enter role name..."
+                        HelperText="A unique name for the role"
+                        Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudSelect
+                        @bind-Value="_model.Type"
+                        Label="Role Type"
+                        Required="true"
+                        Variant="Variant.Outlined"
+                        HelperText="Select the scope of this role">
+                        <MudSelectItem Value='"Global"'>
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="Icons.Material.Filled.SupervisedUserCircle" Class="mr-2" Color="Color.Error" />
+                                Global - System-wide access
+                            </div>
+                        </MudSelectItem>
+                        <MudSelectItem Value='"Tenant"'>
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="Icons.Material.Filled.Business" Class="mr-2" Color="Color.Primary" />
+                                Tenant - Workspace-specific access
+                            </div>
+                        </MudSelectItem>
+                        <MudSelectItem Value='"Domain"'>
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="Icons.Material.Filled.Domain" Class="mr-2" Color="Color.Success" />
+                                Domain - Domain-specific access
+                            </div>
+                        </MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField
+                        @bind-Value="_model.Description"
+                        Label="Description"
+                        Lines="3"
+                        Placeholder="Describe the purpose of this role..."
+                        HelperText="A clear description of what this role is for"
+                        Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Permissions</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Select the permissions this role should have:
+                    </MudText>
+                    
+                    <MudGrid>
+                        <!-- User permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">User Management</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.UserRead]"
+                                Label="Read Users"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.UserWrite]"
+                                Label="Write Users"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.UserDelete]"
+                                Label="Delete Users"
+                                Size="Size.Small" />
+                        </MudItem>
+                        
+                        <!-- Tenant permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Tenant Management</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.TenantRead]"
+                                Label="Read Tenants"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.TenantWrite]"
+                                Label="Write Tenants"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.TenantDelete]"
+                                Label="Delete Tenants"
+                                Size="Size.Small" />
+                        </MudItem>
+                        
+                        <!-- Domain permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Domain Management</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.DomainRead]"
+                                Label="Read Domains"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.DomainWrite]"
+                                Label="Write Domains"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.DomainDelete]"
+                                Label="Delete Domains"
+                                Size="Size.Small" />
+                        </MudItem>
+                        
+                        <!-- Role permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Role Management</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.RoleRead]"
+                                Label="Read Roles"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.RoleWrite]"
+                                Label="Write Roles"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.RoleDelete]"
+                                Label="Delete Roles"
+                                Size="Size.Small" />
+                        </MudItem>
+                        
+                        <!-- Indexing permissions -->
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">Indexing</MudText>
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.IndexingRead]"
+                                Label="Read Indexing Data"
+                                Size="Size.Small" />
+                            <MudCheckBox
+                                @bind-Value="_permissions[Permissions.IndexingWrite]"
+                                Label="Submit URLs for Indexing"
+                                Size="Size.Small" />
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton 
+            Color="Color.Primary" 
+            Variant="Variant.Filled"
+            OnClick="CreateRole"
+            Disabled="@(!IsFormValid() || _isSubmitting)">
+            @if (_isSubmitting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Create Role
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    
+    private CreateRoleModel _model = new();
+    private Dictionary<string, bool> _permissions = new();
+    private bool _isSubmitting = false;
+
+    protected override void OnInitialized()
+    {
+        // Initialize permissions dictionary
+        _permissions[Permissions.UserRead] = false;
+        _permissions[Permissions.UserWrite] = false;
+        _permissions[Permissions.UserDelete] = false;
+        _permissions[Permissions.TenantRead] = false;
+        _permissions[Permissions.TenantWrite] = false;
+        _permissions[Permissions.TenantDelete] = false;
+        _permissions[Permissions.DomainRead] = false;
+        _permissions[Permissions.DomainWrite] = false;
+        _permissions[Permissions.DomainDelete] = false;
+        _permissions[Permissions.RoleRead] = false;
+        _permissions[Permissions.RoleWrite] = false;
+        _permissions[Permissions.RoleDelete] = false;
+        _permissions[Permissions.IndexingRead] = false;
+        _permissions[Permissions.IndexingWrite] = false;
+    }
+    
+    private async Task CreateRole()
+    {
+        if (!IsFormValid()) return;
+
+        _isSubmitting = true;
+        try
+        {
+            var selectedPermissions = _permissions
+                .Where(p => p.Value)
+                .Select(p => p.Key)
+                .ToArray();
+            
+            var request = new
+            {
+                Name = _model.Name,
+                Type = _model.Type,
+                Description = _model.Description,
+                Permissions = string.Join(",", selectedPermissions)
+            };
+
+            var response = await HttpClient.PostAsJsonAsync("/api/v1/identity/roles", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Role '{_model.Name}' created successfully", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Failed to create role: {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating role: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+    
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(_model.Name) && 
+               !string.IsNullOrWhiteSpace(_model.Type);
+    }
+    
+    private class CreateRoleModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+}

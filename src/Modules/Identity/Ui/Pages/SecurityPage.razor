@@ -1,0 +1,25 @@
+@page "/security"
+@inject NavigationManager Navigation
+
+<PageTitle>Security Settings</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <div class="d-flex align-center mb-4">
+        <MudIcon 
+            Icon="@Icons.Material.Filled.Security" 
+            Size="Size.Large" 
+            Class="mr-3" 
+            Color="Color.Primary" />
+        <MudText Typo="Typo.h3">Security Dashboard</MudText>
+    </div>
+    
+    <SecurityDashboard />
+</MudContainer>
+
+@code 
+{
+    protected override void OnInitialized()
+    {
+        // Add any page-specific initialization here
+    }
+}
